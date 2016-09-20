@@ -34,5 +34,19 @@ define(function (require) {
             // 不能缓存rect！
             var rect = this.style.rect;
             if (x >= rect.x
-                && x <= (rect.x="" +="" rect.width)="" &&="" y="">= rect.y
-                && y </=>
+                && x <= (rect.x + rect.width)
+                && y >= rect.y
+                && y <= (rect.y + rect.height)
+            ) {
+                // 矩形内
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    };
+    zrUtil.inherits(HandlePolygon, Base);
+
+    return HandlePolygon;
+});

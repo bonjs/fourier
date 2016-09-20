@@ -688,7 +688,8 @@ define(function (require) {
                 if (angle < 0) { // Constrain to [0,360]
                     angle += 360;
                 }
-                var isRightSide = angle <= 90="" ||="" angle="">= 270;
+                var isRightSide = angle <= 90
+                                 || angle >= 270;
                 angle = angle * Math.PI / 180;
                 var v = [Math.cos(angle), -Math.sin(angle)];
 
@@ -771,7 +772,158 @@ define(function (require) {
 
                 if (series.length === 1) {
                     // 取小端的颜色
-                    if (edge.layout.weight <= 1="" other.layout.weight)="" {="" color="this.getColor(edge.node1.id);" }="" else="" 使用系列颜色="" var="" querytarget="this._getEdgeQueryTarget(serie," edge.data);="" querytargetemphasis="this._getEdgeQueryTarget(" serie,="" edge.data,="" 'emphasis'="" );="" ribbon="new" ribbonshape({="" zlevel:="" serie.zlevel,="" z:="" serie.z,="" style:="" x:="" center[0],="" y:="" center[1],="" r:="" radius[0],="" source0:="" s0,="" source1:="" s1,="" target0:="" t0,="" target1:="" t1,="" brushtype:="" 'both',="" opacity:="" this.deepquery(="" querytarget,="" 'opacity'="" ),="" color:="" color,="" linewidth:="" this.deepquery(querytarget,="" 'borderwidth'),="" strokecolor:="" 'bordercolor'),="" clockwise:="" mainserie.clockwise="" },="" clickable:="" mainserie.clickable,="" highlightstyle:="" querytargetemphasis,="" this.deepquery(querytargetemphasis,="" 'bordercolor')="" });="" node1,="" node2;="" 从大端到小端="" if="" (edge.layout.weight="" <="other.layout.weight)" node1="other.node1;" node2="other.node2;" ecdata.pack(="" ribbon,="" serieidx,="" edge.rawindex="=" null="" ?="" idx="" :="" edge.rawindex,="" edge.data.name="" ||="" (node1.id="" +="" '-'="" node2.id),="" special="" node1.id,="" special2="" node2.id="" this.shapelist.push(ribbon);="" edge.shape="ribbon;" this);="" _buildedgecurves:="" function="" (series,="" graph,="" mainserie,="" maingraph)="" serie="series[serieIdx];" center="this.parseCenter(this.zr," mainserie.center);="" graph.eachedge(function="" (e,="" idx)="" shape1="node1.shape;" shape2="node2.shape;" e.data);="" e.data,="" curveshape="new" beziercurveshape({="" xstart:="" shape1.position[0],="" ystart:="" shape1.position[1],="" xend:="" shape2.position[0],="" yend:="" shape2.position[1],="" cpx1:="" cpy1:="" 'width'="" 'color'="" )="" curveshape,="" e.rawindex="=" e.rawindex,="" e.data.name="" (e.node1.id="" e.node2.id),="" e.node1.id,="" e.node2.id="" this.shapelist.push(curveshape);="" e.shape="curveShape;" _buildscales:="" (serie,="" graph)="" clockwise="serie.clockWise;" serie.center);="" radius="this.parseRadius(this.zr," serie.radius);="" sign="clockWise" -1;="" sumvalue="0;" maxvalue="-Infinity;" unitpostfix;="" unitscale;="" (serie.showscaletext)="" graph.eachnode(function="" (node)="" val="node.data.value;" (val=""> maxValue) {
+                    if (edge.layout.weight <= other.layout.weight) {
+                        color = this.getColor(edge.node1.id);
+                    }
+                    else {
+                        color = this.getColor(edge.node2.id);
+                    }
+                } else {
+                    //  使用系列颜色
+                    color = this.getColor(serie.name);
+                }
+                var queryTarget = this._getEdgeQueryTarget(serie, edge.data);
+                var queryTargetEmphasis = this._getEdgeQueryTarget(
+                    serie, edge.data, 'emphasis'
+                );
+                var ribbon = new RibbonShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z,
+                    style: {
+                        x: center[0],
+                        y: center[1],
+                        r: radius[0],
+                        source0: s0,
+                        source1: s1,
+                        target0: t0,
+                        target1: t1,
+                        brushType: 'both',
+                        opacity: this.deepQuery(
+                            queryTarget, 'opacity'
+                        ),
+                        color: color,
+                        lineWidth: this.deepQuery(queryTarget, 'borderWidth'),
+                        strokeColor: this.deepQuery(queryTarget, 'borderColor'),
+                        clockWise: mainSerie.clockWise
+                    },
+                    clickable: mainSerie.clickable,
+                    highlightStyle: {
+                        brushType: 'both',
+                        opacity: this.deepQuery(
+                            queryTargetEmphasis, 'opacity'
+                        ),
+                        lineWidth: this.deepQuery(queryTargetEmphasis, 'borderWidth'),
+                        strokeColor: this.deepQuery(queryTargetEmphasis, 'borderColor')
+                    }
+                });
+                var node1, node2;
+                // 从大端到小端
+                if (edge.layout.weight <= other.layout.weight) {
+                    node1 = other.node1;
+                    node2 = other.node2;
+                } else {
+                    node1 = edge.node1;
+                    node2 = edge.node2;
+                }
+                ecData.pack(
+                    ribbon,
+                    serie,
+                    serieIdx,
+                    edge.data,
+                    edge.rawIndex == null ? idx : edge.rawIndex,
+                    edge.data.name || (node1.id + '-' + node2.id),
+                    // special
+                    node1.id,
+                    // special2
+                    node2.id
+                );
+
+                this.shapeList.push(ribbon);
+                edge.shape = ribbon;
+            }, this);
+        },
+
+        _buildEdgeCurves: function (series, serieIdx, graph, mainSerie, mainGraph) {
+            var serie = series[serieIdx];
+            
+            var center = this.parseCenter(this.zr, mainSerie.center);
+
+            graph.eachEdge(function (e, idx) {
+                var node1 = mainGraph.getNodeById(e.node1.id);
+                var node2 = mainGraph.getNodeById(e.node2.id);
+                var shape1 = node1.shape;
+                var shape2 = node2.shape;
+                var queryTarget = this._getEdgeQueryTarget(serie, e.data);
+                var queryTargetEmphasis = this._getEdgeQueryTarget(
+                    serie, e.data, 'emphasis'
+                );
+
+                var curveShape = new BezierCurveShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z,
+                    style: {
+                        xStart: shape1.position[0],
+                        yStart: shape1.position[1],
+                        xEnd: shape2.position[0],
+                        yEnd: shape2.position[1],
+                        cpX1: center[0],
+                        cpY1: center[1],
+                        lineWidth: this.deepQuery(
+                            queryTarget, 'width'
+                        ),
+                        strokeColor: this.deepQuery(
+                            queryTarget, 'color'
+                        ),
+                        opacity: this.deepQuery(
+                            queryTarget, 'opacity'
+                        )
+                    },
+                    highlightStyle: {
+                        lineWidth: this.deepQuery(
+                            queryTargetEmphasis, 'width'
+                        ),
+                        strokeColor: this.deepQuery(
+                            queryTargetEmphasis, 'color'
+                        ),
+                        opacity: this.deepQuery(
+                            queryTargetEmphasis, 'opacity'
+                        )
+                    }
+                });
+
+                ecData.pack(
+                    curveShape,
+                    serie,
+                    serieIdx,
+                    e.data,
+                    e.rawIndex == null ? idx : e.rawIndex,
+                    e.data.name || (e.node1.id + '-' + e.node2.id),
+                    // special
+                    e.node1.id,
+                    // special2
+                    e.node2.id
+                );
+
+                this.shapeList.push(curveShape);
+                e.shape = curveShape;
+            }, this);
+        },
+
+        _buildScales: function (serie, serieIdx, graph) {
+            var clockWise = serie.clockWise;
+            var center = this.parseCenter(this.zr, serie.center);
+            var radius = this.parseRadius(this.zr, serie.radius);
+            var sign = clockWise ? 1 : -1;
+
+            var sumValue = 0;
+            var maxValue = -Infinity;
+            var unitPostfix;
+            var unitScale;
+
+            if (serie.showScaleText) {
+                graph.eachNode(function (node) {
+                    var val = node.data.value;
+                    if (val > maxValue) {
                         maxValue = val;
                     }
                     sumValue += val;
@@ -850,7 +1002,8 @@ define(function (require) {
                     if (theta < 0) {
                         theta += 360;
                     }
-                    var isRightSide = theta <= 90="" ||="" theta="">= 270;
+                    var isRightSide = theta <= 90
+                                     || theta >= 270;
 
                     var textShape = new TextShape({
                         zlevel: serie.zlevel,
@@ -943,4 +1096,3 @@ define(function (require) {
 
     return Chord;
 });
-</=></=></=>

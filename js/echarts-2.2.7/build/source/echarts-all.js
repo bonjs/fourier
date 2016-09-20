@@ -2820,7 +2820,7 @@ define('zrender/zrender', [
             var downloadLink = document.createElement('a');
             downloadLink.href = image;
             downloadLink.setAttribute('download', (saveOption.name ? saveOption.name : this.option.title && (this.option.title.text || this.option.title.subtext) ? this.option.title.text || this.option.title.subtext : 'ECharts') + '.' + imgType);
-            downloadLink.innerHTML = '<img style="vertical-align:middle" src="' + image + '" title="' + (!!window.ActiveXObject || 'ActiveXObject' in window ? '右键->图片另存为' : saveOption.lang ? saveOption.lang[0] : '点击保存') + '">';
+            downloadLink.innerHTML = '<img style="vertical-align:middle" src="' + image + '" title="' + (!!window.ActiveXObject || 'ActiveXObject' in window ? '右键->图片另存为' : saveOption.lang ? saveOption.lang[0] : '点击保存') + '"/>';
             downloadDiv.appendChild(downloadLink);
             document.body.appendChild(downloadDiv);
             downloadLink = null;
@@ -2922,7 +2922,9 @@ define('zrender/zrender', [
             }
             var zoomOption = newOption.dataZoom;
             if (zoomOption && zoomOption.show) {
-                var start = zoomOption.start != null && zoomOption.start >= 0 && zoomOption.start <= 100="" ?="" zoomoption.start="" :="" 0;="" var="" end="zoomOption.end" !="null" &&="" zoomoption.end="">= 0 && zoomOption.end <= 100="" ?="" zoomoption.end="" :="" 100;="" if="" (start=""> end) {
+                var start = zoomOption.start != null && zoomOption.start >= 0 && zoomOption.start <= 100 ? zoomOption.start : 0;
+                var end = zoomOption.end != null && zoomOption.end >= 0 && zoomOption.end <= 100 ? zoomOption.end : 100;
+                if (start > end) {
                     start = start + end;
                     end = start - end;
                     start = start - end;
@@ -3310,7 +3312,7 @@ define('zrender/zrender', [
         show: true,
         showContent: true,
         trigger: 'item',
-        islandFormatter: '{a} <br>{b} : {c}',
+        islandFormatter: '{a} <br/>{b} : {c}',
         showDelay: 20,
         hideDelay: 100,
         transitionDuration: 0.4,
@@ -3637,7 +3639,29 @@ define('zrender/zrender', [
                 var curCoord = categoryAxis.getCoordByIndex(dataIndex);
                 while (curCoord < xEnd) {
                     right = curCoord;
-                    if (curCoord <= x)="" {="" left="curCoord;" }="" else="" break;="" curcoord="categoryAxis.getCoordByIndex(++dataIndex);" if="" (dataindex="" <="0)" dataindex="0;" (x="" -="" (categoryaxis.getnamebyindex(dataindex)="=" null)="" return="" dataindex;="" var="" top;="" bottom;="" ystart="this.component.grid.getY();" while="" (curcoord=""> yStart) {
+                    if (curCoord <= x) {
+                        left = curCoord;
+                    } else {
+                        break;
+                    }
+                    curCoord = categoryAxis.getCoordByIndex(++dataIndex);
+                }
+                if (dataIndex <= 0) {
+                    dataIndex = 0;
+                } else if (x - left <= right - x) {
+                    dataIndex -= 1;
+                } else {
+                    if (categoryAxis.getNameByIndex(dataIndex) == null) {
+                        dataIndex -= 1;
+                    }
+                }
+                return dataIndex;
+            } else {
+                var top;
+                var bottom;
+                var yStart = this.component.grid.getY();
+                var curCoord = categoryAxis.getCoordByIndex(dataIndex);
+                while (curCoord > yStart) {
                     top = curCoord;
                     if (curCoord >= y) {
                         bottom = curCoord;
@@ -3646,7 +3670,9 @@ define('zrender/zrender', [
                     }
                     curCoord = categoryAxis.getCoordByIndex(++dataIndex);
                 }
-                if (dataIndex <= 0)="" {="" dataindex="0;" }="" else="" if="" (y="" -="" top="">= bottom - y) {
+                if (dataIndex <= 0) {
+                    dataIndex = 0;
+                } else if (y - top >= bottom - y) {
                     dataIndex -= 1;
                 } else {
                     if (categoryAxis.getNameByIndex(dataIndex) == null) {
@@ -3787,7 +3813,7 @@ define('zrender/zrender', [
                         this._curTicket = NaN;
                         formatter = this._encodeHTML(categoryAxis.getNameByIndex(dataIndex));
                         for (var i = 0, l = seriesArray.length; i < l; i++) {
-                            formatter += '<br>' + this._encodeHTML(seriesArray[i].name || '') + ' : ';
+                            formatter += '<br/>' + this._encodeHTML(seriesArray[i].name || '') + ' : ';
                             data = seriesArray[i].data[dataIndex];
                             data = this.getDataFromOption(data, '-');
                             formatter += data instanceof Array ? data : this.numAddCommas(data);
@@ -3875,9 +3901,29 @@ define('zrender/zrender', [
                         });
                     }
                 }
-                if (params.length <= 0)="" {="" return;="" }="" this._lastitemtriggerid="-1;" if="" (this._lastdataindex="" !="dataIndex" ||="" this._lastseriesindex="" this._lastdataindex="dataIndex;" (typeof="" formatter="==" 'function')="" this._curticket="axis:" +="" dataindex;="" this._tdom.innerhtml="formatter.call(this.myChart," params,="" this._curticket,="" this._setcontent);="" else="" 'string')="" '{a0}').replace('{b}',="" '{b0}').replace('{c}',="" '{c0}').replace('{d}',="" '{d0}');="" for="" (var="" i="0," l="params.length;" <="" l;="" i++)="" '}',="" this._encodehtml(params[i].seriesname));="" this._encodehtml(params[i].name));="" this.numaddcommas(params[i].value));="" this._encodehtml(params[i].indicator));="" '<br="">' + this._encodeHTML(params[0].indicator) + ' : ' + this.numAddCommas(params[0].value);
+                if (params.length <= 0) {
+                    return;
+                }
+                this._lastItemTriggerId = -1;
+                if (this._lastDataIndex != dataIndex || this._lastSeriesIndex != seriesIndex[0]) {
+                    this._lastDataIndex = dataIndex;
+                    this._lastSeriesIndex = seriesIndex[0];
+                    if (typeof formatter === 'function') {
+                        this._curTicket = 'axis:' + dataIndex;
+                        this._tDom.innerHTML = formatter.call(this.myChart, params, this._curTicket, this._setContent);
+                    } else if (typeof formatter === 'string') {
+                        formatter = formatter.replace('{a}', '{a0}').replace('{b}', '{b0}').replace('{c}', '{c0}').replace('{d}', '{d0}');
+                        for (var i = 0, l = params.length; i < l; i++) {
+                            formatter = formatter.replace('{a' + i + '}', this._encodeHTML(params[i].seriesName));
+                            formatter = formatter.replace('{b' + i + '}', this._encodeHTML(params[i].name));
+                            formatter = formatter.replace('{c' + i + '}', this.numAddCommas(params[i].value));
+                            formatter = formatter.replace('{d' + i + '}', this._encodeHTML(params[i].indicator));
+                        }
+                        this._tDom.innerHTML = formatter;
+                    } else {
+                        formatter = this._encodeHTML(params[0].name) + '<br/>' + this._encodeHTML(params[0].indicator) + ' : ' + this.numAddCommas(params[0].value);
                         for (var i = 1, l = params.length; i < l; i++) {
-                            formatter += '<br>' + this._encodeHTML(params[i].name) + '<br>';
+                            formatter += '<br/>' + this._encodeHTML(params[i].name) + '<br/>';
                             formatter += this._encodeHTML(params[i].indicator) + ' : ' + this.numAddCommas(params[i].value);
                         }
                         this._tDom.innerHTML = formatter;
@@ -3980,7 +4026,7 @@ define('zrender/zrender', [
                     } else if (serie.type === ecConfig.CHART_TYPE_EVENTRIVER) {
                         this._tDom.innerHTML = this._itemFormatter.eventRiver.call(this, serie, name, value, data);
                     } else {
-                        this._tDom.innerHTML = '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br>' : '') + (name === '' ? '' : this._encodeHTML(name) + ' : ') + (value instanceof Array ? value : this.numAddCommas(value));
+                        this._tDom.innerHTML = '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br/>' : '') + (name === '' ? '' : this._encodeHTML(name) + ' : ') + (value instanceof Array ? value : this.numAddCommas(value));
                     }
                 }
             }
@@ -4006,9 +4052,9 @@ define('zrender/zrender', [
             radar: function (serie, name, value, indicator) {
                 var html = '';
                 html += this._encodeHTML(name === '' ? serie.name || '' : name);
-                html += html === '' ? '' : '<br>';
+                html += html === '' ? '' : '<br />';
                 for (var i = 0; i < indicator.length; i++) {
-                    html += this._encodeHTML(indicator[i].text) + ' : ' + this.numAddCommas(value[i]) + '<br>';
+                    html += this._encodeHTML(indicator[i].text) + ' : ' + this.numAddCommas(value[i]) + '<br />';
                 }
                 return html;
             },
@@ -4018,14 +4064,14 @@ define('zrender/zrender', [
                 } else {
                     var name1 = this._encodeHTML(name);
                     var name2 = this._encodeHTML(special);
-                    return '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br>' : '') + name1 + ' -> ' + name2 + ' (' + this.numAddCommas(value) + ')' + '<br>' + name2 + ' -> ' + name1 + ' (' + this.numAddCommas(special2) + ')';
+                    return '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br/>' : '') + name1 + ' -> ' + name2 + ' (' + this.numAddCommas(value) + ')' + '<br />' + name2 + ' -> ' + name1 + ' (' + this.numAddCommas(special2) + ')';
                 }
             },
             eventRiver: function (serie, name, value, data) {
                 var html = '';
                 html += this._encodeHTML(serie.name === '' ? '' : serie.name + ' : ');
                 html += this._encodeHTML(name);
-                html += html === '' ? '' : '<br>';
+                html += html === '' ? '' : '<br />';
                 data = data.evolution;
                 for (var i = 0, l = data.length; i < l; i++) {
                     html += '<div style="padding-top:5px;">';
@@ -4035,7 +4081,7 @@ define('zrender/zrender', [
                     if (data[i].detail.img) {
                         html += '<img src="' + data[i].detail.img + '" style="float:left;width:40px;height:40px;">';
                     }
-                    html += '<div style="margin-left:45px;">' + data[i].time + '<br>';
+                    html += '<div style="margin-left:45px;">' + data[i].time + '<br/>';
                     html += '<a href="' + data[i].detail.link + '" target="_blank">';
                     html += data[i].detail.text + '</a></div>';
                     html += '</div>';
@@ -4291,7 +4337,122 @@ define('zrender/zrender', [
                 case ecConfig.CHART_TYPE_BAR:
                 case ecConfig.CHART_TYPE_K:
                 case ecConfig.CHART_TYPE_RADAR:
-                    if (this.component.polar == null || serie.data[0].value.length <= 2="" dataindex)="" {="" return;="" }="" var="" polarindex="serie.polarIndex" ||="" 0;="" vector="this.component.polar.getVector(polarIndex," dataindex,="" 'max');="" this._event="{" zrenderx:="" vector[0],="" zrendery:="" vector[1]="" };="" this._showpolartrigger(polarindex,="" dataindex);="" break;="" else="" shapelist="chart.shapeList;" x;="" y;="" switch="" (chart.type)="" case="" ecconfig.chart_type_line:="" ecconfig.chart_type_bar:="" ecconfig.chart_type_k:="" ecconfig.chart_type_treemap:="" ecconfig.chart_type_scatter:="" dataindex="params.dataIndex;" for="" (var="" i="0," l="shapeList.length;" <="" l;="" i++)="" if="" (shapelist[i]._mark="=" null="" &&="" ecdata.get(shapelist[i],="" 'seriesindex')="=" seriesindex="" 'dataindex')="=" this._curtarget="shapeList[i];" x="shapeList[i].style.x;" y="chart.type" !="ecConfig.CHART_TYPE_K" ?="" shapelist[i].style.y="" :="" shapelist[i].style.y[0];="" ecconfig.chart_type_radar:="" (shapelist[i].type="==" 'polygon'="" 0);="" ecconfig.chart_type_pie:="" name="params.name;" 'sector'="" 'name')="=" name)="" style="this._curTarget.style;" midangle="(style.startAngle" +="" style.endangle)="" *="" math.pi="" 180;="" math.cos(midangle)="" style.r="" 1.5;="" -="" math.sin(midangle)="" ecconfig.chart_type_map:="" maptype="serie.mapType;" 'text'="" shapelist[i]._maptype="==" shapelist[i].style._name="==" this._curtarget.position[0];="" this._curtarget.position[1];="" ecconfig.chart_type_chord:="" (style.r="" 2);="" this.zr.trigger(zrconfig.event.mousemove,="" x,="" });="" ecconfig.chart_type_force:="" 'circle'="" (x="" this.zr.addhovershape(this._curtarget);="" this.zr.refreshhover();="" this._showitemtrigger();="" },="" hidetip:="" function="" ()="" this._hide();="" refresh:="" (newoption)="" this._zrheight="this.zr.getHeight();" this._zrwidth="this.zr.getWidth();" (this._lasttipshape="" this._lasttipshape.tipshape.length=""> 0) {
+                    if (this.component.polar == null || serie.data[0].value.length <= dataIndex) {
+                        return;
+                    }
+                    var polarIndex = serie.polarIndex || 0;
+                    var vector = this.component.polar.getVector(polarIndex, dataIndex, 'max');
+                    this._event = {
+                        zrenderX: vector[0],
+                        zrenderY: vector[1]
+                    };
+                    this._showPolarTrigger(polarIndex, dataIndex);
+                    break;
+                }
+            } else {
+                var shapeList = chart.shapeList;
+                var x;
+                var y;
+                switch (chart.type) {
+                case ecConfig.CHART_TYPE_LINE:
+                case ecConfig.CHART_TYPE_BAR:
+                case ecConfig.CHART_TYPE_K:
+                case ecConfig.CHART_TYPE_TREEMAP:
+                case ecConfig.CHART_TYPE_SCATTER:
+                    var dataIndex = params.dataIndex;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i]._mark == null && ecData.get(shapeList[i], 'seriesIndex') == seriesIndex && ecData.get(shapeList[i], 'dataIndex') == dataIndex) {
+                            this._curTarget = shapeList[i];
+                            x = shapeList[i].style.x;
+                            y = chart.type != ecConfig.CHART_TYPE_K ? shapeList[i].style.y : shapeList[i].style.y[0];
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_RADAR:
+                    var dataIndex = params.dataIndex;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'polygon' && ecData.get(shapeList[i], 'seriesIndex') == seriesIndex && ecData.get(shapeList[i], 'dataIndex') == dataIndex) {
+                            this._curTarget = shapeList[i];
+                            var vector = this.component.polar.getCenter(serie.polarIndex || 0);
+                            x = vector[0];
+                            y = vector[1];
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_PIE:
+                    var name = params.name;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'sector' && ecData.get(shapeList[i], 'seriesIndex') == seriesIndex && ecData.get(shapeList[i], 'name') == name) {
+                            this._curTarget = shapeList[i];
+                            var style = this._curTarget.style;
+                            var midAngle = (style.startAngle + style.endAngle) / 2 * Math.PI / 180;
+                            x = this._curTarget.style.x + Math.cos(midAngle) * style.r / 1.5;
+                            y = this._curTarget.style.y - Math.sin(midAngle) * style.r / 1.5;
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_MAP:
+                    var name = params.name;
+                    var mapType = serie.mapType;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'text' && shapeList[i]._mapType === mapType && shapeList[i].style._name === name) {
+                            this._curTarget = shapeList[i];
+                            x = this._curTarget.style.x + this._curTarget.position[0];
+                            y = this._curTarget.style.y + this._curTarget.position[1];
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_CHORD:
+                    var name = params.name;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'sector' && ecData.get(shapeList[i], 'name') == name) {
+                            this._curTarget = shapeList[i];
+                            var style = this._curTarget.style;
+                            var midAngle = (style.startAngle + style.endAngle) / 2 * Math.PI / 180;
+                            x = this._curTarget.style.x + Math.cos(midAngle) * (style.r - 2);
+                            y = this._curTarget.style.y - Math.sin(midAngle) * (style.r - 2);
+                            this.zr.trigger(zrConfig.EVENT.MOUSEMOVE, {
+                                zrenderX: x,
+                                zrenderY: y
+                            });
+                            return;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_FORCE:
+                    var name = params.name;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'circle' && ecData.get(shapeList[i], 'name') == name) {
+                            this._curTarget = shapeList[i];
+                            x = this._curTarget.position[0];
+                            y = this._curTarget.position[1];
+                            break;
+                        }
+                    }
+                    break;
+                }
+                if (x != null && y != null) {
+                    this._event = {
+                        zrenderX: x,
+                        zrenderY: y
+                    };
+                    this.zr.addHoverShape(this._curTarget);
+                    this.zr.refreshHover();
+                    this._showItemTrigger();
+                }
+            }
+        },
+        hideTip: function () {
+            this._hide();
+        },
+        refresh: function (newOption) {
+            this._zrHeight = this.zr.getHeight();
+            this._zrWidth = this.zr.getWidth();
+            if (this._lastTipShape && this._lastTipShape.tipShape.length > 0) {
                 this.zr.delShape(this._lastTipShape.tipShape);
             }
             this._lastTipShape = false;
@@ -4345,7 +4506,7 @@ define('zrender/zrender', [
             this._tDom = null;
         },
         _encodeHTML: function (source) {
-            return String(source).replace(/&/g, '&amp;').replace(//g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            return String(source).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
     };
     zrUtil.inherits(Tooltip, Base);
@@ -5684,7 +5845,9 @@ define('zrender/zrender', [
         return array;
     }
     function adjust(value, region) {
-        if (value <= region[0])="" {="" value="region[0];" }="" else="" if="" (value="">= region[1]) {
+        if (value <= region[0]) {
+            value = region[0];
+        } else if (value >= region[1]) {
             value = region[1];
         }
         return value;
@@ -6425,11 +6588,37 @@ define('zrender/zrender', [
         _findChainIndex: function (x) {
             var chainPoint = this._chainPoint;
             var len = chainPoint.length;
-            if (x <= chainpoint[0].x)="" {="" return="" 0;="" }="" else="" if="" (x="">= chainPoint[len - 1].x) {
+            if (x <= chainPoint[0].x) {
+                return 0;
+            } else if (x >= chainPoint[len - 1].x) {
                 return len - 1;
             }
             for (var i = 0; i < len - 1; i++) {
-                if (x >= chainPoint[i].x && x <= chainpoint[i="" +="" 1].x)="" {="" return="" math.abs(x="" -="" chainpoint[i].x)="" <="" ?="" i="" :="" 1;="" }="" },="" __onclick:="" function="" (param)="" var="" x="zrEvent.getX(param.event);" newindex="this._findChainIndex(x);" if="" (newindex="==" this.currentindex)="" true;="" this.currentindex="newIndex;" this.timelineoption.autoplay="" &&="" this.stop();="" cleartimeout(this.playticket);="" this._onframe();="" __ondrift:="" (shape,="" dx)="" chainpoint="this._chainPoint;" len="chainPoint.length;" newindex;="" (shape.style.x="" dx="" chainpoint[0].symbolsize)="" shape.style.x="chainPoint[0].x" chainpoint[0].symbolsize;="" else="">= chainPoint[len - 1].x - chainPoint[len - 1].symbolSize) {
+                if (x >= chainPoint[i].x && x <= chainPoint[i + 1].x) {
+                    return Math.abs(x - chainPoint[i].x) < Math.abs(x - chainPoint[i + 1].x) ? i : i + 1;
+                }
+            }
+        },
+        __onclick: function (param) {
+            var x = zrEvent.getX(param.event);
+            var newIndex = this._findChainIndex(x);
+            if (newIndex === this.currentIndex) {
+                return true;
+            }
+            this.currentIndex = newIndex;
+            this.timelineOption.autoPlay && this.stop();
+            clearTimeout(this.playTicket);
+            this._onFrame();
+        },
+        __ondrift: function (shape, dx) {
+            this.timelineOption.autoPlay && this.stop();
+            var chainPoint = this._chainPoint;
+            var len = chainPoint.length;
+            var newIndex;
+            if (shape.style.x + dx <= chainPoint[0].x - chainPoint[0].symbolSize) {
+                shape.style.x = chainPoint[0].x - chainPoint[0].symbolSize;
+                newIndex = 0;
+            } else if (shape.style.x + dx >= chainPoint[len - 1].x - chainPoint[len - 1].symbolSize) {
                 shape.style.x = chainPoint[len - 1].x - chainPoint[len - 1].symbolSize;
                 newIndex = len - 1;
             } else {
@@ -6822,7 +7011,75 @@ define('zrender/zrender', [
             addShapeHandle(background);
             for (var i = 0; i < n; i++) {
                 var style = shapeList[i].highlightStyle;
-                if (style.y - shapeList[i].animationY + style.r <= 100="" 0)="" {="" shapelist[i].highlightstyle.y="canvasHeight" +="" style.r;="" shapelist[i].highlightstyle.x="Math.ceil(Math.random()" *="" canvaswidth);="" }="" -="shapeList[i].animationY;" addshapehandle(shapelist[i]);="" addshapehandle(textshape);="" refreshhandle();="" },="" effectoption.timeinterval);="" };="" return="" bubble;="" });define('zrender="" loadingeffect="" dynamicline',="" [="" 'require',="" '.="" base',="" '..="" tool="" util',="" color',="" shape="" line'="" ],="" function="" (require)="" var="" base="require('./Base');" util="require('../tool/util');" zrcolor="require('../tool/color');" lineshape="require('../shape/Line');" dynamicline(options)="" base.call(this,="" options);="" util.inherits(dynamicline,="" base);="" dynamicline.prototype._start="function" (addshapehandle,="" refreshhandle)="" options="util.merge(this.options," textstyle:="" color:="" '#fff'="" backgroundcolor:="" 'rgba(0,="" 0,="" 0.8)',="" effectoption:="" n:="" 30,="" linewidth:="" 1,="" 'random',="" timeinterval:="" });="" textshape="this.createTextShape(options.textStyle);" background="this.createBackgroundShape(options.backgroundColor);" effectoption="options.effectOption;" n="effectOption.n;" linewidth="effectOption.lineWidth;" shapelist="[];" canvaswidth="this.canvasWidth;" canvasheight="this.canvasHeight;" for="" (var="" i="0;" <="" n;="" i++)="" xstart="-Math.ceil(Math.random()" 1000);="" len="Math.ceil(Math.random()" 400);="" pos="Math.ceil(Math.random()" canvasheight);="" color="effectOption.color" =="random" ?="" zrcolor.random()="" :="" effectoption.color;="" shapelist[i]="new" lineshape({="" highlightstyle:="" xstart:="" xstart,="" ystart:="" pos,="" xend:="" len,="" yend:="" strokecolor:="" color,="" animationx:="" math.ceil(math.random()="" 100),="" len:="" setinterval(function="" ()="" addshapehandle(background);="" style="shapeList[i].highlightStyle;" if="" (style.xstart="">= canvasWidth) {
+                if (style.y - shapeList[i].animationY + style.r <= 0) {
+                    shapeList[i].highlightStyle.y = canvasHeight + style.r;
+                    shapeList[i].highlightStyle.x = Math.ceil(Math.random() * canvasWidth);
+                }
+                shapeList[i].highlightStyle.y -= shapeList[i].animationY;
+                addShapeHandle(shapeList[i]);
+            }
+            addShapeHandle(textShape);
+            refreshHandle();
+        }, effectOption.timeInterval);
+    };
+    return Bubble;
+});define('zrender/loadingEffect/DynamicLine', [
+    'require',
+    './Base',
+    '../tool/util',
+    '../tool/color',
+    '../shape/Line'
+], function (require) {
+    var Base = require('./Base');
+    var util = require('../tool/util');
+    var zrColor = require('../tool/color');
+    var LineShape = require('../shape/Line');
+    function DynamicLine(options) {
+        Base.call(this, options);
+    }
+    util.inherits(DynamicLine, Base);
+    DynamicLine.prototype._start = function (addShapeHandle, refreshHandle) {
+        var options = util.merge(this.options, {
+            textStyle: { color: '#fff' },
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            effectOption: {
+                n: 30,
+                lineWidth: 1,
+                color: 'random',
+                timeInterval: 100
+            }
+        });
+        var textShape = this.createTextShape(options.textStyle);
+        var background = this.createBackgroundShape(options.backgroundColor);
+        var effectOption = options.effectOption;
+        var n = effectOption.n;
+        var lineWidth = effectOption.lineWidth;
+        var shapeList = [];
+        var canvasWidth = this.canvasWidth;
+        var canvasHeight = this.canvasHeight;
+        for (var i = 0; i < n; i++) {
+            var xStart = -Math.ceil(Math.random() * 1000);
+            var len = Math.ceil(Math.random() * 400);
+            var pos = Math.ceil(Math.random() * canvasHeight);
+            var color = effectOption.color == 'random' ? zrColor.random() : effectOption.color;
+            shapeList[i] = new LineShape({
+                highlightStyle: {
+                    xStart: xStart,
+                    yStart: pos,
+                    xEnd: xStart + len,
+                    yEnd: pos,
+                    strokeColor: color,
+                    lineWidth: lineWidth
+                },
+                animationX: Math.ceil(Math.random() * 100),
+                len: len
+            });
+        }
+        return setInterval(function () {
+            addShapeHandle(background);
+            for (var i = 0; i < n; i++) {
+                var style = shapeList[i].highlightStyle;
+                if (style.xStart >= canvasWidth) {
                     shapeList[i].len = Math.ceil(Math.random() * 400);
                     style.xStart = -400;
                     style.xEnd = -400 + shapeList[i].len;
@@ -8207,7 +8464,7 @@ define('zrender/zrender', [
                 var W = 10;
                 var H = 10;
                 var scaleX = scaleY = 1;
-                vmlStr.push(' <g_vml_:group', '="" coordsize="', Z * W, ',', Z * H, '" ',="" coordorigin="0,0" style="width:', W, 'px;height:', H, 'px;position:absolute;');
+                vmlStr.push(' <g_vml_:group', ' coordsize="', Z * W, ',', Z * H, '"', ' coordorigin="0,0"', ' style="width:', W, 'px;height:', H, 'px;position:absolute;');
                 if (this.m_[0][0] != 1 || this.m_[0][1] || this.m_[1][1] != 1 || this.m_[1][0]) {
                     var filter = [];
                     var scaleX = this.scaleX_;
@@ -8234,7 +8491,7 @@ define('zrender/zrender', [
                 vmlStr.push(' progid:DXImageTransform.Microsoft.AlphaImageLoader(src=', image.src, ',sizingMethod=scale)">');
                 if (sx || sy)
                     vmlStr.push('</div>');
-                vmlStr.push('</div>');
+                vmlStr.push('</div></div>');
                 this.element_.insertAdjacentHTML('BeforeEnd', vmlStr.join(''));
             };
             contextPrototype.stroke = function (aFill) {
@@ -8242,7 +8499,7 @@ define('zrender/zrender', [
                 var lineOpen = false;
                 var W = 10;
                 var H = 10;
-                lineStr.push('<g_vml_:shape', '="" filled="', !!aFill, '" ',="" style="position:absolute;width:', W, 'px;height:', H, 'px;" coordorigin="0,0" coordsize="', Z * W, ',', Z * H, '" stroked="', !aFill, '" path="');
+                lineStr.push('<g_vml_:shape', ' filled="', !!aFill, '"', ' style="position:absolute;width:', W, 'px;height:', H, 'px;"', ' coordorigin="0,0"', ' coordsize="', Z * W, ',', Z * H, '"', ' stroked="', !aFill, '"', ' path="');
                 var newSeq = false;
                 var min = {
                     x: null,
@@ -8296,7 +8553,7 @@ define('zrender/zrender', [
                 } else {
                     appendFill(this, lineStr, min, max);
                 }
-                lineStr.push('');
+                lineStr.push('</g_vml_:shape>');
                 this.element_.insertAdjacentHTML('beforeEnd', lineStr.join(''));
             };
             function appendStroke(ctx, lineStr) {
@@ -8307,7 +8564,7 @@ define('zrender/zrender', [
                 if (lineWidth < 1) {
                     opacity *= lineWidth;
                 }
-                lineStr.push('<g_vml_:stroke', '="" opacity="', opacity, '" ',="" joinstyle="', ctx.lineJoin, '" miterlimit="', ctx.miterLimit, '" endcap="', processLineCap(ctx.lineCap), '" weight="', lineWidth, 'px" color="', color, '">');
+                lineStr.push('<g_vml_:stroke', ' opacity="', opacity, '"', ' joinstyle="', ctx.lineJoin, '"', ' miterlimit="', ctx.miterLimit, '"', ' endcap="', processLineCap(ctx.lineCap), '"', ' weight="', lineWidth, 'px"', ' color="', color, '" />');
             }
             function appendFill(ctx, lineStr, min, max) {
                 var fillStyle = ctx.fillStyle;
@@ -8365,18 +8622,18 @@ define('zrender/zrender', [
                         var stop = stops[i];
                         colors.push(stop.offset * expansion + shift + ' ' + stop.color);
                     }
-                    lineStr.push('<g_vml_:fill type="', fillStyle.type_, '" ',="" '="" method="none" focus="100%" color="', color1, '" color2="', color2, '" colors="', colors.join(','), '" opacity="', opacity2, '" g_o_:opacity2="', opacity1, '" angle="', angle, '" focusposition="', focus.x, ',', focus.y, '">');
+                    lineStr.push('<g_vml_:fill type="', fillStyle.type_, '"', ' method="none" focus="100%"', ' color="', color1, '"', ' color2="', color2, '"', ' colors="', colors.join(','), '"', ' opacity="', opacity2, '"', ' g_o_:opacity2="', opacity1, '"', ' angle="', angle, '"', ' focusposition="', focus.x, ',', focus.y, '" />');
                 } else if (fillStyle instanceof CanvasPattern_) {
                     if (width && height) {
                         var deltaLeft = -min.x;
                         var deltaTop = -min.y;
-                        lineStr.push('<g_vml_:fill', '="" position="', deltaLeft / width * arcScaleX * arcScaleX, ',', deltaTop / height * arcScaleY * arcScaleY, '" ',="" type="tile" src="', fillStyle.src_, '">');
+                        lineStr.push('<g_vml_:fill', ' position="', deltaLeft / width * arcScaleX * arcScaleX, ',', deltaTop / height * arcScaleY * arcScaleY, '"', ' type="tile"', ' src="', fillStyle.src_, '" />');
                     }
                 } else {
                     var a = processStyle(ctx.fillStyle);
                     var color = a.color;
                     var opacity = a.alpha * ctx.globalAlpha;
-                    lineStr.push('<g_vml_:fill color="', color, '" opacity="', opacity, '">');
+                    lineStr.push('<g_vml_:fill color="', color, '" opacity="', opacity, '" />');
                 }
             }
             contextPrototype.fill = function () {
@@ -8571,7 +8828,7 @@ define('zrender/zrender', [
                     break;
                 }
                 var d = getCoords(this, x + offset.x, y + offset.y);
-                lineStr.push('<g_vml_:line from="', -left, ' 0" to="', right, ' 0.05" ',="" '="" coordsize="100 100" coordorigin="0 0" filled="', !stroke, '" stroked="', !!stroke, '" style="position:absolute;width:1px;height:1px;">');
+                lineStr.push('<g_vml_:line from="', -left, ' 0" to="', right, ' 0.05" ', ' coordsize="100 100" coordorigin="0 0"', ' filled="', !stroke, '" stroked="', !!stroke, '" style="position:absolute;width:1px;height:1px;">');
                 if (stroke) {
                     appendStroke(this, lineStr);
                 } else {
@@ -8585,7 +8842,7 @@ define('zrender/zrender', [
                 }
                 var skewM = m[0][0].toFixed(3) + ',' + m[1][0].toFixed(3) + ',' + m[0][1].toFixed(3) + ',' + m[1][1].toFixed(3) + ',0,0';
                 var skewOffset = mr(d.x / Z) + ',' + mr(d.y / Z);
-                lineStr.push('<g_vml_:skew on="t" matrix="', skewM, '" ',="" '="" offset="', skewOffset, '" origin="', left, ' 0">', '<g_vml_:path textpathok="true">', '<g_vml_:textpath on="true" string="', encodeHtmlAttribute(text), '" style="v-text-align:', textAlign, ';font:', encodeHtmlAttribute(fontStyleString), '"></g_vml_:textpath></g_vml_:path></g_vml_:skew></g_vml_:line>');
+                lineStr.push('<g_vml_:skew on="t" matrix="', skewM, '" ', ' offset="', skewOffset, '" origin="', left, ' 0" />', '<g_vml_:path textpathok="true" />', '<g_vml_:textpath on="true" string="', encodeHtmlAttribute(text), '" style="v-text-align:', textAlign, ';font:', encodeHtmlAttribute(fontStyleString), '" /></g_vml_:line>');
                 this.element_.insertAdjacentHTML('beforeEnd', lineStr.join(''));
             };
             contextPrototype.fillText = function (text, x, y, maxWidth) {
@@ -10453,7 +10710,14 @@ define('zrender/zrender', [
                     if (percent < cachePercent) {
                         start = Math.min(cacheKey + 1, trackLen - 1);
                         for (i = start; i >= 0; i--) {
-                            if (kfPercents[i] <= percent)="" {="" break;="" }="" i="Math.min(i," tracklen="" -="" 2);="" else="" for="" (i="cacheKey;" <="" tracklen;="" i++)="" if="" (kfpercents[i]=""> percent) {
+                            if (kfPercents[i] <= percent) {
+                                break;
+                            }
+                        }
+                        i = Math.min(i, trackLen - 2);
+                    } else {
+                        for (i = cacheKey; i < trackLen; i++) {
+                            if (kfPercents[i] > percent) {
                                 break;
                             }
                         }
@@ -10811,7 +11075,9 @@ define('zrender/zrender', [
         this.options = options || {};
     };
     Base.prototype.adjust = function (value, region) {
-        if (value <= region[0])="" {="" value="region[0];" }="" else="" if="" (value="">= region[1]) {
+        if (value <= region[0]) {
+            value = region[0];
+        } else if (value >= region[1]) {
             value = region[1];
         }
         return value;
@@ -11295,15 +11561,43 @@ define('zrender/zrender', [
             _a = (y0 - y1) / (x0 - x1);
             _b = (x0 * y1 - x1 * y0) / (x0 - x1);
         } else {
-            return Math.abs(x - x0) <= 2="" _l="" 2;="" }="" var="" tmp="_a" *="" x="" -="" y="" +="" _b;="" _s="tmp" (_a="" _a="" 1);="" return="" <="_l" function="" isinsidecubicstroke(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" x3,="" y3,="" linewidth,="" x,="" y)="" {="" if="" (linewidth="==" 0)="" false;="" 5);="" (y=""> y0 + _l && y > y1 + _l && y > y2 + _l && y > y3 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l && y < y3 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l && x > x3 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l && x < x3 - _l) {
+            return Math.abs(x - x0) <= _l / 2;
+        }
+        var tmp = _a * x - y + _b;
+        var _s = tmp * tmp / (_a * _a + 1);
+        return _s <= _l / 2 * _l / 2;
+    }
+    function isInsideCubicStroke(x0, y0, x1, y1, x2, y2, x3, y3, lineWidth, x, y) {
+        if (lineWidth === 0) {
+            return false;
+        }
+        var _l = Math.max(lineWidth, 5);
+        if (y > y0 + _l && y > y1 + _l && y > y2 + _l && y > y3 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l && y < y3 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l && x > x3 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l && x < x3 - _l) {
             return false;
         }
         var d = curve.cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, null);
-        return d <= _l="" 2;="" }="" function="" isinsidequadraticstroke(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" linewidth,="" x,="" y)="" {="" if="" (linewidth="==" 0)="" return="" false;="" var="" 5);="" (y=""> y0 + _l && y > y1 + _l && y > y2 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l) {
+        return d <= _l / 2;
+    }
+    function isInsideQuadraticStroke(x0, y0, x1, y1, x2, y2, lineWidth, x, y) {
+        if (lineWidth === 0) {
+            return false;
+        }
+        var _l = Math.max(lineWidth, 5);
+        if (y > y0 + _l && y > y1 + _l && y > y2 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l) {
             return false;
         }
         var d = curve.quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, null);
-        return d <= _l="" 2;="" }="" function="" isinsidearcstroke(cx,="" cy,="" r,="" startangle,="" endangle,="" anticlockwise,="" linewidth,="" x,="" y)="" {="" if="" (linewidth="==" 0)="" return="" false;="" var="" 5);="" x="" -="cx;" y="" d="Math.sqrt(x" *="" +="" y);="" (d=""> r || d + _l < r) {
+        return d <= _l / 2;
+    }
+    function isInsideArcStroke(cx, cy, r, startAngle, endAngle, anticlockwise, lineWidth, x, y) {
+        if (lineWidth === 0) {
+            return false;
+        }
+        var _l = Math.max(lineWidth, 5);
+        x -= cx;
+        y -= cy;
+        var d = Math.sqrt(x * x + y * y);
+        if (d - _l > r || d + _l < r) {
             return false;
         }
         if (Math.abs(startAngle - endAngle) >= PI2) {
@@ -11324,10 +11618,49 @@ define('zrender/zrender', [
         if (angle < 0) {
             angle += PI2;
         }
-        return angle >= startAngle && angle <= endangle="" ||="" angle="" +="" pi2="">= startAngle && angle + PI2 <= endangle;="" }="" function="" isinsidepolyline(points,="" linewidth,="" x,="" y)="" {="" var="" linewidth="Math.max(lineWidth," 10);="" for="" (var="" i="0," l="points.length" -="" 1;="" <="" l;="" i++)="" x0="points[i][0];" y0="points[i][1];" x1="points[i" +="" 1][0];="" y1="points[i" 1][1];="" if="" (isinsideline(x0,="" y0,="" x1,="" y1,="" y))="" return="" true;="" false;="" isinsidering(cx,="" cy,="" r0,="" r,="" d="(x" cx)="" *="" (x="" (y="" cy)="" cy);="" r="" &&=""> r0 * r0;
+        return angle >= startAngle && angle <= endAngle || angle + PI2 >= startAngle && angle + PI2 <= endAngle;
+    }
+    function isInsidePolyline(points, lineWidth, x, y) {
+        var lineWidth = Math.max(lineWidth, 10);
+        for (var i = 0, l = points.length - 1; i < l; i++) {
+            var x0 = points[i][0];
+            var y0 = points[i][1];
+            var x1 = points[i + 1][0];
+            var y1 = points[i + 1][1];
+            if (isInsideLine(x0, y0, x1, y1, lineWidth, x, y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function isInsideRing(cx, cy, r0, r, x, y) {
+        var d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+        return d < r * r && d > r0 * r0;
     }
     function isInsideRect(x0, y0, width, height, x, y) {
-        return x >= x0 && x <= x0="" +="" width="" &&="" y="">= y0 && y <= y0="" +="" height;="" }="" function="" isinsidecircle(x0,="" y0,="" r,="" x,="" y)="" {="" return="" (x="" -="" x0)="" *="" (y="" y0)="" <="" r="" r;="" isinsidesector(cx,="" cy,="" r0,="" startangle,="" endangle,="" anticlockwise,="" isinsidearcstroke(cx,="" (r0="" r)="" 2,="" y);="" isinsidepolygon(points,="" var="" n="points.length;" w="0;" for="" (var="" i="0," j="N" 1;="" n;="" i++)="" x0="points[j][0];" x1="points[i][0];" y1="points[i][1];" x1,="" y1,="" !="=" 0;="" windingline(x0,="" if=""> y0 && y > y1 || y < y0 && y < y1) {
+        return x >= x0 && x <= x0 + width && y >= y0 && y <= y0 + height;
+    }
+    function isInsideCircle(x0, y0, r, x, y) {
+        return (x - x0) * (x - x0) + (y - y0) * (y - y0) < r * r;
+    }
+    function isInsideSector(cx, cy, r0, r, startAngle, endAngle, anticlockwise, x, y) {
+        return isInsideArcStroke(cx, cy, (r0 + r) / 2, startAngle, endAngle, anticlockwise, r - r0, x, y);
+    }
+    function isInsidePolygon(points, x, y) {
+        var N = points.length;
+        var w = 0;
+        for (var i = 0, j = N - 1; i < N; i++) {
+            var x0 = points[j][0];
+            var y0 = points[j][1];
+            var x1 = points[i][0];
+            var y1 = points[i][1];
+            w += windingLine(x0, y0, x1, y1, x, y);
+            j = i;
+        }
+        return w !== 0;
+    }
+    function windingLine(x0, y0, x1, y1, x, y) {
+        if (y > y0 && y > y1 || y < y0 && y < y1) {
             return 0;
         }
         if (y1 == y0) {
@@ -11407,7 +11740,33 @@ define('zrender/zrender', [
             return 0;
         } else {
             var t = curve.quadraticExtremum(y0, y1, y2);
-            if (t >= 0 && t <= 1="" 1)="" {="" var="" w="0;" y_="curve.quadraticAt(y0," y1,="" y2,="" t);="" for="" (var="" i="0;" <="" nroots;="" i++)="" x_="curve.quadraticAt(x0," x1,="" x2,="" roots[i]);="" if="" (x_="" x)="" continue;="" }="" (roots[i]="" t)="" +="y_" y0="" ?="" :="" -1;="" else="" return="" w;="" roots[0]);="" 0;="" y2="" function="" windingarc(cx,="" cy,="" r,="" startangle,="" endangle,="" anticlockwise,="" x,="" y)="" y="" -="cy;" (y=""> r || y < -r) {
+            if (t >= 0 && t <= 1) {
+                var w = 0;
+                var y_ = curve.quadraticAt(y0, y1, y2, t);
+                for (var i = 0; i < nRoots; i++) {
+                    var x_ = curve.quadraticAt(x0, x1, x2, roots[i]);
+                    if (x_ < x) {
+                        continue;
+                    }
+                    if (roots[i] < t) {
+                        w += y_ < y0 ? 1 : -1;
+                    } else {
+                        w += y2 < y_ ? 1 : -1;
+                    }
+                }
+                return w;
+            } else {
+                var x_ = curve.quadraticAt(x0, x1, x2, roots[0]);
+                if (x_ < x) {
+                    return 0;
+                }
+                return y2 < y0 ? 1 : -1;
+            }
+        }
+    }
+    function windingArc(cx, cy, r, startAngle, endAngle, anticlockwise, x, y) {
+        y -= cy;
+        if (y > r || y < -r) {
             return 0;
         }
         var tmp = Math.sqrt(r * r - y * y);
@@ -11417,7 +11776,21 @@ define('zrender/zrender', [
             startAngle = 0;
             endAngle = PI2;
             var dir = anticlockwise ? 1 : -1;
-            if (x >= roots[0] + cx && x <= roots[1]="" +="" cx)="" {="" return="" dir;="" }="" else="" 0;="" if="" (anticlockwise)="" var="" tmp="startAngle;" startangle="normalizeRadian(endAngle);" endangle="normalizeRadian(tmp);" (startangle=""> endAngle) {
+            if (x >= roots[0] + cx && x <= roots[1] + cx) {
+                return dir;
+            } else {
+                return 0;
+            }
+        }
+        if (anticlockwise) {
+            var tmp = startAngle;
+            startAngle = normalizeRadian(endAngle);
+            endAngle = normalizeRadian(tmp);
+        } else {
+            startAngle = normalizeRadian(startAngle);
+            endAngle = normalizeRadian(endAngle);
+        }
+        if (startAngle > endAngle) {
             endAngle += PI2;
         }
         var w = 0;
@@ -11429,7 +11802,8 @@ define('zrender/zrender', [
                 if (angle < 0) {
                     angle = PI2 + angle;
                 }
-                if (angle >= startAngle && angle <= endangle="" ||="" angle="" +="" pi2="">= startAngle && angle + PI2 <= endangle)="" {="" if="" (angle=""> Math.PI / 2 && angle < Math.PI * 1.5) {
+                if (angle >= startAngle && angle <= endAngle || angle + PI2 >= startAngle && angle + PI2 <= endAngle) {
+                    if (angle > Math.PI / 2 && angle < Math.PI * 1.5) {
                         dir = -dir;
                     }
                     w += dir;
@@ -11870,11 +12244,166 @@ define('zrender/zrender', [
         if (!rect) {
             rect = this.style.__rect = this.getRect(this.style);
         }
-        return x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y <= 0="" rect.y="" +="" rect.height;="" };="" base.prototype.drawtext="function" (ctx,="" style,="" normalstyle)="" {="" if="" (typeof="" style.text="=" 'undefined'="" ||="" false)="" return;="" }="" var="" textcolor="style.textColor" style.color="" style.strokecolor;="" ctx.fillstyle="textColor;" dd="10;" al;="" bl;="" tx;="" ty;="" textposition="style.textPosition" this.textposition="" 'top';="" switch="" (textposition)="" case="" 'inside':="" 'top':="" 'bottom':="" 'left':="" 'right':="" (this.getrect)="" rect="(normalStyle" style).__rect="" this.getrect(normalstyle="" style);="" tx="rect.x" rect.width="" 2;="" ty="rect.y" rect.height="" al="center" ;="" bl="middle" (style.brushtype="" !="stroke" &&="" style.color)="" break;="" -="" dd;="" 'start':="" 'end':="" pointlist="style.pointList" [="" style.xstart="" 0,="" style.ystart="" ],="" style.xend="" style.yend="" ]="" ];="" length="pointList.length;" (length="" <="" 2)="" xstart;="" xend;="" ystart;="" yend;="" xstart="pointList[1][0];" xend="pointList[0][0];" ystart="pointList[1][1];" yend="pointList[0][1];" 2][0];="" 1][0];="" 2][1];="" 1][1];="" angle="Math.atan((yStart" yend)="" (xend="" xstart))="" math.pi="" *="" 180;="" 0)="" else="" (ystart="" (angle="">= 30 && angle <= 150)="" {="" al="center" ;="" bl="bottom" ty="" -="dd;" }="" else="" if="" (angle=""> 150 && angle < 210) {
+        return x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
+    };
+    Base.prototype.drawText = function (ctx, style, normalStyle) {
+        if (typeof style.text == 'undefined' || style.text === false) {
+            return;
+        }
+        var textColor = style.textColor || style.color || style.strokeColor;
+        ctx.fillStyle = textColor;
+        var dd = 10;
+        var al;
+        var bl;
+        var tx;
+        var ty;
+        var textPosition = style.textPosition || this.textPosition || 'top';
+        switch (textPosition) {
+        case 'inside':
+        case 'top':
+        case 'bottom':
+        case 'left':
+        case 'right':
+            if (this.getRect) {
+                var rect = (normalStyle || style).__rect || this.getRect(normalStyle || style);
+                switch (textPosition) {
+                case 'inside':
+                    tx = rect.x + rect.width / 2;
+                    ty = rect.y + rect.height / 2;
+                    al = 'center';
+                    bl = 'middle';
+                    if (style.brushType != 'stroke' && textColor == style.color) {
+                        ctx.fillStyle = '#fff';
+                    }
+                    break;
+                case 'left':
+                    tx = rect.x - dd;
+                    ty = rect.y + rect.height / 2;
+                    al = 'end';
+                    bl = 'middle';
+                    break;
+                case 'right':
+                    tx = rect.x + rect.width + dd;
+                    ty = rect.y + rect.height / 2;
+                    al = 'start';
+                    bl = 'middle';
+                    break;
+                case 'top':
+                    tx = rect.x + rect.width / 2;
+                    ty = rect.y - dd;
+                    al = 'center';
+                    bl = 'bottom';
+                    break;
+                case 'bottom':
+                    tx = rect.x + rect.width / 2;
+                    ty = rect.y + rect.height + dd;
+                    al = 'center';
+                    bl = 'top';
+                    break;
+                }
+            }
+            break;
+        case 'start':
+        case 'end':
+            var pointList = style.pointList || [
+                [
+                    style.xStart || 0,
+                    style.yStart || 0
+                ],
+                [
+                    style.xEnd || 0,
+                    style.yEnd || 0
+                ]
+            ];
+            var length = pointList.length;
+            if (length < 2) {
+                return;
+            }
+            var xStart;
+            var xEnd;
+            var yStart;
+            var yEnd;
+            switch (textPosition) {
+            case 'start':
+                xStart = pointList[1][0];
+                xEnd = pointList[0][0];
+                yStart = pointList[1][1];
+                yEnd = pointList[0][1];
+                break;
+            case 'end':
+                xStart = pointList[length - 2][0];
+                xEnd = pointList[length - 1][0];
+                yStart = pointList[length - 2][1];
+                yEnd = pointList[length - 1][1];
+                break;
+            }
+            tx = xEnd;
+            ty = yEnd;
+            var angle = Math.atan((yStart - yEnd) / (xEnd - xStart)) / Math.PI * 180;
+            if (xEnd - xStart < 0) {
+                angle += 180;
+            } else if (yStart - yEnd < 0) {
+                angle += 360;
+            }
+            dd = 5;
+            if (angle >= 30 && angle <= 150) {
+                al = 'center';
+                bl = 'bottom';
+                ty -= dd;
+            } else if (angle > 150 && angle < 210) {
                 al = 'right';
                 bl = 'middle';
                 tx -= dd;
-            } else if (angle >= 210 && angle <= 330)="" {="" al="center" ;="" bl="top" ty="" +="dd;" }="" else="" tx="" break;="" case="" 'specific':="" ||="" 0;="" if="" (tx="" !="null" &&="" _filltext(ctx,="" style.text,="" tx,="" ty,="" style.textfont,="" style.textalign="" al,="" style.textbaseline="" bl);="" };="" base.prototype.modself="function" ()="" this.__dirty="true;" (this.style)="" this.style.__rect="null;" (this.highlightstyle)="" this.highlightstyle.__rect="null;" base.prototype.issilent="function" return="" !(this.hoverable="" this.draggable="" this.clickable="" this.onmousemove="" this.onmouseover="" this.onmouseout="" this.onmousedown="" this.onmouseup="" this.onclick="" this.ondragenter="" this.ondragover="" this.ondragleave="" this.ondrop);="" util.merge(base.prototype,="" transformable.prototype,="" true);="" eventful.prototype,="" base;="" });define('zrender="" tool="" curve',="" [="" 'require',="" '.="" vector'="" ],="" function="" (require)="" var="" vector="require('./vector');" 'use="" strict';="" epsilon="0.0001;" three_sqrt="Math.sqrt(3);" one_third="1" 3;="" _v0="vector.create();" _v1="vector.create();" _v2="vector.create();" isaroundzero(val)="" val=""> -EPSILON && val < EPSILON;
+            } else if (angle >= 210 && angle <= 330) {
+                al = 'center';
+                bl = 'top';
+                ty += dd;
+            } else {
+                al = 'left';
+                bl = 'middle';
+                tx += dd;
+            }
+            break;
+        case 'specific':
+            tx = style.textX || 0;
+            ty = style.textY || 0;
+            al = 'start';
+            bl = 'middle';
+            break;
+        }
+        if (tx != null && ty != null) {
+            _fillText(ctx, style.text, tx, ty, style.textFont, style.textAlign || al, style.textBaseline || bl);
+        }
+    };
+    Base.prototype.modSelf = function () {
+        this.__dirty = true;
+        if (this.style) {
+            this.style.__rect = null;
+        }
+        if (this.highlightStyle) {
+            this.highlightStyle.__rect = null;
+        }
+    };
+    Base.prototype.isSilent = function () {
+        return !(this.hoverable || this.draggable || this.clickable || this.onmousemove || this.onmouseover || this.onmouseout || this.onmousedown || this.onmouseup || this.onclick || this.ondragenter || this.ondragover || this.ondragleave || this.ondrop);
+    };
+    util.merge(Base.prototype, Transformable.prototype, true);
+    util.merge(Base.prototype, Eventful.prototype, true);
+    return Base;
+});define('zrender/tool/curve', [
+    'require',
+    './vector'
+], function (require) {
+    var vector = require('./vector');
+    'use strict';
+    var EPSILON = 0.0001;
+    var THREE_SQRT = Math.sqrt(3);
+    var ONE_THIRD = 1 / 3;
+    var _v0 = vector.create();
+    var _v1 = vector.create();
+    var _v2 = vector.create();
+    function isAroundZero(val) {
+        return val > -EPSILON && val < EPSILON;
     }
     function isNotAroundZero(val) {
         return val > EPSILON || val < -EPSILON;
@@ -11901,7 +12430,23 @@ define('zrender/zrender', [
                 roots[0] = 0;
             } else {
                 var t1 = -c / b;
-                if (t1 >= 0 && t1 <= 4="" 1)="" {="" roots[n++]="t1;" }="" else="" var="" disc="B" *="" b="" -="" a="" c;="" if="" (isaroundzero(disc))="" k="B" a;="" t1="-b" +="" k;="" t2="-K" 2;="" (t1="">= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 1)="" {="" roots[n++]="t2;" }="" else="" if="" (disc=""> 0) {
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            }
+        } else {
+            var disc = B * B - 4 * A * C;
+            if (isAroundZero(disc)) {
+                var K = B / A;
+                var t1 = -b / a + K;
+                var t2 = -K / 2;
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    roots[n++] = t2;
+                }
+            } else if (disc > 0) {
                 var discSqrt = Math.sqrt(disc);
                 var Y1 = A * b + 1.5 * a * (-B + discSqrt);
                 var Y2 = A * b + 1.5 * a * (-B - discSqrt);
@@ -11916,29 +12461,257 @@ define('zrender/zrender', [
                     Y2 = Math.pow(Y2, ONE_THIRD);
                 }
                 var t1 = (-b - (Y1 + Y2)) / (3 * a);
-                if (t1 >= 0 && t1 <= 2="" 3="" 1)="" {="" roots[n++]="t1;" }="" else="" var="" t="(2" *="" a="" b="" -="" b)="" (2="" math.sqrt(a="" a));="" theta="Math.acos(T)" 3;="" asqrt="Math.sqrt(A);" tmp="Math.cos(theta);" t1="(-b" tmp)="" (3="" a);="" t2="(-b" +="" (tmp="" three_sqrt="" math.sin(theta)))="" t3="(-b" if="" (t1="">= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 1)="" {="" roots[n++]="t2;" }="" if="" (t3="">= 0 && t3 <= 3="" 6="" 9="" 12="" 1)="" {="" roots[n++]="t3;" }="" return="" n;="" function="" cubicextrema(p0,="" p1,="" p2,="" p3,="" extrema)="" var="" b="6" *="" p2="" -="" p1="" +="" p0;="" a="9" p3="" p0="" p2;="" c="3" n="0;" if="" (isaroundzero(a))="" (isnotaroundzero(b))="" t1="-c" b;="" (t1="">= 0 && t1 <= 4="" 1)="" {="" extrema[n++]="t1;" }="" else="" var="" disc="b" *="" b="" -="" a="" c;="" if="" (isaroundzero(disc))="" extrema[0]="-b" (2="" a);="" (disc=""> 0) {
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            } else {
+                var T = (2 * A * b - 3 * a * B) / (2 * Math.sqrt(A * A * A));
+                var theta = Math.acos(T) / 3;
+                var ASqrt = Math.sqrt(A);
+                var tmp = Math.cos(theta);
+                var t1 = (-b - 2 * ASqrt * tmp) / (3 * a);
+                var t2 = (-b + ASqrt * (tmp + THREE_SQRT * Math.sin(theta))) / (3 * a);
+                var t3 = (-b + ASqrt * (tmp - THREE_SQRT * Math.sin(theta))) / (3 * a);
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    roots[n++] = t2;
+                }
+                if (t3 >= 0 && t3 <= 1) {
+                    roots[n++] = t3;
+                }
+            }
+        }
+        return n;
+    }
+    function cubicExtrema(p0, p1, p2, p3, extrema) {
+        var b = 6 * p2 - 12 * p1 + 6 * p0;
+        var a = 9 * p1 + 3 * p3 - 3 * p0 - 9 * p2;
+        var c = 3 * p1 - 3 * p0;
+        var n = 0;
+        if (isAroundZero(a)) {
+            if (isNotAroundZero(b)) {
+                var t1 = -c / b;
+                if (t1 >= 0 && t1 <= 1) {
+                    extrema[n++] = t1;
+                }
+            }
+        } else {
+            var disc = b * b - 4 * a * c;
+            if (isAroundZero(disc)) {
+                extrema[0] = -b / (2 * a);
+            } else if (disc > 0) {
                 var discSqrt = Math.sqrt(disc);
                 var t1 = (-b + discSqrt) / (2 * a);
                 var t2 = (-b - discSqrt) / (2 * a);
-                if (t1 >= 0 && t1 <= 1)="" {="" extrema[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 1)="" {="" extrema[n++]="t2;" }="" return="" n;="" function="" cubicsubdivide(p0,="" p1,="" p2,="" p3,="" t,="" out)="" var="" p01="(p1" -="" p0)="" *="" t="" +="" p0;="" p12="(p2" p1)="" p1;="" p23="(p3" p2)="" p2;="" p012="(p12" p01)="" p01;="" p123="(p23" p12)="" p12;="" p0123="(p123" p012)="" p012;="" out[0]="p0;" out[1]="p01;" out[2]="p012;" out[3]="p0123;" out[4]="p0123;" out[5]="p123;" out[6]="p23;" out[7]="p3;" cubicprojectpoint(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" x3,="" y3,="" x,="" y,="" t;="" interval="0.005;" d="Infinity;" _v0[0]="x;" _v0[1]="y;" for="" (var="" _t="0;" <="" 1;="" _v1[0]="cubicAt(x0," _t);="" _v1[1]="cubicAt(y0," d1="vector.distSquare(_v0," _v1);="" if="" (d1="" d)="" i="0;" 32;="" i++)="" (interval="" epsilon)="" break;="" prev="t" interval;="" next="t" prev);="" _v0);="" (prev="">= 0 && d1 < d) {
+                if (t1 >= 0 && t1 <= 1) {
+                    extrema[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    extrema[n++] = t2;
+                }
+            }
+        }
+        return n;
+    }
+    function cubicSubdivide(p0, p1, p2, p3, t, out) {
+        var p01 = (p1 - p0) * t + p0;
+        var p12 = (p2 - p1) * t + p1;
+        var p23 = (p3 - p2) * t + p2;
+        var p012 = (p12 - p01) * t + p01;
+        var p123 = (p23 - p12) * t + p12;
+        var p0123 = (p123 - p012) * t + p012;
+        out[0] = p0;
+        out[1] = p01;
+        out[2] = p012;
+        out[3] = p0123;
+        out[4] = p0123;
+        out[5] = p123;
+        out[6] = p23;
+        out[7] = p3;
+    }
+    function cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, out) {
+        var t;
+        var interval = 0.005;
+        var d = Infinity;
+        _v0[0] = x;
+        _v0[1] = y;
+        for (var _t = 0; _t < 1; _t += 0.05) {
+            _v1[0] = cubicAt(x0, x1, x2, x3, _t);
+            _v1[1] = cubicAt(y0, y1, y2, y3, _t);
+            var d1 = vector.distSquare(_v0, _v1);
+            if (d1 < d) {
+                t = _t;
+                d = d1;
+            }
+        }
+        d = Infinity;
+        for (var i = 0; i < 32; i++) {
+            if (interval < EPSILON) {
+                break;
+            }
+            var prev = t - interval;
+            var next = t + interval;
+            _v1[0] = cubicAt(x0, x1, x2, x3, prev);
+            _v1[1] = cubicAt(y0, y1, y2, y3, prev);
+            var d1 = vector.distSquare(_v1, _v0);
+            if (prev >= 0 && d1 < d) {
                 t = prev;
                 d = d1;
             } else {
                 _v2[0] = cubicAt(x0, x1, x2, x3, next);
                 _v2[1] = cubicAt(y0, y1, y2, y3, next);
                 var d2 = vector.distSquare(_v2, _v0);
-                if (next <= 1="" 2="" &&="" d2="" <="" d)="" {="" t="next;" d="d2;" }="" else="" interval="" *="0.5;" if="" (out)="" out[0]="cubicAt(x0," x1,="" x2,="" x3,="" t);="" out[1]="cubicAt(y0," y1,="" y2,="" y3,="" return="" math.sqrt(d);="" function="" quadraticat(p0,="" p1,="" p2,="" t)="" var="" onet="1" -="" t;="" (onet="" p0="" +="" p1)="" p2;="" quadraticderivativeat(p0,="" ((1="" (p1="" p0)="" (p2="" p1));="" quadraticrootat(p0,="" val,="" roots)="" a="p0" p1="" b="2" p0);="" c="p0" val;="" n="0;" (isaroundzero(a))="" (isnotaroundzero(b))="" t1="-c" b;="" (t1="">= 0 && t1 <= 4="" 1)="" {="" roots[n++]="t1;" }="" else="" var="" disc="b" *="" b="" -="" a="" c;="" if="" (isaroundzero(disc))="" t1="-b" (2="" a);="" (t1="">= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" else="" if="" (disc=""> 0) {
+                if (next <= 1 && d2 < d) {
+                    t = next;
+                    d = d2;
+                } else {
+                    interval *= 0.5;
+                }
+            }
+        }
+        if (out) {
+            out[0] = cubicAt(x0, x1, x2, x3, t);
+            out[1] = cubicAt(y0, y1, y2, y3, t);
+        }
+        return Math.sqrt(d);
+    }
+    function quadraticAt(p0, p1, p2, t) {
+        var onet = 1 - t;
+        return onet * (onet * p0 + 2 * t * p1) + t * t * p2;
+    }
+    function quadraticDerivativeAt(p0, p1, p2, t) {
+        return 2 * ((1 - t) * (p1 - p0) + t * (p2 - p1));
+    }
+    function quadraticRootAt(p0, p1, p2, val, roots) {
+        var a = p0 - 2 * p1 + p2;
+        var b = 2 * (p1 - p0);
+        var c = p0 - val;
+        var n = 0;
+        if (isAroundZero(a)) {
+            if (isNotAroundZero(b)) {
+                var t1 = -c / b;
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            }
+        } else {
+            var disc = b * b - 4 * a * c;
+            if (isAroundZero(disc)) {
+                var t1 = -b / (2 * a);
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            } else if (disc > 0) {
                 var discSqrt = Math.sqrt(disc);
                 var t1 = (-b + discSqrt) / (2 * a);
                 var t2 = (-b - discSqrt) / (2 * a);
-                if (t1 >= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 2="" 1)="" {="" roots[n++]="t2;" }="" return="" n;="" function="" quadraticextremum(p0,="" p1,="" p2)="" var="" divider="p0" +="" p2="" -="" *="" p1;="" if="" (divider="==" 0)="" 0.5;="" else="" (p0="" p1)="" divider;="" quadraticsubdivide(p0,="" p2,="" t,="" out)="" p01="(p1" p0)="" t="" p0;="" p12="(p2" p012="(p12" p01)="" p01;="" out[0]="p0;" out[1]="p01;" out[2]="p012;" out[3]="p012;" out[4]="p12;" out[5]="p2;" quadraticprojectpoint(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" x,="" y,="" t;="" interval="0.005;" d="Infinity;" _v0[0]="x;" _v0[1]="y;" for="" (var="" _t="0;" <="" 1;="" _v1[0]="quadraticAt(x0," _t);="" _v1[1]="quadraticAt(y0," d1="vector.distSquare(_v0," _v1);="" (d1="" d)="" i="0;" 32;="" i++)="" (interval="" epsilon)="" break;="" prev="t" interval;="" next="t" prev);="" _v0);="" (prev="">= 0 && d1 < d) {
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    roots[n++] = t2;
+                }
+            }
+        }
+        return n;
+    }
+    function quadraticExtremum(p0, p1, p2) {
+        var divider = p0 + p2 - 2 * p1;
+        if (divider === 0) {
+            return 0.5;
+        } else {
+            return (p0 - p1) / divider;
+        }
+    }
+    function quadraticSubdivide(p0, p1, p2, t, out) {
+        var p01 = (p1 - p0) * t + p0;
+        var p12 = (p2 - p1) * t + p1;
+        var p012 = (p12 - p01) * t + p01;
+        out[0] = p0;
+        out[1] = p01;
+        out[2] = p012;
+        out[3] = p012;
+        out[4] = p12;
+        out[5] = p2;
+    }
+    function quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, out) {
+        var t;
+        var interval = 0.005;
+        var d = Infinity;
+        _v0[0] = x;
+        _v0[1] = y;
+        for (var _t = 0; _t < 1; _t += 0.05) {
+            _v1[0] = quadraticAt(x0, x1, x2, _t);
+            _v1[1] = quadraticAt(y0, y1, y2, _t);
+            var d1 = vector.distSquare(_v0, _v1);
+            if (d1 < d) {
+                t = _t;
+                d = d1;
+            }
+        }
+        d = Infinity;
+        for (var i = 0; i < 32; i++) {
+            if (interval < EPSILON) {
+                break;
+            }
+            var prev = t - interval;
+            var next = t + interval;
+            _v1[0] = quadraticAt(x0, x1, x2, prev);
+            _v1[1] = quadraticAt(y0, y1, y2, prev);
+            var d1 = vector.distSquare(_v1, _v0);
+            if (prev >= 0 && d1 < d) {
                 t = prev;
                 d = d1;
             } else {
                 _v2[0] = quadraticAt(x0, x1, x2, next);
                 _v2[1] = quadraticAt(y0, y1, y2, next);
                 var d2 = vector.distSquare(_v2, _v0);
-                if (next <= 0="" 1="" &&="" d2="" <="" d)="" {="" t="next;" d="d2;" }="" else="" interval="" *="0.5;" if="" (out)="" out[0]="quadraticAt(x0," x1,="" x2,="" t);="" out[1]="quadraticAt(y0," y1,="" y2,="" return="" math.sqrt(d);="" cubicat:="" cubicat,="" cubicderivativeat:="" cubicderivativeat,="" cubicrootat:="" cubicrootat,="" cubicextrema:="" cubicextrema,="" cubicsubdivide:="" cubicsubdivide,="" cubicprojectpoint:="" cubicprojectpoint,="" quadraticat:="" quadraticat,="" quadraticderivativeat:="" quadraticderivativeat,="" quadraticrootat:="" quadraticrootat,="" quadraticextremum:="" quadraticextremum,="" quadraticsubdivide:="" quadraticsubdivide,="" quadraticprojectpoint:="" quadraticprojectpoint="" };="" });define('zrender="" mixin="" transformable',="" [="" 'require',="" '..="" tool="" matrix',="" vector'="" ],="" function="" (require)="" 'use="" strict';="" var="" matrix="require('../tool/matrix');" vector="require('../tool/vector');" origin="[" 0,="" ];="" mtranslate="matrix.translate;" epsilon="0.00005;" isaroundzero(val)="" val=""> -EPSILON && val < EPSILON;
+                if (next <= 1 && d2 < d) {
+                    t = next;
+                    d = d2;
+                } else {
+                    interval *= 0.5;
+                }
+            }
+        }
+        if (out) {
+            out[0] = quadraticAt(x0, x1, x2, t);
+            out[1] = quadraticAt(y0, y1, y2, t);
+        }
+        return Math.sqrt(d);
+    }
+    return {
+        cubicAt: cubicAt,
+        cubicDerivativeAt: cubicDerivativeAt,
+        cubicRootAt: cubicRootAt,
+        cubicExtrema: cubicExtrema,
+        cubicSubdivide: cubicSubdivide,
+        cubicProjectPoint: cubicProjectPoint,
+        quadraticAt: quadraticAt,
+        quadraticDerivativeAt: quadraticDerivativeAt,
+        quadraticRootAt: quadraticRootAt,
+        quadraticExtremum: quadraticExtremum,
+        quadraticSubdivide: quadraticSubdivide,
+        quadraticProjectPoint: quadraticProjectPoint
+    };
+});define('zrender/mixin/Transformable', [
+    'require',
+    '../tool/matrix',
+    '../tool/vector'
+], function (require) {
+    'use strict';
+    var matrix = require('../tool/matrix');
+    var vector = require('../tool/vector');
+    var origin = [
+        0,
+        0
+    ];
+    var mTranslate = matrix.translate;
+    var EPSILON = 0.00005;
+    function isAroundZero(val) {
+        return val > -EPSILON && val < EPSILON;
     }
     function isNotAroundZero(val) {
         return val > EPSILON || val < -EPSILON;
@@ -14230,7 +15003,35 @@ define('zrender/zrender', [
                 rect = this.style.__rect = this.getRect(this.style);
             }
             var delta = rect.height < 8 || rect.width < 8 ? 4 : 0;
-            return x >= rect.x - delta && x <= rect.x="" +="" rect.width="" delta="" &&="" y="">= rect.y - delta && y <= rect.y="" +="" rect.height="" delta;="" }="" };="" zrutil.inherits(icon,="" base);="" return="" icon;="" });define('echarts="" util="" shape="" markline',="" [="" 'require',="" 'zrender="" base',="" '.="" icon',="" line',="" beziercurve',="" tool="" area',="" dashedlineto',="" util',="" curve'="" ],="" function="" (require)="" {="" var="" base="require('zrender/shape/Base');" iconshape="require('./Icon');" lineshape="require('zrender/shape/Line');" lineinstance="new" lineshape({});="" curveshape="require('zrender/shape/BezierCurve');" curveinstance="new" curveshape({});="" area="require('zrender/tool/area');" dashedlineto="require('zrender/shape/util/dashedLineTo');" zrutil="require('zrender/tool/util');" curvetool="require('zrender/tool/curve');" markline(options)="" base.call(this,="" options);="" if="" (this.style.curveness=""> 0) {
+            return x >= rect.x - delta && x <= rect.x + rect.width + delta && y >= rect.y - delta && y <= rect.y + rect.height + delta;
+        }
+    };
+    zrUtil.inherits(Icon, Base);
+    return Icon;
+});define('echarts/util/shape/MarkLine', [
+    'require',
+    'zrender/shape/Base',
+    './Icon',
+    'zrender/shape/Line',
+    'zrender/shape/BezierCurve',
+    'zrender/tool/area',
+    'zrender/shape/util/dashedLineTo',
+    'zrender/tool/util',
+    'zrender/tool/curve'
+], function (require) {
+    var Base = require('zrender/shape/Base');
+    var IconShape = require('./Icon');
+    var LineShape = require('zrender/shape/Line');
+    var lineInstance = new LineShape({});
+    var CurveShape = require('zrender/shape/BezierCurve');
+    var curveInstance = new CurveShape({});
+    var area = require('zrender/tool/area');
+    var dashedLineTo = require('zrender/shape/util/dashedLineTo');
+    var zrUtil = require('zrender/tool/util');
+    var curveTool = require('zrender/tool/curve');
+    function MarkLine(options) {
+        Base.call(this, options);
+        if (this.style.curveness > 0) {
             this.updatePoints(this.style);
         }
         if (this.highlightStyle.curveness > 0) {
@@ -15584,7 +16385,21 @@ define('zrender/zrender', [
                     coarsenedEdges.push(new CoarsenedEdge(res.groups[i]));
                 }
                 var newRes = this._iterate(coarsenedEdges);
-                if (newRes.savedInk <= 0)="" {="" break;="" }="" else="" res="newRes;" var="" newedges="[];" function="" pointapproxequal(p0,="" p1)="" return="" v2distsquare(p0,="" <="" 1e-10;="" cleanedgepoints(edgepoints,="" rawedgepoints)="" off="0;" for="" (var="" i="0;" edgepoints.length;="" i++)="" if="" (!(off=""> 0 && pointApproxEqual(edgePoints[i], res[off - 1]))) {
+                if (newRes.savedInk <= 0) {
+                    break;
+                } else {
+                    res = newRes;
+                }
+            }
+            var newEdges = [];
+            function pointApproxEqual(p0, p1) {
+                return v2DistSquare(p0, p1) < 1e-10;
+            }
+            function cleanEdgePoints(edgePoints, rawEdgePoints) {
+                var res = [];
+                var off = 0;
+                for (var i = 0; i < edgePoints.length; i++) {
+                    if (!(off > 0 && pointApproxEqual(edgePoints[i], res[off - 1]))) {
                         res[off++] = v2Clone(edgePoints[i]);
                     }
                 }
@@ -16690,12 +17505,87 @@ define('zrender/zrender', [
         nearestNList[i].node = node;
     };
     KDTree.prototype.nearestN = function (target, N, squaredDistance, output) {
-        if (N <= 0)="" {="" output.length="0;" return="" output;="" }="" var="" curr="this.root;" stack="this._stack;" idx="0;" nearestnlist="this._nearstNList;" for="" (var="" i="0;" <="" n;="" i++)="" if="" (!nearestnlist[i])="" nearestnlist[i]="{};" nearestnlist[i].dist="0;" nearestnlist[i].node="null;" currdist="squaredDistance(curr.data," target);="" found="0;" (curr.data="" !="=" target)="" found++;="" this._addnearest(found,="" currdist,="" curr);="" (target.array[curr.axis]="" curr.data.array[curr.axis])="" curr.right="" &&="" (stack[idx++]="curr.right);" curr.left="" else="" while="" (idx--)="" -="" curr.data.array[curr.axis];="" isleft="currDist" 0;="" needscheckotherside="false;" *="" currdist;="" (found="" n="" ||="" nearestnlist[found="" 1].dist)="" ((found="" curr.data="" n)="" (isleft)="" (needscheckotherside)="" found;="" output[i]="nearestNList[i].node.data;" };="" kdtree;="" });define('echarts="" data="" quickselect',="" ['require'],="" function="" (require)="" defaultcomparefunc(a,="" b)="" a="" b;="" swapelement(list,="" idx0,="" idx1)="" tmp="list[idx0];" list[idx0]="list[idx1];" list[idx1]="tmp;" select(list,="" left,="" right,="" nth,="" comparefunc)="" pivotidx="left;" (right=""> left) {
+        if (N <= 0) {
+            output.length = 0;
+            return output;
+        }
+        var curr = this.root;
+        var stack = this._stack;
+        var idx = 0;
+        var nearestNList = this._nearstNList;
+        for (var i = 0; i < N; i++) {
+            if (!nearestNList[i]) {
+                nearestNList[i] = {};
+            }
+            nearestNList[i].dist = 0;
+            nearestNList[i].node = null;
+        }
+        var currDist = squaredDistance(curr.data, target);
+        var found = 0;
+        if (curr.data !== target) {
+            found++;
+            this._addNearest(found, currDist, curr);
+        }
+        if (target.array[curr.axis] < curr.data.array[curr.axis]) {
+            curr.right && (stack[idx++] = curr.right);
+            curr.left && (stack[idx++] = curr.left);
+        } else {
+            curr.left && (stack[idx++] = curr.left);
+            curr.right && (stack[idx++] = curr.right);
+        }
+        while (idx--) {
+            curr = stack[idx];
+            var currDist = target.array[curr.axis] - curr.data.array[curr.axis];
+            var isLeft = currDist < 0;
+            var needsCheckOtherSide = false;
+            currDist = currDist * currDist;
+            if (found < N || currDist < nearestNList[found - 1].dist) {
+                currDist = squaredDistance(curr.data, target);
+                if ((found < N || currDist < nearestNList[found - 1].dist) && curr.data !== target) {
+                    if (found < N) {
+                        found++;
+                    }
+                    this._addNearest(found, currDist, curr);
+                }
+                needsCheckOtherSide = true;
+            }
+            if (isLeft) {
+                if (needsCheckOtherSide) {
+                    curr.right && (stack[idx++] = curr.right);
+                }
+                curr.left && (stack[idx++] = curr.left);
+            } else {
+                if (needsCheckOtherSide) {
+                    curr.left && (stack[idx++] = curr.left);
+                }
+                curr.right && (stack[idx++] = curr.right);
+            }
+        }
+        for (var i = 0; i < found; i++) {
+            output[i] = nearestNList[i].node.data;
+        }
+        output.length = found;
+        return output;
+    };
+    return KDTree;
+});define('echarts/data/quickSelect', ['require'], function (require) {
+    function defaultCompareFunc(a, b) {
+        return a - b;
+    }
+    function swapElement(list, idx0, idx1) {
+        var tmp = list[idx0];
+        list[idx0] = list[idx1];
+        list[idx1] = tmp;
+    }
+    function select(list, left, right, nth, compareFunc) {
+        var pivotIdx = left;
+        while (right > left) {
             var pivotIdx = Math.round((right + left) / 2);
             var pivotValue = list[pivotIdx];
             swapElement(list, pivotIdx, right);
             pivotIdx = left;
-            for (var i = left; i <= right="" -="" 1;="" i++)="" {="" if="" (comparefunc(pivotvalue,="" list[i])="">= 0) {
+            for (var i = left; i <= right - 1; i++) {
+                if (compareFunc(pivotValue, list[i]) >= 0) {
                     swapElement(list, i, pivotIdx);
                     pivotIdx++;
                 }
@@ -16712,7 +17602,78 @@ define('zrender/zrender', [
         return left;
     }
     function quickSelect(list, left, right, nth, compareFunc) {
-        if (arguments.length <= 0="" 3)="" {="" nth="left;" if="" (arguments.length="=" 2)="" comparefunc="defaultCompareFunc;" }="" else="" left="0;" right="list.length" -="" 1;="" return="" select(list,="" left,="" right,="" nth,="" comparefunc);="" quickselect;="" });define('echarts="" component="" dataview',="" [="" 'require',="" '.="" base',="" '..="" config',="" 'zrender="" tool="" util',="" component'="" ],="" function="" (require)="" var="" base="require('./base');" ecconfig="require('../config');" zrutil="require('zrender/tool/util');" dataview(ectheme,="" messagecenter,="" zr,="" option,="" mychart)="" base.call(this,="" ectheme,="" mychart);="" this.dom="myChart.dom;" this._tdom="document.createElement('div');" this._textarea="document.createElement('textArea');" this._buttonrefresh="document.createElement('button');" this._buttonrefresh.setattribute('type',="" 'button');="" this._buttonclose="document.createElement('button');" this._buttonclose.setattribute('type',="" this._hasshow="false;" this._zrheight="zr.getHeight();" this._zrwidth="zr.getWidth();" this._tdom.classname="echarts-dataview" ;="" this.hide();="" this.dom.firstchild.appendchild(this._tdom);="" (window.addeventlistener)="" this._tdom.addeventlistener('click',="" this._stop);="" this._tdom.addeventlistener('mousewheel',="" this._tdom.addeventlistener('mousemove',="" this._tdom.addeventlistener('mousedown',="" this._tdom.addeventlistener('mouseup',="" this._tdom.addeventlistener('touchstart',="" this._tdom.addeventlistener('touchmove',="" this._tdom.addeventlistener('touchend',="" this._tdom.attachevent('onclick',="" this._tdom.attachevent('onmousewheel',="" this._tdom.attachevent('onmousemove',="" this._tdom.attachevent('onmousedown',="" this._tdom.attachevent('onmouseup',="" dataview.prototype="{" type:="" ecconfig.component_type_dataview,="" _lang:="" 'data="" view',="" 'close',="" 'refresh'="" _gcsstext:="" 'position:absolute;'="" +="" 'display:block;'="" 'overflow:hidden;'="" 'transition:height="" 0.8s,background-color="" 1s;'="" '-moz-transition:height="" '-webkit-transition:height="" '-o-transition:height="" 'z-index:1;'="" 'left:0;'="" 'top:0;',="" hide:="" ()="" this._sizecsstext="width:" 'px;'="" 'height:'="" 'background-color:#f0ffff;';="" this._tdom.style.csstext="this._gCssText" this._sizecsstext;="" },="" show:="" (newoption)="" lang="this.query(this.option," 'toolbox.feature.dataview.lang')="" ||="" this._lang;="" this.option="newOption;" this._tdom.innerhtml="<p style="padding:8px 0;margin:0 0 10px 0;" 'border-bottom:1px="" solid="" #eee"="">' + (lang[0] || this._lang[0]) + '<p></p>';
+        if (arguments.length <= 3) {
+            nth = left;
+            if (arguments.length == 2) {
+                compareFunc = defaultCompareFunc;
+            } else {
+                compareFunc = right;
+            }
+            left = 0;
+            right = list.length - 1;
+        }
+        return select(list, left, right, nth, compareFunc);
+    }
+    return quickSelect;
+});define('echarts/component/dataView', [
+    'require',
+    './base',
+    '../config',
+    'zrender/tool/util',
+    '../component'
+], function (require) {
+    var Base = require('./base');
+    var ecConfig = require('../config');
+    var zrUtil = require('zrender/tool/util');
+    function DataView(ecTheme, messageCenter, zr, option, myChart) {
+        Base.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.dom = myChart.dom;
+        this._tDom = document.createElement('div');
+        this._textArea = document.createElement('textArea');
+        this._buttonRefresh = document.createElement('button');
+        this._buttonRefresh.setAttribute('type', 'button');
+        this._buttonClose = document.createElement('button');
+        this._buttonClose.setAttribute('type', 'button');
+        this._hasShow = false;
+        this._zrHeight = zr.getHeight();
+        this._zrWidth = zr.getWidth();
+        this._tDom.className = 'echarts-dataview';
+        this.hide();
+        this.dom.firstChild.appendChild(this._tDom);
+        if (window.addEventListener) {
+            this._tDom.addEventListener('click', this._stop);
+            this._tDom.addEventListener('mousewheel', this._stop);
+            this._tDom.addEventListener('mousemove', this._stop);
+            this._tDom.addEventListener('mousedown', this._stop);
+            this._tDom.addEventListener('mouseup', this._stop);
+            this._tDom.addEventListener('touchstart', this._stop);
+            this._tDom.addEventListener('touchmove', this._stop);
+            this._tDom.addEventListener('touchend', this._stop);
+        } else {
+            this._tDom.attachEvent('onclick', this._stop);
+            this._tDom.attachEvent('onmousewheel', this._stop);
+            this._tDom.attachEvent('onmousemove', this._stop);
+            this._tDom.attachEvent('onmousedown', this._stop);
+            this._tDom.attachEvent('onmouseup', this._stop);
+        }
+    }
+    DataView.prototype = {
+        type: ecConfig.COMPONENT_TYPE_DATAVIEW,
+        _lang: [
+            'Data View',
+            'close',
+            'refresh'
+        ],
+        _gCssText: 'position:absolute;' + 'display:block;' + 'overflow:hidden;' + 'transition:height 0.8s,background-color 1s;' + '-moz-transition:height 0.8s,background-color 1s;' + '-webkit-transition:height 0.8s,background-color 1s;' + '-o-transition:height 0.8s,background-color 1s;' + 'z-index:1;' + 'left:0;' + 'top:0;',
+        hide: function () {
+            this._sizeCssText = 'width:' + this._zrWidth + 'px;' + 'height:' + 0 + 'px;' + 'background-color:#f0ffff;';
+            this._tDom.style.cssText = this._gCssText + this._sizeCssText;
+        },
+        show: function (newOption) {
+            this._hasShow = true;
+            var lang = this.query(this.option, 'toolbox.feature.dataView.lang') || this._lang;
+            this.option = newOption;
+            this._tDom.innerHTML = '<p style="padding:8px 0;margin:0 0 10px 0;' + 'border-bottom:1px solid #eee">' + (lang[0] || this._lang[0]) + '</p>';
             var customContent = this.query(this.option, 'toolbox.feature.dataView.optionToContent');
             if (typeof customContent != 'function') {
                 this._textArea.value = this._optionToContent();
@@ -17366,7 +18327,214 @@ define('zrender/zrender', [
         },
         isCover: function (x, y) {
             var rect = this.style;
-            if (x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y <= 2="" rect.y="" +="" rect.height)="" {="" return="" true;="" }="" else="" false;="" };="" zrutil.inherits(chain,="" base);="" chain;="" });define('zrender="" shape="" ring',="" [="" 'require',="" '.="" base',="" '..="" tool="" util'="" ],="" function="" (require)="" var="" base="require('./Base');" ring="function" (options)="" base.call(this,="" options);="" ring.prototype="{" type:="" 'ring',="" buildpath:="" (ctx,="" style)="" ctx.arc(style.x,="" style.y,="" style.r,="" 0,="" math.pi="" *="" 2,="" false);="" ctx.moveto(style.x="" style.r0,="" style.y);="" true);="" return;="" },="" getrect:="" (style)="" if="" (style.__rect)="" style.__rect;="" linewidth;="" (style.brushtype="=" 'stroke'="" ||="" style.brushtype="=" 'fill')="" linewidth="style.lineWidth" 1;="" style.__rect="{" x:="" math.round(style.x="" -="" style.r="" 2),="" y:="" math.round(style.y="" width:="" linewidth,="" height:="" require('..="" util').inherits(ring,="" ring;="" });define('echarts="" component="" axis',="" 'zrender="" line',="" config',="" util="" ecdata',="" util',="" color',="" categoryaxis',="" valueaxis',="" component'="" lineshape="require('zrender/shape/Line');" ecconfig="require('../config');" ecdata="require('../util/ecData');" zrutil="require('zrender/tool/util');" zrcolor="require('zrender/tool/color');" axis(ectheme,="" messagecenter,="" zr,="" option,="" mychart,="" axistype)="" ectheme,="" mychart);="" this.axistype="axisType;" this._axislist="[];" this.refresh(option);="" axis.prototype="{" ecconfig.component_type_axis,="" axisbase:="" _buildaxisline:="" ()="" halflinewidth="lineWidth" 2;="" axshape="{" _axisshape:="" 'axisline',="" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase()="" 3,="" hoverable:="" false="" grid="this.grid;" switch="" (this.option.position)="" case="" 'left':="" axshape.style="{" xstart:="" grid.getx()="" halflinewidth,="" ystart:="" grid.getyend(),="" xend:="" yend:="" grid.gety(),="" linecap:="" 'round'="" break;="" 'right':="" grid.getxend()="" 'bottom':="" grid.getx(),="" grid.getyend()="" grid.getxend(),="" 'top':="" grid.gety()="" style="axShape.style;" (this.option.name="" !="=" '')="" style.text="this.option.name;" style.textposition="this.option.nameLocation;" style.textfont="this.getFont(this.option.nameTextStyle);" (this.option.nametextstyle.align)="" style.textalign="this.option.nameTextStyle.align;" (this.option.nametextstyle.baseline)="" style.textbaseline="this.option.nameTextStyle.baseline;" (this.option.nametextstyle.color)="" style.textcolor="this.option.nameTextStyle.color;" style.strokecolor="this.option.axisLine.lineStyle.color;" style.linewidth="lineWidth;" (this.ishorizontal())="" style.ystart="style.yEnd" =="" this.subpixeloptimize(style.yend,="" linewidth);="" style.xstart="style.xEnd" this.subpixeloptimize(style.xend,="" style.linetype="this.option.axisLine.lineStyle.type;" lineshape(axshape);="" this.shapelist.push(axshape);="" _axislabelclickable:="" (clickable,="" axshape)="" (clickable)="" ecdata.pack(axshape,="" undefined,="" -1,="" axshape.style.text);="" axshape.hoverable="true;" axshape.clickable="true;" axshape.highlightstyle="{" color:="" zrcolor.lift(axshape.style.color,="" 1),="" brushtype:="" 'fill'="" axshape;="" refixaxisshape:="" (zerox,="" zeroy)="" (!this.option.axisline.onzero)="" ticklength;="" (this.ishorizontal()="" &&="" zeroy="" for="" (var="" i="0," l="this.shapeList.length;" <="" l;="" i++)="" (this.shapelist[i]._axisshape="==" 'axisline')="" this.shapelist[i].style.ystart="this.shapeList[i].style.yEnd" this.subpixeloptimize(zeroy,="" this.shapelist[i].stylelinewidth);="" this.zr.modshape(this.shapelist[i].id);="" 'axistick')="" ticklength="this.shapeList[i].style.yEnd" this.shapelist[i].style.ystart;="" this.shapelist[i].style.yend="zeroY;" (!this.ishorizontal()="" zerox="" this.shapelist[i].style.xstart="this.shapeList[i].style.xEnd" this.subpixeloptimize(zerox,="" this.shapelist[i].style.xstart;="" this.shapelist[i].style.xend="zeroX" getposition:="" this.option.position;="" ishorizontal:="" this.option.position="==" 'bottom'="" 'top';="" reformoption:="" (opt)="" (!opt="" opt="" instanceof="" array="" opt.length="==" 0)="" ecconfig.component_type_axis_value="" }];="" (!(opt="" array))="" (opt.length=""> 2) {
+            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    zrUtil.inherits(Chain, Base);
+    return Chain;
+});define('zrender/shape/Ring', [
+    'require',
+    './Base',
+    '../tool/util'
+], function (require) {
+    var Base = require('./Base');
+    var Ring = function (options) {
+        Base.call(this, options);
+    };
+    Ring.prototype = {
+        type: 'ring',
+        buildPath: function (ctx, style) {
+            ctx.arc(style.x, style.y, style.r, 0, Math.PI * 2, false);
+            ctx.moveTo(style.x + style.r0, style.y);
+            ctx.arc(style.x, style.y, style.r0, 0, Math.PI * 2, true);
+            return;
+        },
+        getRect: function (style) {
+            if (style.__rect) {
+                return style.__rect;
+            }
+            var lineWidth;
+            if (style.brushType == 'stroke' || style.brushType == 'fill') {
+                lineWidth = style.lineWidth || 1;
+            } else {
+                lineWidth = 0;
+            }
+            style.__rect = {
+                x: Math.round(style.x - style.r - lineWidth / 2),
+                y: Math.round(style.y - style.r - lineWidth / 2),
+                width: style.r * 2 + lineWidth,
+                height: style.r * 2 + lineWidth
+            };
+            return style.__rect;
+        }
+    };
+    require('../tool/util').inherits(Ring, Base);
+    return Ring;
+});define('echarts/component/axis', [
+    'require',
+    './base',
+    'zrender/shape/Line',
+    '../config',
+    '../util/ecData',
+    'zrender/tool/util',
+    'zrender/tool/color',
+    './categoryAxis',
+    './valueAxis',
+    '../component'
+], function (require) {
+    var Base = require('./base');
+    var LineShape = require('zrender/shape/Line');
+    var ecConfig = require('../config');
+    var ecData = require('../util/ecData');
+    var zrUtil = require('zrender/tool/util');
+    var zrColor = require('zrender/tool/color');
+    function Axis(ecTheme, messageCenter, zr, option, myChart, axisType) {
+        Base.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.axisType = axisType;
+        this._axisList = [];
+        this.refresh(option);
+    }
+    Axis.prototype = {
+        type: ecConfig.COMPONENT_TYPE_AXIS,
+        axisBase: {
+            _buildAxisLine: function () {
+                var lineWidth = this.option.axisLine.lineStyle.width;
+                var halfLineWidth = lineWidth / 2;
+                var axShape = {
+                    _axisShape: 'axisLine',
+                    zlevel: this.getZlevelBase(),
+                    z: this.getZBase() + 3,
+                    hoverable: false
+                };
+                var grid = this.grid;
+                switch (this.option.position) {
+                case 'left':
+                    axShape.style = {
+                        xStart: grid.getX() - halfLineWidth,
+                        yStart: grid.getYend(),
+                        xEnd: grid.getX() - halfLineWidth,
+                        yEnd: grid.getY(),
+                        lineCap: 'round'
+                    };
+                    break;
+                case 'right':
+                    axShape.style = {
+                        xStart: grid.getXend() + halfLineWidth,
+                        yStart: grid.getYend(),
+                        xEnd: grid.getXend() + halfLineWidth,
+                        yEnd: grid.getY(),
+                        lineCap: 'round'
+                    };
+                    break;
+                case 'bottom':
+                    axShape.style = {
+                        xStart: grid.getX(),
+                        yStart: grid.getYend() + halfLineWidth,
+                        xEnd: grid.getXend(),
+                        yEnd: grid.getYend() + halfLineWidth,
+                        lineCap: 'round'
+                    };
+                    break;
+                case 'top':
+                    axShape.style = {
+                        xStart: grid.getX(),
+                        yStart: grid.getY() - halfLineWidth,
+                        xEnd: grid.getXend(),
+                        yEnd: grid.getY() - halfLineWidth,
+                        lineCap: 'round'
+                    };
+                    break;
+                }
+                var style = axShape.style;
+                if (this.option.name !== '') {
+                    style.text = this.option.name;
+                    style.textPosition = this.option.nameLocation;
+                    style.textFont = this.getFont(this.option.nameTextStyle);
+                    if (this.option.nameTextStyle.align) {
+                        style.textAlign = this.option.nameTextStyle.align;
+                    }
+                    if (this.option.nameTextStyle.baseline) {
+                        style.textBaseline = this.option.nameTextStyle.baseline;
+                    }
+                    if (this.option.nameTextStyle.color) {
+                        style.textColor = this.option.nameTextStyle.color;
+                    }
+                }
+                style.strokeColor = this.option.axisLine.lineStyle.color;
+                style.lineWidth = lineWidth;
+                if (this.isHorizontal()) {
+                    style.yStart = style.yEnd = this.subPixelOptimize(style.yEnd, lineWidth);
+                } else {
+                    style.xStart = style.xEnd = this.subPixelOptimize(style.xEnd, lineWidth);
+                }
+                style.lineType = this.option.axisLine.lineStyle.type;
+                axShape = new LineShape(axShape);
+                this.shapeList.push(axShape);
+            },
+            _axisLabelClickable: function (clickable, axShape) {
+                if (clickable) {
+                    ecData.pack(axShape, undefined, -1, undefined, -1, axShape.style.text);
+                    axShape.hoverable = true;
+                    axShape.clickable = true;
+                    axShape.highlightStyle = {
+                        color: zrColor.lift(axShape.style.color, 1),
+                        brushType: 'fill'
+                    };
+                    return axShape;
+                } else {
+                    return axShape;
+                }
+            },
+            refixAxisShape: function (zeroX, zeroY) {
+                if (!this.option.axisLine.onZero) {
+                    return;
+                }
+                var tickLength;
+                if (this.isHorizontal() && zeroY != null) {
+                    for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                        if (this.shapeList[i]._axisShape === 'axisLine') {
+                            this.shapeList[i].style.yStart = this.shapeList[i].style.yEnd = this.subPixelOptimize(zeroY, this.shapeList[i].stylelineWidth);
+                            this.zr.modShape(this.shapeList[i].id);
+                        } else if (this.shapeList[i]._axisShape === 'axisTick') {
+                            tickLength = this.shapeList[i].style.yEnd - this.shapeList[i].style.yStart;
+                            this.shapeList[i].style.yStart = zeroY - tickLength;
+                            this.shapeList[i].style.yEnd = zeroY;
+                            this.zr.modShape(this.shapeList[i].id);
+                        }
+                    }
+                }
+                if (!this.isHorizontal() && zeroX != null) {
+                    for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                        if (this.shapeList[i]._axisShape === 'axisLine') {
+                            this.shapeList[i].style.xStart = this.shapeList[i].style.xEnd = this.subPixelOptimize(zeroX, this.shapeList[i].stylelineWidth);
+                            this.zr.modShape(this.shapeList[i].id);
+                        } else if (this.shapeList[i]._axisShape === 'axisTick') {
+                            tickLength = this.shapeList[i].style.xEnd - this.shapeList[i].style.xStart;
+                            this.shapeList[i].style.xStart = zeroX;
+                            this.shapeList[i].style.xEnd = zeroX + tickLength;
+                            this.zr.modShape(this.shapeList[i].id);
+                        }
+                    }
+                }
+            },
+            getPosition: function () {
+                return this.option.position;
+            },
+            isHorizontal: function () {
+                return this.option.position === 'bottom' || this.option.position === 'top';
+            }
+        },
+        reformOption: function (opt) {
+            if (!opt || opt instanceof Array && opt.length === 0) {
+                opt = [{ type: ecConfig.COMPONENT_TYPE_AXIS_VALUE }];
+            } else if (!(opt instanceof Array)) {
+                opt = [opt];
+            }
+            if (opt.length > 2) {
                 opt = [
                     opt[0],
                     opt[1]
@@ -17546,7 +18714,25 @@ define('zrender/zrender', [
                 } else {
                     this._width = this.parsePercent(gridOption.width, this._zrWidth);
                 }
-                this._width = this._width <= 0="" 10="" ?="" :="" this._width;="" if="" (typeof="" gridoption.height="=" 'undefined')="" {="" this._height="this._zrHeight" -="" this._y="" y2;="" }="" else="" this._zrheight);="" <="0" this._height;="" this._x="this.subPixelOptimize(this._x," gridoption.borderwidth);="" this.shapelist.push(new="" rectangleshape({="" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" hoverable:="" false,="" style:="" x:="" this._x,="" y:="" this._y,="" width:="" this._width,="" height:="" this._height,="" brushtype:="" gridoption.borderwidth=""> 0 ? 'both' : 'fill',
+                this._width = this._width <= 0 ? 10 : this._width;
+                if (typeof gridOption.height == 'undefined') {
+                    this._height = this._zrHeight - this._y - y2;
+                } else {
+                    this._height = this.parsePercent(gridOption.height, this._zrHeight);
+                }
+                this._height = this._height <= 0 ? 10 : this._height;
+                this._x = this.subPixelOptimize(this._x, gridOption.borderWidth);
+                this._y = this.subPixelOptimize(this._y, gridOption.borderWidth);
+                this.shapeList.push(new RectangleShape({
+                    zlevel: this.getZlevelBase(),
+                    z: this.getZBase(),
+                    hoverable: false,
+                    style: {
+                        x: this._x,
+                        y: this._y,
+                        width: this._width,
+                        height: this._height,
+                        brushType: gridOption.borderWidth > 0 ? 'both' : 'fill',
                         color: gridOption.backgroundColor,
                         strokeColor: gridOption.borderColor,
                         lineWidth: gridOption.borderWidth
@@ -18153,7 +19339,51 @@ define('zrender/zrender', [
             var value;
             for (var i = 0, l = data.length; i < l; i++) {
                 value = data[i].value || data[i];
-                if (value[0] >= xStart && value[0] <= xend="" &&="" value[1]="">= yStart && value[1] <= 0="" 100="" yend)="" {="" newdata.push(data[i]);="" }="" return="" newdata;="" },="" _setscale:="" function="" ()="" var="" needscale="this._zoom.start" !="=" ||="" this._zoom.end="" this._zoom.start2="" this._zoom.end2="" 100;="" axis="{" xaxis:="" this.option.xaxis,="" yaxis:="" this.option.yaxis="" };="" for="" (var="" key="" in="" axis)="" i="0," l="axis[key].length;" <="" l;="" i++)="" axis[key][i].scale="needScale" axis[key][i]._scale;="" _backupscale:="" axis[key][i]._scale="axis[key][i].scale;" _getdetail:="" 'xaxis',="" 'yaxis'="" ];="" target="this._originalData[key[i]];" idx="" target)="" data="target[idx];" if="" (data="=" null)="" continue;="" length="data.length;" start="Math.floor(this._zoom.start" *="" length);="" end="Math.ceil(this._zoom.end" -="end"> 0 ? 1 : 0;
+                if (value[0] >= xStart && value[0] <= xEnd && value[1] >= yStart && value[1] <= yEnd) {
+                    newData.push(data[i]);
+                }
+            }
+            return newData;
+        },
+        _setScale: function () {
+            var needScale = this._zoom.start !== 0 || this._zoom.end !== 100 || this._zoom.start2 !== 0 || this._zoom.end2 !== 100;
+            var axis = {
+                xAxis: this.option.xAxis,
+                yAxis: this.option.yAxis
+            };
+            for (var key in axis) {
+                for (var i = 0, l = axis[key].length; i < l; i++) {
+                    axis[key][i].scale = needScale || axis[key][i]._scale;
+                }
+            }
+        },
+        _backupScale: function () {
+            var axis = {
+                xAxis: this.option.xAxis,
+                yAxis: this.option.yAxis
+            };
+            for (var key in axis) {
+                for (var i = 0, l = axis[key].length; i < l; i++) {
+                    axis[key][i]._scale = axis[key][i].scale;
+                }
+            }
+        },
+        _getDetail: function () {
+            var key = [
+                'xAxis',
+                'yAxis'
+            ];
+            for (var i = 0, l = key.length; i < l; i++) {
+                var target = this._originalData[key[i]];
+                for (var idx in target) {
+                    var data = target[idx];
+                    if (data == null) {
+                        continue;
+                    }
+                    var length = data.length;
+                    var start = Math.floor(this._zoom.start / 100 * length);
+                    var end = Math.ceil(this._zoom.end / 100 * length);
+                    end -= end > 0 ? 1 : 0;
                     return {
                         start: this.getDataFromOption(data[start]),
                         end: this.getDataFromOption(data[end])
@@ -18192,13 +19422,17 @@ define('zrender/zrender', [
             }
             var detailSize = shape._type == 'filler' ? this._handleSize : 0;
             if (this.zoomOption.orient == 'horizontal') {
-                if (shape.style.x + dx - detailSize <= this._location.x)="" {="" shape.style.x="this._location.x" +="" detailsize;="" }="" else="" if="" (shape.style.x="" dx="" shape.style.width="" detailsize="">= this._location.x + this._location.width) {
+                if (shape.style.x + dx - detailSize <= this._location.x) {
+                    shape.style.x = this._location.x + detailSize;
+                } else if (shape.style.x + dx + shape.style.width + detailSize >= this._location.x + this._location.width) {
                     shape.style.x = this._location.x + this._location.width - shape.style.width - detailSize;
                 } else {
                     shape.style.x += dx;
                 }
             } else {
-                if (shape.style.y + dy - detailSize <= this._location.y)="" {="" shape.style.y="this._location.y" +="" detailsize;="" }="" else="" if="" (shape.style.y="" dy="" shape.style.height="" detailsize="">= this._location.y + this._location.height) {
+                if (shape.style.y + dy - detailSize <= this._location.y) {
+                    shape.style.y = this._location.y + detailSize;
+                } else if (shape.style.y + dy + shape.style.height + detailSize >= this._location.y + this._location.height) {
                     shape.style.y = this._location.y + this._location.height - shape.style.height - detailSize;
                 } else {
                     shape.style.y += dy;
@@ -18794,7 +20028,69 @@ define('zrender/zrender', [
                     var height = this.grid.getHeight();
                     var lastX = this.grid.getX();
                     var curX;
-                    for (var i = 0; i <= datalength;="" i="" +="this._interval)" {="" if="" (intervalfunction="" &&="" !intervalfunction(i,="" data[i])="" <="" datalength)="" continue;="" }="" curx="i" datalength="" ?="" this.getcoordbyindex(i)="" optgap="" :="" this.grid.getxend();="" axshape="{" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" hoverable:="" false,="" style:="" x:="" lastx,="" y:="" y,="" width:="" -="" height:="" height,="" color:="" color[i="" this._interval="" %="" colorlength]="" };="" this.shapelist.push(new="" rectangleshape(axshape));="" lastx="curX;" else="" var="" x="this.grid.getX();" width="this.grid.getWidth();" lastyend="this.grid.getYend();" cury;="" for="" (var="" cury="i" this.grid.gety();="" x,="" cury,="" width,="" },="" refresh:="" function="" (newoption)="" this.option="this.reformOption(newOption);" this.option.axislabel.textstyle="this.getTextStyle(this.option.axisLabel.textStyle);" this.clear();="" this._buildshape();="" getgap:="" ()="" total="this.isHorizontal()" this.grid.getwidth()="" this.grid.getheight();="" (this.option.boundarygap)="" return="" (datalength=""> 1 ? dataLength - 1 : 1);
+                    for (var i = 0; i <= dataLength; i += this._interval) {
+                        if (intervalFunction && !intervalFunction(i, data[i]) && i < dataLength) {
+                            continue;
+                        }
+                        curX = i < dataLength ? this.getCoordByIndex(i) + optGap : this.grid.getXend();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: lastX,
+                                y: y,
+                                width: curX - lastX,
+                                height: height,
+                                color: color[i / this._interval % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastX = curX;
+                    }
+                } else {
+                    var x = this.grid.getX();
+                    var width = this.grid.getWidth();
+                    var lastYend = this.grid.getYend();
+                    var curY;
+                    for (var i = 0; i <= dataLength; i += this._interval) {
+                        if (intervalFunction && !intervalFunction(i, data[i]) && i < dataLength) {
+                            continue;
+                        }
+                        curY = i < dataLength ? this.getCoordByIndex(i) - optGap : this.grid.getY();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: x,
+                                y: curY,
+                                width: width,
+                                height: lastYend - curY,
+                                color: color[i / this._interval % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastYend = curY;
+                    }
+                }
+            }
+        },
+        refresh: function (newOption) {
+            if (newOption) {
+                this.option = this.reformOption(newOption);
+                this.option.axisLabel.textStyle = this.getTextStyle(this.option.axisLabel.textStyle);
+            }
+            this.clear();
+            this._buildShape();
+        },
+        getGap: function () {
+            var dataLength = this.option.data.length;
+            var total = this.isHorizontal() ? this.grid.getWidth() : this.grid.getHeight();
+            if (this.option.boundaryGap) {
+                return total / dataLength;
+            } else {
+                return total / (dataLength > 1 ? dataLength - 1 : 1);
             }
         },
         getCoord: function (value) {
@@ -19180,7 +20476,103 @@ define('zrender/zrender', [
                     var height = this.grid.getHeight();
                     var lastX = this.grid.getX();
                     var curX;
-                    for (var i = 0; i <= 0="" datalength;="" i++)="" {="" curx="i" <="" datalength="" ?="" this.getcoord(data[i])="" :="" this.grid.getxend();="" axshape="{" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" hoverable:="" false,="" style:="" x:="" lastx,="" y:="" y,="" width:="" -="" height:="" height,="" color:="" color[i="" %="" colorlength]="" }="" };="" this.shapelist.push(new="" rectangleshape(axshape));="" lastx="curX;" else="" var="" x="this.grid.getX();" width="this.grid.getWidth();" lastyend="this.grid.getYend();" cury;="" for="" (var="" i="0;" cury="i" this.grid.gety();="" x,="" cury,="" width,="" },="" _calculatevalue:="" function="" ()="" if="" (isnan(this.option.min="" 0)="" ||="" isnan(this.option.max="" 0))="" data="{};" xidx;="" yidx;="" legend="this.component.legend;" l="this.series.length;" l;="" (this.series[i].type="" !="ecConfig.CHART_TYPE_LINE" &&="" this.series[i].type="" continue;="" (legend="" !legend.isselected(this.series[i].name))="" xidx="this.series[i].xAxisIndex" 0;="" yidx="this.series[i].yAxisIndex" (this.option.xaxisindex="" this.option.yaxisindex="" this._calculsum(data,="" i);="" oridata;="" in="" data)="" oridata="data[i];" j="0," k="oriData.length;" k;="" j++)="" (!isnan(oridata[j]))="" this._hasdata="true;" this._min="oriData[j];" this._max="oriData[j];" break;="" (this._hasdata)="" oridata[j]);="" boundarygap="this.option.type" 'log'="" this.option.boundarygap="" [="" 0,="" ];="" gap="Math.abs(this._max" this._min);="" math.abs(gap="" *="" boundarygap[0])="" this.option.min="" +="" boundarygap[1])="" this.option.max="" (this._min="==" this._max)="" (this._max="=="> 0) {
+                    for (var i = 0; i <= dataLength; i++) {
+                        curX = i < dataLength ? this.getCoord(data[i]) : this.grid.getXend();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: lastX,
+                                y: y,
+                                width: curX - lastX,
+                                height: height,
+                                color: color[i % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastX = curX;
+                    }
+                } else {
+                    var x = this.grid.getX();
+                    var width = this.grid.getWidth();
+                    var lastYend = this.grid.getYend();
+                    var curY;
+                    for (var i = 0; i <= dataLength; i++) {
+                        curY = i < dataLength ? this.getCoord(data[i]) : this.grid.getY();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: x,
+                                y: curY,
+                                width: width,
+                                height: lastYend - curY,
+                                color: color[i % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastYend = curY;
+                    }
+                }
+            }
+        },
+        _calculateValue: function () {
+            if (isNaN(this.option.min - 0) || isNaN(this.option.max - 0)) {
+                var data = {};
+                var xIdx;
+                var yIdx;
+                var legend = this.component.legend;
+                for (var i = 0, l = this.series.length; i < l; i++) {
+                    if (this.series[i].type != ecConfig.CHART_TYPE_LINE && this.series[i].type != ecConfig.CHART_TYPE_BAR && this.series[i].type != ecConfig.CHART_TYPE_SCATTER && this.series[i].type != ecConfig.CHART_TYPE_K && this.series[i].type != ecConfig.CHART_TYPE_EVENTRIVER) {
+                        continue;
+                    }
+                    if (legend && !legend.isSelected(this.series[i].name)) {
+                        continue;
+                    }
+                    xIdx = this.series[i].xAxisIndex || 0;
+                    yIdx = this.series[i].yAxisIndex || 0;
+                    if (this.option.xAxisIndex != xIdx && this.option.yAxisIndex != yIdx) {
+                        continue;
+                    }
+                    this._calculSum(data, i);
+                }
+                var oriData;
+                for (var i in data) {
+                    oriData = data[i];
+                    for (var j = 0, k = oriData.length; j < k; j++) {
+                        if (!isNaN(oriData[j])) {
+                            this._hasData = true;
+                            this._min = oriData[j];
+                            this._max = oriData[j];
+                            break;
+                        }
+                    }
+                    if (this._hasData) {
+                        break;
+                    }
+                }
+                for (var i in data) {
+                    oriData = data[i];
+                    for (var j = 0, k = oriData.length; j < k; j++) {
+                        if (!isNaN(oriData[j])) {
+                            this._min = Math.min(this._min, oriData[j]);
+                            this._max = Math.max(this._max, oriData[j]);
+                        }
+                    }
+                }
+                var boundaryGap = this.option.type !== 'log' ? this.option.boundaryGap : [
+                    0,
+                    0
+                ];
+                var gap = Math.abs(this._max - this._min);
+                this._min = isNaN(this.option.min - 0) ? this._min - Math.abs(gap * boundaryGap[0]) : this.option.min - 0;
+                this._max = isNaN(this.option.max - 0) ? this._max + Math.abs(gap * boundaryGap[1]) : this.option.max - 0;
+                if (this._min === this._max) {
+                    if (this._max === 0) {
+                        this._max = 1;
+                    } else if (this._max > 0) {
                         this._min = this._max / this.option.splitNumber != null ? this.option.splitNumber : 5;
                     } else {
                         this._max = this._max / this.option.splitNumber != null ? this.option.splitNumber : 5;
@@ -19279,7 +20671,56 @@ define('zrender/zrender', [
             if (!scale && this._min >= 0 && this._max >= 0) {
                 this._min = 0;
             }
-            if (!scale && this._min <= 0="" &&="" this._max="" <="0)" {="" }="" var="" stepopt="smartSteps(this._min," this._max,="" splitnumber);="" splitnumber="splitNumber" !="null" ?="" :="" stepopt.secs;="" this._min="stepOpt.min;" this._valuelist="stepOpt.pnts;" this._reformlabeldata();="" },="" _reformtimevalue:="" function="" ()="" this.option.splitnumber="" 5;="" curvalue="ecDate.getAutoFormatter(this._min," formatter="curValue.formatter;" gapvalue="curValue.gapValue;" startgap;="" switch="" (formatter)="" case="" 'week':="" startgap="ecDate.nextMonday(this._min);" break;="" 'month':="" 1);="" 'quarter':="" 'half-year':="" 'year':="" default:="" if="" (gapvalue="" *="" 2)="" gapvalue)="" +="" 1)="" gapvalue;="" else="" -="" -gapvalue);="" startgap.sethours(math.round(startgap.gethours()="" 6)="" 6);="" startgap.setminutes(0);="" startgap.setseconds(0);="" (startgap="" while="" (splitnumber--="">= 0) {
+            if (!scale && this._min <= 0 && this._max <= 0) {
+                this._max = 0;
+            }
+            var stepOpt = smartSteps(this._min, this._max, splitNumber);
+            splitNumber = splitNumber != null ? splitNumber : stepOpt.secs;
+            this._min = stepOpt.min;
+            this._max = stepOpt.max;
+            this._valueList = stepOpt.pnts;
+            this._reformLabelData();
+        },
+        _reformTimeValue: function () {
+            var splitNumber = this.option.splitNumber != null ? this.option.splitNumber : 5;
+            var curValue = ecDate.getAutoFormatter(this._min, this._max, splitNumber);
+            var formatter = curValue.formatter;
+            var gapValue = curValue.gapValue;
+            this._valueList = [ecDate.getNewDate(this._min)];
+            var startGap;
+            switch (formatter) {
+            case 'week':
+                startGap = ecDate.nextMonday(this._min);
+                break;
+            case 'month':
+                startGap = ecDate.nextNthOnMonth(this._min, 1);
+                break;
+            case 'quarter':
+                startGap = ecDate.nextNthOnQuarterYear(this._min, 1);
+                break;
+            case 'half-year':
+                startGap = ecDate.nextNthOnHalfYear(this._min, 1);
+                break;
+            case 'year':
+                startGap = ecDate.nextNthOnYear(this._min, 1);
+                break;
+            default:
+                if (gapValue <= 3600000 * 2) {
+                    startGap = (Math.floor(this._min / gapValue) + 1) * gapValue;
+                } else {
+                    startGap = ecDate.getNewDate(this._min - -gapValue);
+                    startGap.setHours(Math.round(startGap.getHours() / 6) * 6);
+                    startGap.setMinutes(0);
+                    startGap.setSeconds(0);
+                }
+                break;
+            }
+            if (startGap - this._min < gapValue / 2) {
+                startGap -= -gapValue;
+            }
+            curValue = ecDate.getNewDate(startGap);
+            splitNumber *= 1.5;
+            while (splitNumber-- >= 0) {
                 if (formatter == 'month' || formatter == 'quarter' || formatter == 'half-year' || formatter == 'year') {
                     curValue.setDate(1);
                 }
@@ -19301,7 +20742,69 @@ define('zrender/zrender', [
             var splitNumber = this.option.splitNumber != null ? this.option.splitNumber : 5;
             var splitGap = (this._max - this._min) / splitNumber;
             this._valueList = [];
-            for (var i = 0; i <= splitnumber;="" i++)="" {="" this._valuelist.push(accmath.accadd(this._min,="" accmath.accmul(splitgap,="" i)));="" }="" this._reformlabeldata();="" },="" _reformlogvalue:="" function="" ()="" var="" thisoption="this.option;" result="require('../util/smartLogSteps')({" datamin:="" this._min,="" datamax:="" this._max,="" logpositive:="" thisoption.logpositive,="" loglabelbase:="" thisoption.loglabelbase,="" splitnumber:="" thisoption.splitnumber="" });="" this._min="result.dataMin;" this._max="result.dataMax;" this._valuelist="result.tickList;" this._datamappingmethods="result.dataMappingMethods;" this._reformlabeldata(result.labelformatter);="" _reformlabeldata:="" (innerformatter)="" this._valuelabel="[];" formatter="this.option.axisLabel.formatter;" if="" (formatter)="" for="" (var="" i="0," l="this._valueList.length;" <="" l;="" (typeof="" 'function')="" this._valuelabel.push(innerformatter="" ?="" formatter.call(this.mychart,="" this._valuelist[i],="" innerformatter)="" :="" this._valuelist[i]));="" else="" 'string')="" ecdate.format(formatter,="" this._valuelist[i])="" formatter.replace('{value}',="" innerformatter(this._valuelist[i])="" this.numaddcommas(this._valuelist[i]));="" getextremum:="" this._calculatevalue();="" datamappingmethods="this._dataMappingMethods;" return="" min:="" max:="" datamappingmethods:="" zrutil.merge({},="" datamappingmethods)="" null="" };="" refresh:="" (newoption,="" newseries)="" (newoption)="" this.option="this.reformOption(newOption);" this.option.axislabel.textstyle="zrUtil.merge(this.option.axisLabel.textStyle" ||="" {},="" this.ectheme.textstyle);="" this.series="newSeries;" (this.zr)="" this.clear();="" this._buildshape();="" getcoord:="" (value)="" (this._datamappingmethods)="" value="this._dataMappingMethods.value2Coord(value);" value;=""> this._max ? this._max : value;
+            for (var i = 0; i <= splitNumber; i++) {
+                this._valueList.push(accMath.accAdd(this._min, accMath.accMul(splitGap, i)));
+            }
+            this._reformLabelData();
+        },
+        _reformLogValue: function () {
+            var thisOption = this.option;
+            var result = require('../util/smartLogSteps')({
+                dataMin: this._min,
+                dataMax: this._max,
+                logPositive: thisOption.logPositive,
+                logLabelBase: thisOption.logLabelBase,
+                splitNumber: thisOption.splitNumber
+            });
+            this._min = result.dataMin;
+            this._max = result.dataMax;
+            this._valueList = result.tickList;
+            this._dataMappingMethods = result.dataMappingMethods;
+            this._reformLabelData(result.labelFormatter);
+        },
+        _reformLabelData: function (innerFormatter) {
+            this._valueLabel = [];
+            var formatter = this.option.axisLabel.formatter;
+            if (formatter) {
+                for (var i = 0, l = this._valueList.length; i < l; i++) {
+                    if (typeof formatter === 'function') {
+                        this._valueLabel.push(innerFormatter ? formatter.call(this.myChart, this._valueList[i], innerFormatter) : formatter.call(this.myChart, this._valueList[i]));
+                    } else if (typeof formatter === 'string') {
+                        this._valueLabel.push(innerFormatter ? ecDate.format(formatter, this._valueList[i]) : formatter.replace('{value}', this._valueList[i]));
+                    }
+                }
+            } else {
+                for (var i = 0, l = this._valueList.length; i < l; i++) {
+                    this._valueLabel.push(innerFormatter ? innerFormatter(this._valueList[i]) : this.numAddCommas(this._valueList[i]));
+                }
+            }
+        },
+        getExtremum: function () {
+            this._calculateValue();
+            var dataMappingMethods = this._dataMappingMethods;
+            return {
+                min: this._min,
+                max: this._max,
+                dataMappingMethods: dataMappingMethods ? zrUtil.merge({}, dataMappingMethods) : null
+            };
+        },
+        refresh: function (newOption, newSeries) {
+            if (newOption) {
+                this.option = this.reformOption(newOption);
+                this.option.axisLabel.textStyle = zrUtil.merge(this.option.axisLabel.textStyle || {}, this.ecTheme.textStyle);
+                this.series = newSeries;
+            }
+            if (this.zr) {
+                this.clear();
+                this._buildShape();
+            }
+        },
+        getCoord: function (value) {
+            if (this._dataMappingMethods) {
+                value = this._dataMappingMethods.value2Coord(value);
+            }
+            value = value < this._min ? this._min : value;
+            value = value > this._max ? this._max : value;
             var result;
             if (!this.isHorizontal()) {
                 result = this.grid.getYend() - (value - this._min) / (this._max - this._min) * this.grid.getHeight();
@@ -19437,7 +20940,136 @@ define('zrender/zrender', [
         for (var i = 0, l = _timeGap.length; i < l; i++) {
             curValue = _timeGap[i].value;
             totalGap = Math.ceil(max / curValue) * curValue - Math.floor(min / curValue) * curValue;
-            if (Math.round(totalGap / curValue) <= 6="" 8="" 10="" 24="" 50="" splitnumber="" *="" 1.2)="" {="" formatter="_timeGap[i].formatter;" gapvalue="_timeGap[i].value;" break;="" }="" if="" (formatter="=" null)="" ;="" curvalue="3600000" 367;="" totalgap="Math.ceil(max" curvalue)="" -="" math.floor(min="" curvalue;="" (splitnumber="" 1)="" return="" formatter:="" formatter,="" gapvalue:="" };="" function="" s2d(v)="" v="" <="" ?="" '0'="" +="" :="" v;="" format(formatter,="" value)="" 'week'="" ||="" 'month'="" 'quarter'="" 'half-year'="" 'year')="" var="" date="getNewDate(value);" y="date.getFullYear();" m="date.getMonth()" 1;="" d="date.getDate();" h="date.getHours();" s="date.getSeconds();" s2d(m));="" y);="" %="" 100);="" s2d(d));="" d);="" s2d(h));="" h);="" m);="" s2d(s));="" s);="" formatter;="" nextmonday(value)="" value="getNewDate(value);" value.setdate(value.getdate()="" value.getday());="" value;="" nextnthpernmonth(value,="" nth,="" nmon)="" value.setmonth(math.ceil((value.getmonth()="" nmon);="" value.setdate(nth);="" nextnthonmonth(value,="" nth)="" 1);="" nextnthonquarteryear(value,="" 3);="" nextnthonhalfyear(value,="" 6);="" nextnthonyear(value,="" 12);="" getnewdate(value)="" instanceof="" new="" date(typeof="" 'string'="" value.replace(="" g,="" '="" ')="" value);="" getautoformatter:="" getautoformatter,="" getnewdate:="" getnewdate,="" format:="" format,="" nextmonday:="" nextmonday,="" nextnthpernmonth:="" nextnthpernmonth,="" nextnthonmonth:="" nextnthonmonth,="" nextnthonquarteryear:="" nextnthonquarteryear,="" nextnthonhalfyear:="" nextnthonhalfyear,="" nextnthonyear:="" nextnthonyear="" });define('echarts="" util="" smartsteps',="" [],="" ()="" mysteps="[" 10,="" 20,="" 25,="" ];="" mysections="[" 4,="" 5,="" custopts;="" custsteps;="" custsecs;="" minlocked;="" maxlocked;="" mt="Math;" math_round="MT.round;" math_floor="MT.floor;" math_ceil="MT.ceil;" math_abs="MT.abs;" math_log(n)="" mt.log(math_abs(n))="" mt.ln10;="" math_pow(n)="" mt.pow(10,="" n);="" math_isint(n)="" n="==" math_floor(n);="" smartsteps(min,="" max,="" section,="" opts)="" custopts="opts" {};="" custsteps="custOpts.steps" mysteps;="" custsecs="custOpts.secs" mysections;="" section="MATH_ROUND(+section" 0)="" 99;="" min="+min" 0;="" max="+max" minlocked="maxLocked" =="" ('min'="" in="" custopts)="" ('max'="" maxlocked="1;" (min=""> max) {
+            if (Math.round(totalGap / curValue) <= splitNumber * 1.2) {
+                formatter = _timeGap[i].formatter;
+                gapValue = _timeGap[i].value;
+                break;
+            }
+        }
+        if (formatter == null) {
+            formatter = 'year';
+            curValue = 3600000 * 24 * 367;
+            totalGap = Math.ceil(max / curValue) * curValue - Math.floor(min / curValue) * curValue;
+            gapValue = Math.round(totalGap / (splitNumber - 1) / curValue) * curValue;
+        }
+        return {
+            formatter: formatter,
+            gapValue: gapValue
+        };
+    }
+    function s2d(v) {
+        return v < 10 ? '0' + v : v;
+    }
+    function format(formatter, value) {
+        if (formatter == 'week' || formatter == 'month' || formatter == 'quarter' || formatter == 'half-year' || formatter == 'year') {
+            formatter = 'MM - dd\nyyyy';
+        }
+        var date = getNewDate(value);
+        var y = date.getFullYear();
+        var M = date.getMonth() + 1;
+        var d = date.getDate();
+        var h = date.getHours();
+        var m = date.getMinutes();
+        var s = date.getSeconds();
+        formatter = formatter.replace('MM', s2d(M));
+        formatter = formatter.toLowerCase();
+        formatter = formatter.replace('yyyy', y);
+        formatter = formatter.replace('yy', y % 100);
+        formatter = formatter.replace('dd', s2d(d));
+        formatter = formatter.replace('d', d);
+        formatter = formatter.replace('hh', s2d(h));
+        formatter = formatter.replace('h', h);
+        formatter = formatter.replace('mm', s2d(m));
+        formatter = formatter.replace('m', m);
+        formatter = formatter.replace('ss', s2d(s));
+        formatter = formatter.replace('s', s);
+        return formatter;
+    }
+    function nextMonday(value) {
+        value = getNewDate(value);
+        value.setDate(value.getDate() + 8 - value.getDay());
+        return value;
+    }
+    function nextNthPerNmonth(value, nth, nmon) {
+        value = getNewDate(value);
+        value.setMonth(Math.ceil((value.getMonth() + 1) / nmon) * nmon);
+        value.setDate(nth);
+        return value;
+    }
+    function nextNthOnMonth(value, nth) {
+        return nextNthPerNmonth(value, nth, 1);
+    }
+    function nextNthOnQuarterYear(value, nth) {
+        return nextNthPerNmonth(value, nth, 3);
+    }
+    function nextNthOnHalfYear(value, nth) {
+        return nextNthPerNmonth(value, nth, 6);
+    }
+    function nextNthOnYear(value, nth) {
+        return nextNthPerNmonth(value, nth, 12);
+    }
+    function getNewDate(value) {
+        return value instanceof Date ? value : new Date(typeof value == 'string' ? value.replace(/-/g, '/') : value);
+    }
+    return {
+        getAutoFormatter: getAutoFormatter,
+        getNewDate: getNewDate,
+        format: format,
+        nextMonday: nextMonday,
+        nextNthPerNmonth: nextNthPerNmonth,
+        nextNthOnMonth: nextNthOnMonth,
+        nextNthOnQuarterYear: nextNthOnQuarterYear,
+        nextNthOnHalfYear: nextNthOnHalfYear,
+        nextNthOnYear: nextNthOnYear
+    };
+});define('echarts/util/smartSteps', [], function () {
+    var mySteps = [
+        10,
+        20,
+        25,
+        50
+    ];
+    var mySections = [
+        4,
+        5,
+        6
+    ];
+    var custOpts;
+    var custSteps;
+    var custSecs;
+    var minLocked;
+    var maxLocked;
+    var MT = Math;
+    var MATH_ROUND = MT.round;
+    var MATH_FLOOR = MT.floor;
+    var MATH_CEIL = MT.ceil;
+    var MATH_ABS = MT.abs;
+    function MATH_LOG(n) {
+        return MT.log(MATH_ABS(n)) / MT.LN10;
+    }
+    function MATH_POW(n) {
+        return MT.pow(10, n);
+    }
+    function MATH_ISINT(n) {
+        return n === MATH_FLOOR(n);
+    }
+    function smartSteps(min, max, section, opts) {
+        custOpts = opts || {};
+        custSteps = custOpts.steps || mySteps;
+        custSecs = custOpts.secs || mySections;
+        section = MATH_ROUND(+section || 0) % 99;
+        min = +min || 0;
+        max = +max || 0;
+        minLocked = maxLocked = 0;
+        if ('min' in custOpts) {
+            min = +custOpts.min || 0;
+            minLocked = 1;
+        }
+        if ('max' in custOpts) {
+            max = +custOpts.max || 0;
+            maxLocked = 1;
+        }
+        if (min > max) {
             max = [
                 min,
                 min = max
@@ -19708,7 +21340,7 @@ define('zrender/zrender', [
         if (min >= 0 && newMin < 0) {
             newMax -= newMin;
             newMin = 0;
-        } else if (max <= 0="" &&="" newmax=""> 0) {
+        } else if (max <= 0 && newMax > 0) {
             newMin -= newMax;
             newMax = 0;
         }
@@ -19931,7 +21563,7 @@ define('zrender/zrender', [
         if (logLabelMode === 'exponent') {
             baseAnalysis();
         } else {
-            !(spanExpon <= min_base_10_split_number="" &&="" splitnumber=""> MIN_BASE_10_SPLIT_NUMBER) ? baseAnalysis() : detailAnalysis();
+            !(spanExpon <= MIN_BASE_10_SPLIT_NUMBER && splitNumber > MIN_BASE_10_SPLIT_NUMBER) ? baseAnalysis() : detailAnalysis();
         }
         function baseAnalysis() {
             if (spanExpon < splitNumber) {
@@ -19946,11 +21578,99 @@ define('zrender/zrender', [
                 minExponAdjust -= 1;
             }
             logMappingOffset = -minExponAdjust * lnBase;
-            for (var n = minExponAdjust; n - stepExpon <= maxdatalog;="" n="" +="stepExpon)" {="" ticklist.push(mathpow(loglabelbase,="" n));="" }="" function="" detailanalysis()="" var="" mindecimal="toDecimalFrom4Hex(minExpon," 0);="" enddecimal="minDecimal" 2;="" while="" (mindecimal="" <="" &&="" toh(mindecimal="" 1)="" tok(mindecimal="" *="" ln2d10="" mindatalog)="" mindecimal++;="" maxdecimal="toDecimalFrom4Hex(maxExpon," -="" (maxdecimal=""> endDecimal && toH(maxDecimal - 1) + toK(maxDecimal - 1) * LN2D10 > maxDataLog) {
+            for (var n = minExponAdjust; n - stepExpon <= maxDataLog; n += stepExpon) {
+                tickList.push(mathPow(logLabelBase, n));
+            }
+        }
+        function detailAnalysis() {
+            var minDecimal = toDecimalFrom4Hex(minExpon, 0);
+            var endDecimal = minDecimal + 2;
+            while (minDecimal < endDecimal && toH(minDecimal + 1) + toK(minDecimal + 1) * LN2D10 < minDataLog) {
+                minDecimal++;
+            }
+            var maxDecimal = toDecimalFrom4Hex(maxExpon, 0);
+            var endDecimal = maxDecimal - 2;
+            while (maxDecimal > endDecimal && toH(maxDecimal - 1) + toK(maxDecimal - 1) * LN2D10 > maxDataLog) {
                 maxDecimal--;
             }
             logMappingOffset = -(toH(minDecimal) * LN10 + toK(minDecimal) * LN2);
-            for (var i = minDecimal; i <= 1="" 3="" maxdecimal;="" i++)="" {="" var="" h="toH(i);" k="toK(i);" ticklist.push(mathpow(10,="" h)="" *="" mathpow(2,="" k));="" }="" function="" todecimalfrom4hex(h,="" k)="" return="" +="" k;="" tok(decimal)="" decimal="" -="" toh(decimal)="" 3;="" mathfloor(fixaccurate(decimal="" 3));="" makeresult()="" resultticklist="[];" for="" (var="" i="0," len="tickList.length;" <="" len;="" resultticklist[i]="(logPositive" ?="" :="" -1)="" ticklist[i];="" !logpositive="" &&="" resultticklist.reverse();="" datamappingmethods="makeDataMappingMethods();" value2coord="dataMappingMethods.value2Coord;" newdatamin="value2Coord(resultTickList[0]);" newdatamax="value2Coord(resultTickList[resultTickList.length" 1]);="" if="" (newdatamin="==" newdatamax)="" datamin:="" newdatamin,="" datamax:="" newdatamax,="" ticklist:="" resultticklist,="" logpositive:="" logpositive,="" labelformatter:="" makelabelformatter(),="" datamappingmethods:="" };="" makelabelformatter()="" (loglabelmode="==" 'exponent')="" myloglabelbase="logLabelBase;" mylnbase="lnBase;" (value)="" (!isfinite(parsefloat(value)))="" '';="" sign="" ;="" (value="" 0)="" value="-value;" makesuperscriptexponent(mathlog(value)="" mylnbase);="" else="" number.addcommas(formatnumber(value));="" makedatamappingmethods()="" mylogpositive="logPositive;" mylogmappingoffset="logMappingOffset;" value2coord:="" (x)="" (x="=" null="" ||="" isnan(x)="" !isfinite(x))="" x;="" x="parseFloat(x);" (!isfinite(x))="" (mylogpositive="" epsilon)="" (!mylogpositive=""> -EPSILON) {
+            for (var i = minDecimal; i <= maxDecimal; i++) {
+                var h = toH(i);
+                var k = toK(i);
+                tickList.push(mathPow(10, h) * mathPow(2, k));
+            }
+        }
+        function toDecimalFrom4Hex(h, k) {
+            return h * 3 + k;
+        }
+        function toK(decimal) {
+            return decimal - toH(decimal) * 3;
+        }
+        function toH(decimal) {
+            return mathFloor(fixAccurate(decimal / 3));
+        }
+    }
+    function makeResult() {
+        var resultTickList = [];
+        for (var i = 0, len = tickList.length; i < len; i++) {
+            resultTickList[i] = (logPositive ? 1 : -1) * tickList[i];
+        }
+        !logPositive && resultTickList.reverse();
+        var dataMappingMethods = makeDataMappingMethods();
+        var value2Coord = dataMappingMethods.value2Coord;
+        var newDataMin = value2Coord(resultTickList[0]);
+        var newDataMax = value2Coord(resultTickList[resultTickList.length - 1]);
+        if (newDataMin === newDataMax) {
+            newDataMin -= 1;
+            newDataMax += 1;
+        }
+        return {
+            dataMin: newDataMin,
+            dataMax: newDataMax,
+            tickList: resultTickList,
+            logPositive: logPositive,
+            labelFormatter: makeLabelFormatter(),
+            dataMappingMethods: dataMappingMethods
+        };
+    }
+    function makeLabelFormatter() {
+        if (logLabelMode === 'exponent') {
+            var myLogLabelBase = logLabelBase;
+            var myLnBase = lnBase;
+            return function (value) {
+                if (!isFinite(parseFloat(value))) {
+                    return '';
+                }
+                var sign = '';
+                if (value < 0) {
+                    value = -value;
+                    sign = '-';
+                }
+                return sign + myLogLabelBase + makeSuperscriptExponent(mathLog(value) / myLnBase);
+            };
+        } else {
+            return function (value) {
+                if (!isFinite(parseFloat(value))) {
+                    return '';
+                }
+                return number.addCommas(formatNumber(value));
+            };
+        }
+    }
+    function makeDataMappingMethods() {
+        var myLogPositive = logPositive;
+        var myLogMappingOffset = logMappingOffset;
+        return {
+            value2Coord: function (x) {
+                if (x == null || isNaN(x) || !isFinite(x)) {
+                    return x;
+                }
+                x = parseFloat(x);
+                if (!isFinite(x)) {
+                    x = EPSILON;
+                } else if (myLogPositive && x < EPSILON) {
+                    x = EPSILON;
+                } else if (!myLogPositive && x > -EPSILON) {
                     x = -EPSILON;
                 }
                 x = mathAbs(x);
@@ -20512,7 +22232,144 @@ define('zrender/zrender', [
             for (var i = 0; i < total; i++) {
                 var idx0 = Math.floor(len / total * i);
                 var idx1 = Math.min(Math.floor(len / total * (i + 1)), len);
-                if (idx1 <= 0="" idx0)="" {="" continue;="" }="" for="" (var="" j="idx0;" <="" idx1;="" j++)="" windowdata[j="" -="" idx0]="orient" =="=" 'horizontal'="" ?="" singlepl[j][1]="" :="" singlepl[j][0];="" windowdata.length="idx1" idx0;="" var="" filteredval="filter(windowData);" nearestidx="-1;" mindist="Infinity;" val="orient" dist="Math.abs(val" filteredval);="" if="" (dist="" mindist)="" newitem="singlePL[nearestIdx].slice();" (orient="==" 'horizontal')="" newitem[1]="filteredVal;" else="" newitem[0]="filteredVal;" newlist.push(newitem);="" return="" newlist;="" },="" _getsmooth:="" function="" (issmooth)="" 0.3;="" 0;="" _getcalculableitem:="" (seriesindex,="" dataindex,="" name,="" x,="" y,="" orient)="" series="this.series;" color="series[seriesIndex].calculableHolderColor" ||="" this.ectheme.calculableholdercolor="" ecconfig.calculableholdercolor;="" itemshape="this._getSymbol(seriesIndex," orient);="" itemshape.style.color="color;" itemshape.style.strokecolor="color;" itemshape.rotation="[" 0,="" ];="" itemshape.hoverable="false;" itemshape.draggable="false;" itemshape.style.text="undefined;" itemshape;="" _getsymbol:="" serie="series[seriesIndex];" data="serie.data[dataIndex];" seriesindex,="" data,="" this._sindex2shapemap[seriesindex],="" this._sindex2colormap[seriesindex],="" '#fff',="" orient="==" 'vertical'="" 'vertical');="" itemshape.zlevel="serie.zlevel;" itemshape.z="serie.z" +="" 1;="" (this.deepquery([="" serie,="" this.option="" ],="" 'calculable'))="" this.setcalculable(itemshape);="" getmarkcoord:="" mpdata)="" xmarkmap="this.xMarkMap[seriesIndex];" xaxis="this.component.xAxis.getAxis(serie.xAxisIndex);" yaxis="this.component.yAxis.getAxis(serie.yAxisIndex);" (mpdata.type="" &&="" 'max'="" mpdata.type="==" 'min'="" 'average'))="" valueindex="mpData.valueIndex" !="null" mpdata.valueindex="" xmarkmap.maxx0="" '1'="" '';="" [="" xmarkmap[mpdata.type="" 'x'="" valueindex],="" 'y'="" 'line'="" valueindex]="" typeof="" mpdata.xaxis="" xaxis.getcoordbyindex="" xaxis.getcoordbyindex(mpdata.xaxis="" 0)="" xaxis.getcoord(mpdata.xaxis="" 0),="" mpdata.yaxis="" yaxis.getcoordbyindex="" yaxis.getcoordbyindex(mpdata.yaxis="" yaxis.getcoord(mpdata.yaxis="" refresh:="" (newoption)="" this.series="newOption.series;" this.backupshapelist();="" this._buildshape();="" ontooltiphover:="" (param,="" tipshape)="" seriesindex="param.seriesIndex;" dataindex="param.dataIndex;" seriespl;="" singlepl;="" len="seriesIndex.length;" while="" (len--)="" seriespl="this.finalPLMap[seriesIndex[len]];" (seriespl)="" i="0," l="seriesPL.length;" l;="" i++)="" singlepl="seriesPL[i];" k="singlePL.length;" k;="" (dataindex="==" singlepl[j][2])="" tipshape.push(this._getsymbol(seriesindex[len],="" singlepl[j][2],="" singlepl[j][3],="" singlepl[j][0],="" singlepl[j][1],="" 'horizontal'));="" adddataanimation:="" (params,="" done)="" animap="{};" animap[params[i][0]]="params[i];" x;="" dx;="" y;="" dy;="" seriesindex;="" pointlist;="" ishorizontal;="" anicount="0;" animationdone()="" anicount--;="" (anicount="==" done="" done();="" animationduring(target)="" target.style.controlpointlist="null;">= 0; i--) {
+                if (idx1 <= idx0) {
+                    continue;
+                }
+                for (var j = idx0; j < idx1; j++) {
+                    windowData[j - idx0] = orient === 'horizontal' ? singlePL[j][1] : singlePL[j][0];
+                }
+                windowData.length = idx1 - idx0;
+                var filteredVal = filter(windowData);
+                var nearestIdx = -1;
+                var minDist = Infinity;
+                for (var j = idx0; j < idx1; j++) {
+                    var val = orient === 'horizontal' ? singlePL[j][1] : singlePL[j][0];
+                    var dist = Math.abs(val - filteredVal);
+                    if (dist < minDist) {
+                        nearestIdx = j;
+                        minDist = dist;
+                    }
+                }
+                var newItem = singlePL[nearestIdx].slice();
+                if (orient === 'horizontal') {
+                    newItem[1] = filteredVal;
+                } else {
+                    newItem[0] = filteredVal;
+                }
+                newList.push(newItem);
+            }
+            return newList;
+        },
+        _getSmooth: function (isSmooth) {
+            if (isSmooth) {
+                return 0.3;
+            } else {
+                return 0;
+            }
+        },
+        _getCalculableItem: function (seriesIndex, dataIndex, name, x, y, orient) {
+            var series = this.series;
+            var color = series[seriesIndex].calculableHolderColor || this.ecTheme.calculableHolderColor || ecConfig.calculableHolderColor;
+            var itemShape = this._getSymbol(seriesIndex, dataIndex, name, x, y, orient);
+            itemShape.style.color = color;
+            itemShape.style.strokeColor = color;
+            itemShape.rotation = [
+                0,
+                0
+            ];
+            itemShape.hoverable = false;
+            itemShape.draggable = false;
+            itemShape.style.text = undefined;
+            return itemShape;
+        },
+        _getSymbol: function (seriesIndex, dataIndex, name, x, y, orient) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var itemShape = this.getSymbolShape(serie, seriesIndex, data, dataIndex, name, x, y, this._sIndex2ShapeMap[seriesIndex], this._sIndex2ColorMap[seriesIndex], '#fff', orient === 'vertical' ? 'horizontal' : 'vertical');
+            itemShape.zlevel = serie.zlevel;
+            itemShape.z = serie.z + 1;
+            if (this.deepQuery([
+                    data,
+                    serie,
+                    this.option
+                ], 'calculable')) {
+                this.setCalculable(itemShape);
+                itemShape.draggable = true;
+            }
+            return itemShape;
+        },
+        getMarkCoord: function (seriesIndex, mpData) {
+            var serie = this.series[seriesIndex];
+            var xMarkMap = this.xMarkMap[seriesIndex];
+            var xAxis = this.component.xAxis.getAxis(serie.xAxisIndex);
+            var yAxis = this.component.yAxis.getAxis(serie.yAxisIndex);
+            if (mpData.type && (mpData.type === 'max' || mpData.type === 'min' || mpData.type === 'average')) {
+                var valueIndex = mpData.valueIndex != null ? mpData.valueIndex : xMarkMap.maxX0 != null ? '1' : '';
+                return [
+                    xMarkMap[mpData.type + 'X' + valueIndex],
+                    xMarkMap[mpData.type + 'Y' + valueIndex],
+                    xMarkMap[mpData.type + 'Line' + valueIndex],
+                    xMarkMap[mpData.type + valueIndex]
+                ];
+            }
+            return [
+                typeof mpData.xAxis != 'string' && xAxis.getCoordByIndex ? xAxis.getCoordByIndex(mpData.xAxis || 0) : xAxis.getCoord(mpData.xAxis || 0),
+                typeof mpData.yAxis != 'string' && yAxis.getCoordByIndex ? yAxis.getCoordByIndex(mpData.yAxis || 0) : yAxis.getCoord(mpData.yAxis || 0)
+            ];
+        },
+        refresh: function (newOption) {
+            if (newOption) {
+                this.option = newOption;
+                this.series = newOption.series;
+            }
+            this.backupShapeList();
+            this._buildShape();
+        },
+        ontooltipHover: function (param, tipShape) {
+            var seriesIndex = param.seriesIndex;
+            var dataIndex = param.dataIndex;
+            var seriesPL;
+            var singlePL;
+            var len = seriesIndex.length;
+            while (len--) {
+                seriesPL = this.finalPLMap[seriesIndex[len]];
+                if (seriesPL) {
+                    for (var i = 0, l = seriesPL.length; i < l; i++) {
+                        singlePL = seriesPL[i];
+                        for (var j = 0, k = singlePL.length; j < k; j++) {
+                            if (dataIndex === singlePL[j][2]) {
+                                tipShape.push(this._getSymbol(seriesIndex[len], singlePL[j][2], singlePL[j][3], singlePL[j][0], singlePL[j][1], 'horizontal'));
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        addDataAnimation: function (params, done) {
+            var series = this.series;
+            var aniMap = {};
+            for (var i = 0, l = params.length; i < l; i++) {
+                aniMap[params[i][0]] = params[i];
+            }
+            var x;
+            var dx;
+            var y;
+            var dy;
+            var seriesIndex;
+            var pointList;
+            var isHorizontal;
+            var aniCount = 0;
+            function animationDone() {
+                aniCount--;
+                if (aniCount === 0) {
+                    done && done();
+                }
+            }
+            function animationDuring(target) {
+                target.style.controlPointList = null;
+            }
+            for (var i = this.shapeList.length - 1; i >= 0; i--) {
                 seriesIndex = this.shapeList[i]._seriesIndex;
                 if (aniMap[seriesIndex] && !aniMap[seriesIndex][3]) {
                     if (this.shapeList[i]._main && this.shapeList[i].style.pointList.length > 1) {
@@ -21001,7 +22858,20 @@ define('zrender/zrender', [
                         barGap = parseFloat(barGap);
                         barWidth = +((gap - sBarWidthTotal - barGap * (locationMap.length - 1)) / (locationMap.length - sBarWidthCounter)).toFixed(2);
                     }
-                    if (barWidth <= 0)="" {="" return="" this._mapsize(categoryaxis,="" locationmap,="" true);="" }="" else="" gap="categoryAxis.getGap();" bargap="0;" barwidth="+(gap" locationmap.length).tofixed(2);="" if="" (barwidth="" <="0)" interval="Math.floor(locationMap.length" gap);=""> 1 ? typeof barCategoryGap === 'string' && barCategoryGap.match(/%$/) ? +(categoryAxis.getGap() * (100 - parseFloat(barCategoryGap)) / 100).toFixed(2) : categoryAxis.getGap() - barCategoryGap : sBarWidthTotal;
+                    if (barWidth <= 0) {
+                        return this._mapSize(categoryAxis, locationMap, true);
+                    }
+                } else {
+                    gap = categoryAxis.getGap();
+                    barGap = 0;
+                    barWidth = +(gap / locationMap.length).toFixed(2);
+                    if (barWidth <= 0) {
+                        interval = Math.floor(locationMap.length / gap);
+                        barWidth = 1;
+                    }
+                }
+            } else {
+                gap = sBarWidthCounter > 1 ? typeof barCategoryGap === 'string' && barCategoryGap.match(/%$/) ? +(categoryAxis.getGap() * (100 - parseFloat(barCategoryGap)) / 100).toFixed(2) : categoryAxis.getGap() - barCategoryGap : sBarWidthTotal;
                 barWidth = 0;
                 barGap = sBarWidthCounter > 1 ? +((gap - sBarWidthTotal) / (sBarWidthCounter - 1)).toFixed(2) : 0;
                 if (barGap < 0) {
@@ -22536,13 +24406,17 @@ define('zrender/zrender', [
             var width = this._calculableLocation.width;
             var height = this._calculableLocation.height;
             if (this.dataRangeOption.orient == 'horizontal') {
-                if (shape.style.x + dx <= x)="" {="" shape.style.x="x;" }="" else="" if="" (shape.style.x="" +="" dx="" shape.style.width="">= x + width) {
+                if (shape.style.x + dx <= x) {
+                    shape.style.x = x;
+                } else if (shape.style.x + dx + shape.style.width >= x + width) {
                     shape.style.x = x + width - shape.style.width;
                 } else {
                     shape.style.x += dx;
                 }
             } else {
-                if (shape.style.y + dy <= y)="" {="" shape.style.y="y;" }="" else="" if="" (shape.style.y="" +="" dy="" shape.style.height="">= y + height) {
+                if (shape.style.y + dy <= y) {
+                    shape.style.y = y;
+                } else if (shape.style.y + dy + shape.style.height >= y + height) {
                     shape.style.y = y + height - shape.style.height;
                 } else {
                     shape.style.y += dy;
@@ -22945,7 +24819,7 @@ define('zrender/zrender', [
             } else {
                 var splitRangeList = this._splitList;
                 for (var i = 0, len = splitRangeList.length; i < len; i++) {
-                    if (splitRangeList[i].min <= value="" &&="" splitrangelist[i].max="">= value) {
+                    if (splitRangeList[i].min <= value && splitRangeList[i].max >= value) {
                         idx = i;
                         break;
                     }
@@ -22994,7 +24868,83 @@ define('zrender/zrender', [
             x = originPos[0];
             y = originPos[1];
             var rect = this.style.rect;
-            if (x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y <= rect.y="" +="" rect.height)="" {="" return="" true;="" }="" else="" false;="" };="" zrutil.inherits(handlepolygon,="" base);="" handlepolygon;="" });define('echarts="" chart="" k',="" [="" 'require',="" '.="" base',="" '..="" util="" shape="" candle',="" component="" axis',="" grid',="" datazoom',="" config',="" ecdata',="" 'zrender="" tool="" util',="" chart'="" ],="" function="" (require)="" var="" chartbase="require('./base');" candleshape="require('../util/shape/Candle');" require('..="" axis');="" grid');="" datazoom');="" ecconfig="require('../config');" ecconfig.k="{" zlevel:="" 0,="" z:="" 2,="" clickable:="" true,="" hoverable:="" legendhoverlink:="" false,="" xaxisindex:="" yaxisindex:="" itemstyle:="" normal:="" color:="" '#fff',="" color0:="" '#00aa11',="" linestyle:="" width:="" 1,="" '#ff3200',="" '#00aa11'="" },="" label:="" show:="" false="" emphasis:="" ecdata="require('../util/ecData');" zrutil="require('zrender/tool/util');" k(ectheme,="" messagecenter,="" zr,="" option,="" mychart)="" chartbase.call(this,="" ectheme,="" mychart);="" this.refresh(option);="" k.prototype="{" type:="" ecconfig.chart_type_k,="" _buildshape:="" ()="" series="this.series;" this.selectedmap="{};" _position2sindexmap="{" top:="" [],="" bottom:="" []="" xaxis;="" for="" (var="" i="0," l="series.length;" <="" l;="" i++)="" if="" (series[i].type="==" ecconfig.chart_type_k)="" series[i]="this.reformOption(series[i]);" this.legendhoverlink="series[i].legendHoverLink" ||="" this.legendhoverlink;="" xaxis="this.component.xAxis.getAxis(series[i].xAxisIndex);" (xaxis.type="==" ecconfig.component_type_axis_category)="" _position2sindexmap[xaxis.getposition()].push(i);="" position="" in="" _position2sindexmap)="" (_position2sindexmap[position].length=""> 0) {
+            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    zrUtil.inherits(HandlePolygon, Base);
+    return HandlePolygon;
+});define('echarts/chart/k', [
+    'require',
+    './base',
+    '../util/shape/Candle',
+    '../component/axis',
+    '../component/grid',
+    '../component/dataZoom',
+    '../config',
+    '../util/ecData',
+    'zrender/tool/util',
+    '../chart'
+], function (require) {
+    var ChartBase = require('./base');
+    var CandleShape = require('../util/shape/Candle');
+    require('../component/axis');
+    require('../component/grid');
+    require('../component/dataZoom');
+    var ecConfig = require('../config');
+    ecConfig.k = {
+        zlevel: 0,
+        z: 2,
+        clickable: true,
+        hoverable: true,
+        legendHoverLink: false,
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        itemStyle: {
+            normal: {
+                color: '#fff',
+                color0: '#00aa11',
+                lineStyle: {
+                    width: 1,
+                    color: '#ff3200',
+                    color0: '#00aa11'
+                },
+                label: { show: false }
+            },
+            emphasis: { label: { show: false } }
+        }
+    };
+    var ecData = require('../util/ecData');
+    var zrUtil = require('zrender/tool/util');
+    function K(ecTheme, messageCenter, zr, option, myChart) {
+        ChartBase.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.refresh(option);
+    }
+    K.prototype = {
+        type: ecConfig.CHART_TYPE_K,
+        _buildShape: function () {
+            var series = this.series;
+            this.selectedMap = {};
+            var _position2sIndexMap = {
+                top: [],
+                bottom: []
+            };
+            var xAxis;
+            for (var i = 0, l = series.length; i < l; i++) {
+                if (series[i].type === ecConfig.CHART_TYPE_K) {
+                    series[i] = this.reformOption(series[i]);
+                    this.legendHoverLink = series[i].legendHoverLink || this.legendHoverLink;
+                    xAxis = this.component.xAxis.getAxis(series[i].xAxisIndex);
+                    if (xAxis.type === ecConfig.COMPONENT_TYPE_AXIS_CATEGORY) {
+                        _position2sIndexMap[xAxis.getPosition()].push(i);
+                    }
+                }
+            }
+            for (var position in _position2sIndexMap) {
+                if (_position2sIndexMap[position].length > 0) {
                     this._buildSinglePosition(position, _position2sIndexMap[position]);
                 }
             }
@@ -23389,7 +25339,365 @@ define('zrender/zrender', [
                             style: {
                                 x: center[0],
                                 y: center[1],
-                                r0: radius[0] <= 0="" 2="" 10="" 360="" ?="" :="" radius[0]="" -="" 10,="" r:="" radius[1]="" +="" brushtype:="" 'stroke',="" linewidth:="" 1,="" strokecolor:="" series[i].calculableholdercolor="" ||="" this.ectheme.calculableholdercolor="" ecconfig.calculableholdercolor="" }="" };="" ecdata.pack(piecase,="" series[i],="" i,="" undefined,="" -1);="" this.setcalculable(piecase);="" piecase="radius[0]" <="10" new="" circleshape(piecase)="" ringshape(piecase);="" this.shapelist.push(piecase);="" this._buildsinglepie(i);="" this.buildmark(i);="" this.addshapelist();="" },="" _buildsinglepie:="" function="" (seriesindex)="" {="" var="" series="this.series;" serie="series[seriesIndex];" data="serie.data;" legend="this.component.legend;" itemname;="" totalselected="0;" totalselectedvalue0="0;" totalvalue="0;" maxvalue="Number.NEGATIVE_INFINITY;" singleshapelist="[];" for="" (var="" i="0," l="data.length;" l;="" i++)="" itemname="data[i].name;" this.selectedmap[itemname]="legend" legend.isselected(itemname)="" true;="" if="" (this.selectedmap[itemname]="" &&="" !isnan(data[i].value))="" (+data[i].value="" !="=" 0)="" totalselected++;="" else="" totalselectedvalue0++;="" +data[i].value);="" (totalvalue="==" return;="" percent="100;" clockwise="serie.clockWise;" startangle="(serie.startAngle.toFixed(2)" 360)="" %="" 360;="" endangle;="" minangle="serie.minAngle" 0.01;="" totalangle="360" *="" 0.01="" totalselectedvalue0;="" defaultcolor;="" rosetype="serie.roseType;" center;="" radius;="" r0;="" r1;="" (!this.selectedmap[itemname]="" isnan(data[i].value))="" continue;="" defaultcolor="legend" legend.getcolor(itemname)="" this.zr.getcolor(i);="" totalvalue;="" (rosetype="" )="" endangle="clockWise" (percent="" 0.01)="" 0.01);="" startangle;="" 0;="" 100).tofixed(2);="" center="this.parseCenter(this.zr," serie.center);="" radius="this.parseRadius(this.zr," serie.radius);="" r0="+radius[0];" r1="+radius[1];" 'radius')="" (r1="" r0)="" 0.8="" 0.2="" 'area')="" maxvalue)="" (clockwise)="" temp;="" temp="startAngle;" this._builditem(singleshapelist,="" seriesindex,="" percent,="" data[i].selected,="" center,="" r0,="" r1,="" startangle,="" endangle,="" defaultcolor);="" (!clockwise)="" this._autolabellayout(singleshapelist,="" r1);="" this.shapelist.push(singleshapelist[i]);="" _builditem:="" (singleshapelist,="" dataindex,="" isselected,="" defaultcolor)="" midangle="((endAngle" startangle)="" sector="this.getSector(seriesIndex," ecdata.pack(sector,="" series[seriesindex],="" series[seriesindex].data[dataindex],="" series[seriesindex].data[dataindex].name,="" percent);="" singleshapelist.push(sector);="" label="this.getLabel(seriesIndex," midangle,="" defaultcolor,="" false);="" labelline="this.getLabelLine(seriesIndex," (labelline)="" ecdata.pack(labelline,="" singleshapelist.push(labelline);="" (label)="" ecdata.pack(label,="" label._labelline="labelLine;" singleshapelist.push(label);="" getsector:="" (seriesindex,="" querytarget="[" data,="" ];="" normal="this.deepMerge(queryTarget," 'itemstyle.normal')="" {};="" emphasis="this.deepMerge(queryTarget," 'itemstyle.emphasis')="" normalcolor="this.getItemStyleColor(normal.color," data)="" emphasiscolor="this.getItemStyleColor(emphasis.color," (typeof="" 'string'="" zrcolor.lift(normalcolor,="" -0.2)="" normalcolor);="" zlevel:="" serie.zlevel,="" z:="" serie.z,="" clickable:="" this.deepquery(querytarget,="" 'clickable'),="" style:="" x:="" center[0],="" y:="" center[1],="" r0:="" startangle:="" endangle:="" 'both',="" color:="" normalcolor,="" normal.borderwidth,="" normal.bordercolor,="" linejoin:="" 'round'="" highlightstyle:="" emphasiscolor,="" emphasis.borderwidth,="" emphasis.bordercolor,="" _seriesindex:="" _dataindex:="" dataindex="" (isselected)="" sector.style.endangle)="" 2).tofixed(2)="" sector.style._hasselected="true;" sector.style._x="sector.style.x;" sector.style._y="sector.style.y;" offset="this.query(serie," 'selectedoffset');="" sector.style.x="" true)="" offset;="" sector.style.y="" this._selected[seriesindex][dataindex]="true;" (this._selectedmode)="" sector.onclick="this.shapeHandler.onclick;" (this.deepquery([="" serie,="" this.option="" ],="" 'calculable'))="" this.setcalculable(sector);="" sector.draggable="true;" (this._needlabel(serie,="" this._needlabelline(serie,="" true))="" sector.onmouseover="this.shapeHandler.onmouseover;" sectorshape(sector);="" return="" sector;="" getlabel:="" isemphasis)="" (!this._needlabel(serie,="" isemphasis))="" status="isEmphasis" 'emphasis'="" 'normal';="" itemstyle="zrUtil.merge(zrUtil.clone(data.itemStyle)" {},="" serie.itemstyle);="" labelcontrol="itemStyle[status].label;" textstyle="labelControl.textStyle" centerx="center[0];" centery="center[1];" x;="" y;="" textalign;="" textbaseline="middle" ;="" labelcontrol.position="labelControl.position" itemstyle.normal.label.position;="" (labelcontrol.position="==" 'center')="" x="centerX;" y="centerY;" textalign="center" 'inner'="" 'inside')="" radius[1])="" (labelcontrol.distance="" 0.5);="" zrmath.cos(midangle,="" true));="" zrmath.sin(midangle,="" -itemstyle[status].labelline.length;="">= 90 && midAngle <= 5="" 20="" 270="" ?="" 'right'="" :="" 'left';="" }="" if="" (labelcontrol.position="" !="center" &&="" labelcontrol.position="" )="" {="" x="" +="textAlign" =="=" 'left'="" -20;="" data.__labelx="x" -="" (textalign="==" -5);="" data.__labely="y;" var="" ts="new" textshape({="" zlevel:="" serie.zlevel,="" z:="" serie.z="" 1,="" hoverable:="" false,="" style:="" x:="" x,="" y:="" y,="" color:="" textstyle.color="" ||="" defaultcolor,="" text:="" this.getlabeltext(seriesindex,="" dataindex,="" percent,="" status),="" textalign:="" textstyle.align="" textalign,="" textbaseline:="" textstyle.baseline="" textbaseline,="" textfont:="" this.getfont(textstyle)="" },="" highlightstyle:="" brushtype:="" 'fill'="" });="" ts._radius="radius;" ts._labelposition="labelControl.position" 'outer';="" ts._rect="ts.getRect(ts.style);" ts._seriesindex="seriesIndex;" ts._dataindex="dataIndex;" return="" ts;="" getlabeltext:="" function="" (seriesindex,="" status)="" series="this.series;" serie="series[seriesIndex];" data="serie.data[dataIndex];" formatter="this.deepQuery([" data,="" ],="" 'itemstyle.'="" status="" '.label.formatter');="" (formatter)="" (typeof="" 'function')="" formatter.call(this.mychart,="" seriesindex:="" seriesindex,="" seriesname:="" serie.name="" '',="" series:="" serie,="" dataindex:="" data:="" name:="" data.name,="" value:="" data.value,="" percent:="" percent="" else="" 'string')="" '{a0}').replace('{b}',="" '{b0}').replace('{c}',="" '{c0}').replace('{d}',="" '{d0}');="" serie.name).replace('{b0}',="" data.name).replace('{c0}',="" data.value).replace('{d0}',="" percent);="" formatter;="" data.name;="" getlabelline:="" center,="" r0,="" r1,="" midangle,="" isemphasis)="" (this._needlabelline(serie,="" isemphasis))="" 'emphasis'="" 'normal';="" itemstyle="zrUtil.merge(zrUtil.clone(data.itemStyle)" {},="" serie.itemstyle);="" labellinecontrol="itemStyle[status].labelLine;" linestyle="labelLineControl.lineStyle" {};="" centerx="center[0];" centery="center[1];" minradius="r1;" maxradius="this.parseRadius(this.zr," serie.radius)[1]="" -labellinecontrol.length;="" cosvalue="zrMath.cos(midAngle," true);="" sinvalue="zrMath.sin(midAngle," new="" polylineshape({="" pointlist:="" [="" *="" cosvalue,="" data.__labelx,="" ]="" strokecolor:="" linestyle.color="" linetype:="" linestyle.type,="" linewidth:="" linestyle.width="" _seriesindex:="" _dataindex:="" dataindex="" return;="" _needlabel:="" (serie,="" this.deepquery([="" (isemphasis="" 'normal')="" '.label.show');="" _needlabelline:="" '.labelline.show');="" _autolabellayout:="" (slist,="" r)="" leftlist="[];" rightlist="[];" for="" (var="" i="0," l="sList.length;" <="" l;="" i++)="" (slist[i]._labelposition="==" 'outer'="" slist[i]._labelposition="==" 'outside')="" slist[i]._rect._y="sList[i]._rect.y;" (slist[i]._rect.x="" center[0])="" leftlist.push(slist[i]);="" rightlist.push(slist[i]);="" this._layoutcalculate(leftlist,="" r,="" -1);="" this._layoutcalculate(rightlist,="" 1);="" _layoutcalculate:="" (tlist,="" direction)="" tlist.sort(function="" (a,="" b)="" a._rect.y="" b._rect.y;="" _changedown(start,="" end,="" delta,="" j="start;" end;="" j++)="" tlist[j]._rect.y="" tlist[j].style.y="" (tlist[j]._labelline)="" tlist[j]._labelline.style.pointlist[1][1]="" tlist[j]._labelline.style.pointlist[2][1]="" (j=""> start && j + 1 < end && tList[j + 1]._rect.y > tList[j]._rect.y + tList[j]._rect.height) {
+                                r0: radius[0] <= 10 ? 0 : radius[0] - 10,
+                                r: radius[1] + 10,
+                                brushType: 'stroke',
+                                lineWidth: 1,
+                                strokeColor: series[i].calculableHolderColor || this.ecTheme.calculableHolderColor || ecConfig.calculableHolderColor
+                            }
+                        };
+                        ecData.pack(pieCase, series[i], i, undefined, -1);
+                        this.setCalculable(pieCase);
+                        pieCase = radius[0] <= 10 ? new CircleShape(pieCase) : new RingShape(pieCase);
+                        this.shapeList.push(pieCase);
+                    }
+                    this._buildSinglePie(i);
+                    this.buildMark(i);
+                }
+            }
+            this.addShapeList();
+        },
+        _buildSinglePie: function (seriesIndex) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data;
+            var legend = this.component.legend;
+            var itemName;
+            var totalSelected = 0;
+            var totalSelectedValue0 = 0;
+            var totalValue = 0;
+            var maxValue = Number.NEGATIVE_INFINITY;
+            var singleShapeList = [];
+            for (var i = 0, l = data.length; i < l; i++) {
+                itemName = data[i].name;
+                this.selectedMap[itemName] = legend ? legend.isSelected(itemName) : true;
+                if (this.selectedMap[itemName] && !isNaN(data[i].value)) {
+                    if (+data[i].value !== 0) {
+                        totalSelected++;
+                    } else {
+                        totalSelectedValue0++;
+                    }
+                    totalValue += +data[i].value;
+                    maxValue = Math.max(maxValue, +data[i].value);
+                }
+            }
+            if (totalValue === 0) {
+                return;
+            }
+            var percent = 100;
+            var clockWise = serie.clockWise;
+            var startAngle = (serie.startAngle.toFixed(2) - 0 + 360) % 360;
+            var endAngle;
+            var minAngle = serie.minAngle || 0.01;
+            var totalAngle = 360 - minAngle * totalSelected - 0.01 * totalSelectedValue0;
+            var defaultColor;
+            var roseType = serie.roseType;
+            var center;
+            var radius;
+            var r0;
+            var r1;
+            for (var i = 0, l = data.length; i < l; i++) {
+                itemName = data[i].name;
+                if (!this.selectedMap[itemName] || isNaN(data[i].value)) {
+                    continue;
+                }
+                defaultColor = legend ? legend.getColor(itemName) : this.zr.getColor(i);
+                percent = data[i].value / totalValue;
+                if (roseType != 'area') {
+                    endAngle = clockWise ? startAngle - percent * totalAngle - (percent !== 0 ? minAngle : 0.01) : percent * totalAngle + startAngle + (percent !== 0 ? minAngle : 0.01);
+                } else {
+                    endAngle = clockWise ? startAngle - 360 / l : 360 / l + startAngle;
+                }
+                endAngle = endAngle.toFixed(2) - 0;
+                percent = (percent * 100).toFixed(2);
+                center = this.parseCenter(this.zr, serie.center);
+                radius = this.parseRadius(this.zr, serie.radius);
+                r0 = +radius[0];
+                r1 = +radius[1];
+                if (roseType === 'radius') {
+                    r1 = data[i].value / maxValue * (r1 - r0) * 0.8 + (r1 - r0) * 0.2 + r0;
+                } else if (roseType === 'area') {
+                    r1 = Math.sqrt(data[i].value / maxValue) * (r1 - r0) + r0;
+                }
+                if (clockWise) {
+                    var temp;
+                    temp = startAngle;
+                    startAngle = endAngle;
+                    endAngle = temp;
+                }
+                this._buildItem(singleShapeList, seriesIndex, i, percent, data[i].selected, center, r0, r1, startAngle, endAngle, defaultColor);
+                if (!clockWise) {
+                    startAngle = endAngle;
+                }
+            }
+            this._autoLabelLayout(singleShapeList, center, r1);
+            for (var i = 0, l = singleShapeList.length; i < l; i++) {
+                this.shapeList.push(singleShapeList[i]);
+            }
+            singleShapeList = null;
+        },
+        _buildItem: function (singleShapeList, seriesIndex, dataIndex, percent, isSelected, center, r0, r1, startAngle, endAngle, defaultColor) {
+            var series = this.series;
+            var midAngle = ((endAngle + startAngle) / 2 + 360) % 360;
+            var sector = this.getSector(seriesIndex, dataIndex, percent, isSelected, center, r0, r1, startAngle, endAngle, defaultColor);
+            ecData.pack(sector, series[seriesIndex], seriesIndex, series[seriesIndex].data[dataIndex], dataIndex, series[seriesIndex].data[dataIndex].name, percent);
+            singleShapeList.push(sector);
+            var label = this.getLabel(seriesIndex, dataIndex, percent, center, midAngle, defaultColor, false);
+            var labelLine = this.getLabelLine(seriesIndex, dataIndex, center, r0, r1, midAngle, defaultColor, false);
+            if (labelLine) {
+                ecData.pack(labelLine, series[seriesIndex], seriesIndex, series[seriesIndex].data[dataIndex], dataIndex, series[seriesIndex].data[dataIndex].name, percent);
+                singleShapeList.push(labelLine);
+            }
+            if (label) {
+                ecData.pack(label, series[seriesIndex], seriesIndex, series[seriesIndex].data[dataIndex], dataIndex, series[seriesIndex].data[dataIndex].name, percent);
+                label._labelLine = labelLine;
+                singleShapeList.push(label);
+            }
+        },
+        getSector: function (seriesIndex, dataIndex, percent, isSelected, center, r0, r1, startAngle, endAngle, defaultColor) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var queryTarget = [
+                data,
+                serie
+            ];
+            var normal = this.deepMerge(queryTarget, 'itemStyle.normal') || {};
+            var emphasis = this.deepMerge(queryTarget, 'itemStyle.emphasis') || {};
+            var normalColor = this.getItemStyleColor(normal.color, seriesIndex, dataIndex, data) || defaultColor;
+            var emphasisColor = this.getItemStyleColor(emphasis.color, seriesIndex, dataIndex, data) || (typeof normalColor === 'string' ? zrColor.lift(normalColor, -0.2) : normalColor);
+            var sector = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                clickable: this.deepQuery(queryTarget, 'clickable'),
+                style: {
+                    x: center[0],
+                    y: center[1],
+                    r0: r0,
+                    r: r1,
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    brushType: 'both',
+                    color: normalColor,
+                    lineWidth: normal.borderWidth,
+                    strokeColor: normal.borderColor,
+                    lineJoin: 'round'
+                },
+                highlightStyle: {
+                    color: emphasisColor,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor,
+                    lineJoin: 'round'
+                },
+                _seriesIndex: seriesIndex,
+                _dataIndex: dataIndex
+            };
+            if (isSelected) {
+                var midAngle = ((sector.style.startAngle + sector.style.endAngle) / 2).toFixed(2) - 0;
+                sector.style._hasSelected = true;
+                sector.style._x = sector.style.x;
+                sector.style._y = sector.style.y;
+                var offset = this.query(serie, 'selectedOffset');
+                sector.style.x += zrMath.cos(midAngle, true) * offset;
+                sector.style.y -= zrMath.sin(midAngle, true) * offset;
+                this._selected[seriesIndex][dataIndex] = true;
+            } else {
+                this._selected[seriesIndex][dataIndex] = false;
+            }
+            if (this._selectedMode) {
+                sector.onclick = this.shapeHandler.onclick;
+            }
+            if (this.deepQuery([
+                    data,
+                    serie,
+                    this.option
+                ], 'calculable')) {
+                this.setCalculable(sector);
+                sector.draggable = true;
+            }
+            if (this._needLabel(serie, data, true) || this._needLabelLine(serie, data, true)) {
+                sector.onmouseover = this.shapeHandler.onmouseover;
+            }
+            sector = new SectorShape(sector);
+            return sector;
+        },
+        getLabel: function (seriesIndex, dataIndex, percent, center, midAngle, defaultColor, isEmphasis) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            if (!this._needLabel(serie, data, isEmphasis)) {
+                return;
+            }
+            var status = isEmphasis ? 'emphasis' : 'normal';
+            var itemStyle = zrUtil.merge(zrUtil.clone(data.itemStyle) || {}, serie.itemStyle);
+            var labelControl = itemStyle[status].label;
+            var textStyle = labelControl.textStyle || {};
+            var centerX = center[0];
+            var centerY = center[1];
+            var x;
+            var y;
+            var radius = this.parseRadius(this.zr, serie.radius);
+            var textAlign;
+            var textBaseline = 'middle';
+            labelControl.position = labelControl.position || itemStyle.normal.label.position;
+            if (labelControl.position === 'center') {
+                x = centerX;
+                y = centerY;
+                textAlign = 'center';
+            } else if (labelControl.position === 'inner' || labelControl.position === 'inside') {
+                radius = (radius[0] + radius[1]) * (labelControl.distance || 0.5);
+                x = Math.round(centerX + radius * zrMath.cos(midAngle, true));
+                y = Math.round(centerY - radius * zrMath.sin(midAngle, true));
+                defaultColor = '#fff';
+                textAlign = 'center';
+            } else {
+                radius = radius[1] - -itemStyle[status].labelLine.length;
+                x = Math.round(centerX + radius * zrMath.cos(midAngle, true));
+                y = Math.round(centerY - radius * zrMath.sin(midAngle, true));
+                textAlign = midAngle >= 90 && midAngle <= 270 ? 'right' : 'left';
+            }
+            if (labelControl.position != 'center' && labelControl.position != 'inner' && labelControl.position != 'inside') {
+                x += textAlign === 'left' ? 20 : -20;
+            }
+            data.__labelX = x - (textAlign === 'left' ? 5 : -5);
+            data.__labelY = y;
+            var ts = new TextShape({
+                zlevel: serie.zlevel,
+                z: serie.z + 1,
+                hoverable: false,
+                style: {
+                    x: x,
+                    y: y,
+                    color: textStyle.color || defaultColor,
+                    text: this.getLabelText(seriesIndex, dataIndex, percent, status),
+                    textAlign: textStyle.align || textAlign,
+                    textBaseline: textStyle.baseline || textBaseline,
+                    textFont: this.getFont(textStyle)
+                },
+                highlightStyle: { brushType: 'fill' }
+            });
+            ts._radius = radius;
+            ts._labelPosition = labelControl.position || 'outer';
+            ts._rect = ts.getRect(ts.style);
+            ts._seriesIndex = seriesIndex;
+            ts._dataIndex = dataIndex;
+            return ts;
+        },
+        getLabelText: function (seriesIndex, dataIndex, percent, status) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var formatter = this.deepQuery([
+                data,
+                serie
+            ], 'itemStyle.' + status + '.label.formatter');
+            if (formatter) {
+                if (typeof formatter === 'function') {
+                    return formatter.call(this.myChart, {
+                        seriesIndex: seriesIndex,
+                        seriesName: serie.name || '',
+                        series: serie,
+                        dataIndex: dataIndex,
+                        data: data,
+                        name: data.name,
+                        value: data.value,
+                        percent: percent
+                    });
+                } else if (typeof formatter === 'string') {
+                    formatter = formatter.replace('{a}', '{a0}').replace('{b}', '{b0}').replace('{c}', '{c0}').replace('{d}', '{d0}');
+                    formatter = formatter.replace('{a0}', serie.name).replace('{b0}', data.name).replace('{c0}', data.value).replace('{d0}', percent);
+                    return formatter;
+                }
+            } else {
+                return data.name;
+            }
+        },
+        getLabelLine: function (seriesIndex, dataIndex, center, r0, r1, midAngle, defaultColor, isEmphasis) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            if (this._needLabelLine(serie, data, isEmphasis)) {
+                var status = isEmphasis ? 'emphasis' : 'normal';
+                var itemStyle = zrUtil.merge(zrUtil.clone(data.itemStyle) || {}, serie.itemStyle);
+                var labelLineControl = itemStyle[status].labelLine;
+                var lineStyle = labelLineControl.lineStyle || {};
+                var centerX = center[0];
+                var centerY = center[1];
+                var minRadius = r1;
+                var maxRadius = this.parseRadius(this.zr, serie.radius)[1] - -labelLineControl.length;
+                var cosValue = zrMath.cos(midAngle, true);
+                var sinValue = zrMath.sin(midAngle, true);
+                return new PolylineShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        pointList: [
+                            [
+                                centerX + minRadius * cosValue,
+                                centerY - minRadius * sinValue
+                            ],
+                            [
+                                centerX + maxRadius * cosValue,
+                                centerY - maxRadius * sinValue
+                            ],
+                            [
+                                data.__labelX,
+                                data.__labelY
+                            ]
+                        ],
+                        strokeColor: lineStyle.color || defaultColor,
+                        lineType: lineStyle.type,
+                        lineWidth: lineStyle.width
+                    },
+                    _seriesIndex: seriesIndex,
+                    _dataIndex: dataIndex
+                });
+            } else {
+                return;
+            }
+        },
+        _needLabel: function (serie, data, isEmphasis) {
+            return this.deepQuery([
+                data,
+                serie
+            ], 'itemStyle.' + (isEmphasis ? 'emphasis' : 'normal') + '.label.show');
+        },
+        _needLabelLine: function (serie, data, isEmphasis) {
+            return this.deepQuery([
+                data,
+                serie
+            ], 'itemStyle.' + (isEmphasis ? 'emphasis' : 'normal') + '.labelLine.show');
+        },
+        _autoLabelLayout: function (sList, center, r) {
+            var leftList = [];
+            var rightList = [];
+            for (var i = 0, l = sList.length; i < l; i++) {
+                if (sList[i]._labelPosition === 'outer' || sList[i]._labelPosition === 'outside') {
+                    sList[i]._rect._y = sList[i]._rect.y;
+                    if (sList[i]._rect.x < center[0]) {
+                        leftList.push(sList[i]);
+                    } else {
+                        rightList.push(sList[i]);
+                    }
+                }
+            }
+            this._layoutCalculate(leftList, center, r, -1);
+            this._layoutCalculate(rightList, center, r, 1);
+        },
+        _layoutCalculate: function (tList, center, r, direction) {
+            tList.sort(function (a, b) {
+                return a._rect.y - b._rect.y;
+            });
+            function _changeDown(start, end, delta, direction) {
+                for (var j = start; j < end; j++) {
+                    tList[j]._rect.y += delta;
+                    tList[j].style.y += delta;
+                    if (tList[j]._labelLine) {
+                        tList[j]._labelLine.style.pointList[1][1] += delta;
+                        tList[j]._labelLine.style.pointList[2][1] += delta;
+                    }
+                    if (j > start && j + 1 < end && tList[j + 1]._rect.y > tList[j]._rect.y + tList[j]._rect.height) {
                         _changeUp(j, delta / 2);
                         return;
                     }
@@ -23423,7 +25731,34 @@ define('zrender/zrender', [
                     if (isDownList && deltaX >= lastDeltaX) {
                         deltaX = lastDeltaX - 10;
                     }
-                    if (!isDownList && deltaX <= lastdeltax)="" {="" deltax="lastDeltaX" +="" 10;="" }="" slist[i]._rect.x="sList[i].style.x" =="" x="" *="" direction;="" if="" (slist[i]._labelline)="" slist[i]._labelline.style.pointlist[2][0]="x" (deltax="" -="" 5)="" slist[i]._labelline.style.pointlist[1][0]="x" 20)="" lastdeltax="deltaX;" var="" lasty="0;" delta;="" len="tList.length;" uplist="[];" downlist="[];" for="" (var="" i="0;" <="" len;="" i++)="" delta="tList[i]._rect.y" lasty;="" (delta="" 0)="" _changedown(i,="" len,="" -delta,="" direction);="" tlist[i]._rect.height;="" (this.zr.getheight()="" _changeup(len="" 1,="" this.zr.getheight());="" (tlist[i]._rect.y="">= center[1]) {
+                    if (!isDownList && deltaX <= lastDeltaX) {
+                        deltaX = lastDeltaX + 10;
+                    }
+                    sList[i]._rect.x = sList[i].style.x = x + deltaX * direction;
+                    if (sList[i]._labelLine) {
+                        sList[i]._labelLine.style.pointList[2][0] = x + (deltaX - 5) * direction;
+                        sList[i]._labelLine.style.pointList[1][0] = x + (deltaX - 20) * direction;
+                    }
+                    lastDeltaX = deltaX;
+                }
+            }
+            var lastY = 0;
+            var delta;
+            var len = tList.length;
+            var upList = [];
+            var downList = [];
+            for (var i = 0; i < len; i++) {
+                delta = tList[i]._rect.y - lastY;
+                if (delta < 0) {
+                    _changeDown(i, len, -delta, direction);
+                }
+                lastY = tList[i]._rect.y + tList[i]._rect.height;
+            }
+            if (this.zr.getHeight() - lastY < 0) {
+                _changeUp(len - 1, lastY - this.zr.getHeight());
+            }
+            for (var i = 0; i < len; i++) {
+                if (tList[i]._rect.y >= center[1]) {
                     downList.push(tList[i]);
                 } else {
                     upList.push(tList[i]);
@@ -24040,7 +26375,71 @@ define('zrender/zrender', [
                     if (!value) {
                         return;
                     }
-                    for (var j = 1; j <= splitnumber;="" j="" +="interval" 1)="" {="" newstyle="zrUtil.merge({}," style);="" text="accMath.accAdd(value.min," accmath.accmul(value.step,="" j));="" if="" (typeof="" formatter="==" 'function')="" }="" else="" 'string')="" '{a0}').replace('{a0}',="" text);="" newstyle.text="text;" newstyle.x="j" *="" vector[0]="" splitnumber="" math.cos(theta)="" offset="" center[0];="" newstyle.y="j" vector[1]="" math.sin(theta)="" center[1];="" this.shapelist.push(new="" textshape({="" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" style:="" newstyle,="" draggable:="" false,="" hoverable:="" false="" }));="" },="" _buildtext:="" function="" (index)="" var="" item="this.polar[index];" __ecindicator="item.__ecIndicator;" vector;="" indicator="this.deepQuery(this._queryTarget," 'indicator');="" center="this.getCenter(index);" style;="" textalign;="" name;="" rotation;="" x="0;" y="0;" margin;="" textstyle;="" for="" (var="" i="0;" <="" indicator.length;="" i++)="" name="this.deepQuery([" indicator[i],="" item,="" this.option="" ],="" 'name');="" (!name.show)="" continue;="" textstyle="this.deepQuery([" name,="" 'textstyle');="" style="{};" style.textfont="this.getFont(textStyle);" style.color="textStyle.color;" name.formatter="=" style.text="name.formatter.call(this.myChart," indicator[i].text,="" i);="" indicator[i].text);="" __ecindicator[i].text="style.text;" vector="__ecIndicator[i].vector;" (math.round(vector[0])=""> 0) {
+                    for (var j = 1; j <= splitNumber; j += interval + 1) {
+                        newStyle = zrUtil.merge({}, style);
+                        text = accMath.accAdd(value.min, accMath.accMul(value.step, j));
+                        if (typeof formatter === 'function') {
+                            text = formatter(text);
+                        } else if (typeof formatter === 'string') {
+                            text = formatter.replace('{a}', '{a0}').replace('{a0}', text);
+                        } else {
+                            text = this.numAddCommas(text);
+                        }
+                        newStyle.text = text;
+                        newStyle.x = j * vector[0] / splitNumber + Math.cos(theta) * offset + center[0];
+                        newStyle.y = j * vector[1] / splitNumber + Math.sin(theta) * offset + center[1];
+                        this.shapeList.push(new TextShape({
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            style: newStyle,
+                            draggable: false,
+                            hoverable: false
+                        }));
+                    }
+                }
+            }
+        },
+        _buildText: function (index) {
+            var item = this.polar[index];
+            var __ecIndicator = item.__ecIndicator;
+            var vector;
+            var indicator = this.deepQuery(this._queryTarget, 'indicator');
+            var center = this.getCenter(index);
+            var style;
+            var textAlign;
+            var name;
+            var rotation;
+            var x = 0;
+            var y = 0;
+            var margin;
+            var textStyle;
+            for (var i = 0; i < indicator.length; i++) {
+                name = this.deepQuery([
+                    indicator[i],
+                    item,
+                    this.option
+                ], 'name');
+                if (!name.show) {
+                    continue;
+                }
+                textStyle = this.deepQuery([
+                    name,
+                    item,
+                    this.option
+                ], 'textStyle');
+                style = {};
+                style.textFont = this.getFont(textStyle);
+                style.color = textStyle.color;
+                if (typeof name.formatter == 'function') {
+                    style.text = name.formatter.call(this.myChart, indicator[i].text, i);
+                } else if (typeof name.formatter == 'string') {
+                    style.text = name.formatter.replace('{value}', indicator[i].text);
+                } else {
+                    style.text = indicator[i].text;
+                }
+                __ecIndicator[i].text = style.text;
+                vector = __ecIndicator[i].vector;
+                if (Math.round(vector[0]) > 0) {
                     textAlign = 'left';
                 } else if (Math.round(vector[0]) < 0) {
                     textAlign = 'right';
@@ -24292,7 +26691,51 @@ define('zrender/zrender', [
                 if (!scale && min >= 0 && max >= 0) {
                     min = 0;
                 }
-                if (!scale && min <= 0="" &&="" max="" <="0)" {="" }="" var="" stepopt="smartSteps(min," max,="" splitnumber,="" opts);="" __ecindicator[i].value="{" min:="" stepopt.min,="" max:="" stepopt.max,="" step:="" stepopt.step="" };="" },="" _getseriesdata:="" function="" (index)="" data="[];" serie;="" seriedata;="" legend="this.component.legend;" polarindex;="" for="" (var="" i="0;" this.series.length;="" i++)="" serie="this.series[i];" if="" (serie.type="" !="ecConfig.CHART_TYPE_RADAR)" continue;="" seriedata="serie.data" ||="" [];="" j="0;" seriedata.length;="" j++)="" polarindex="this.deepQuery([" seriedata[j],="" serie,="" this.option="" ],="" 'polarindex')="" 0;="" (polarindex="=" index="" (!legend="" legend.isselected(seriedata[j].name)))="" data.push(seriedata[j]);="" return="" data;="" _findvalue:="" (data,="" index,="" boundarygap)="" max;="" min;="" one;="" (!data="" data.length="==" 0)="" return;="" _compare(item)="" (item=""> max || max === undefined) && (max = item);
+                if (!scale && min <= 0 && max <= 0) {
+                    max = 0;
+                }
+                var stepOpt = smartSteps(min, max, splitNumber, opts);
+                __ecIndicator[i].value = {
+                    min: stepOpt.min,
+                    max: stepOpt.max,
+                    step: stepOpt.step
+                };
+            }
+        },
+        _getSeriesData: function (index) {
+            var data = [];
+            var serie;
+            var serieData;
+            var legend = this.component.legend;
+            var polarIndex;
+            for (var i = 0; i < this.series.length; i++) {
+                serie = this.series[i];
+                if (serie.type != ecConfig.CHART_TYPE_RADAR) {
+                    continue;
+                }
+                serieData = serie.data || [];
+                for (var j = 0; j < serieData.length; j++) {
+                    polarIndex = this.deepQuery([
+                        serieData[j],
+                        serie,
+                        this.option
+                    ], 'polarIndex') || 0;
+                    if (polarIndex == index && (!legend || legend.isSelected(serieData[j].name))) {
+                        data.push(serieData[j]);
+                    }
+                }
+            }
+            return data;
+        },
+        _findValue: function (data, index, splitNumber, boundaryGap) {
+            var max;
+            var min;
+            var one;
+            if (!data || data.length === 0) {
+                return;
+            }
+            function _compare(item) {
+                (item > max || max === undefined) && (max = item);
                 (item < min || min === undefined) && (min = item);
             }
             if (data.length == 1) {
@@ -24973,7 +27416,7 @@ define('zrender/zrender', [
                 if (angle < 0) {
                     angle += 360;
                 }
-                var isRightSide = angle <= 90="" ||="" angle="">= 270;
+                var isRightSide = angle <= 90 || angle >= 270;
                 angle = angle * Math.PI / 180;
                 var v = [
                     Math.cos(angle),
@@ -25041,7 +27484,103 @@ define('zrender/zrender', [
                 var t0 = other.layout.startAngle / Math.PI * 180;
                 var t1 = other.layout.endAngle / Math.PI * 180;
                 if (series.length === 1) {
-                    if (edge.layout.weight <= 1="" other.layout.weight)="" {="" color="this.getColor(edge.node1.id);" }="" else="" var="" querytarget="this._getEdgeQueryTarget(serie," edge.data);="" querytargetemphasis="this._getEdgeQueryTarget(serie," edge.data,="" 'emphasis');="" ribbon="new" ribbonshape({="" zlevel:="" serie.zlevel,="" z:="" serie.z,="" style:="" x:="" center[0],="" y:="" center[1],="" r:="" radius[0],="" source0:="" s0,="" source1:="" s1,="" target0:="" t0,="" target1:="" t1,="" brushtype:="" 'both',="" opacity:="" this.deepquery(querytarget,="" 'opacity'),="" color:="" color,="" linewidth:="" 'borderwidth'),="" strokecolor:="" 'bordercolor'),="" clockwise:="" mainserie.clockwise="" },="" clickable:="" mainserie.clickable,="" highlightstyle:="" this.deepquery(querytargetemphasis,="" 'bordercolor')="" });="" node1,="" node2;="" if="" (edge.layout.weight="" <="other.layout.weight)" node1="other.node1;" node2="other.node2;" ecdata.pack(ribbon,="" serie,="" serieidx,="" edge.rawindex="=" null="" ?="" idx="" :="" edge.rawindex,="" edge.data.name="" ||="" node1.id="" +="" '-'="" node2.id,="" node1.id,="" node2.id);="" this.shapelist.push(ribbon);="" edge.shape="ribbon;" this);="" _buildedgecurves:="" function="" (series,="" graph,="" mainserie,="" maingraph)="" serie="series[serieIdx];" center="this.parseCenter(this.zr," mainserie.center);="" graph.eachedge(function="" (e,="" idx)="" shape1="node1.shape;" shape2="node2.shape;" e.data);="" e.data,="" curveshape="new" beziercurveshape({="" xstart:="" shape1.position[0],="" ystart:="" shape1.position[1],="" xend:="" shape2.position[0],="" yend:="" shape2.position[1],="" cpx1:="" cpy1:="" 'width'),="" 'color'),="" 'opacity')="" ecdata.pack(curveshape,="" e.rawindex="=" e.rawindex,="" e.data.name="" e.node1.id="" e.node2.id,="" e.node1.id,="" e.node2.id);="" this.shapelist.push(curveshape);="" e.shape="curveShape;" _buildscales:="" (serie,="" graph)="" clockwise="serie.clockWise;" serie.center);="" radius="this.parseRadius(this.zr," serie.radius);="" sign="clockWise" -1;="" sumvalue="0;" maxvalue="-Infinity;" unitpostfix;="" unitscale;="" (serie.showscaletext)="" graph.eachnode(function="" (node)="" val="node.data.value;" (val=""> maxValue) {
+                    if (edge.layout.weight <= other.layout.weight) {
+                        color = this.getColor(edge.node1.id);
+                    } else {
+                        color = this.getColor(edge.node2.id);
+                    }
+                } else {
+                    color = this.getColor(serie.name);
+                }
+                var queryTarget = this._getEdgeQueryTarget(serie, edge.data);
+                var queryTargetEmphasis = this._getEdgeQueryTarget(serie, edge.data, 'emphasis');
+                var ribbon = new RibbonShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z,
+                    style: {
+                        x: center[0],
+                        y: center[1],
+                        r: radius[0],
+                        source0: s0,
+                        source1: s1,
+                        target0: t0,
+                        target1: t1,
+                        brushType: 'both',
+                        opacity: this.deepQuery(queryTarget, 'opacity'),
+                        color: color,
+                        lineWidth: this.deepQuery(queryTarget, 'borderWidth'),
+                        strokeColor: this.deepQuery(queryTarget, 'borderColor'),
+                        clockWise: mainSerie.clockWise
+                    },
+                    clickable: mainSerie.clickable,
+                    highlightStyle: {
+                        brushType: 'both',
+                        opacity: this.deepQuery(queryTargetEmphasis, 'opacity'),
+                        lineWidth: this.deepQuery(queryTargetEmphasis, 'borderWidth'),
+                        strokeColor: this.deepQuery(queryTargetEmphasis, 'borderColor')
+                    }
+                });
+                var node1, node2;
+                if (edge.layout.weight <= other.layout.weight) {
+                    node1 = other.node1;
+                    node2 = other.node2;
+                } else {
+                    node1 = edge.node1;
+                    node2 = edge.node2;
+                }
+                ecData.pack(ribbon, serie, serieIdx, edge.data, edge.rawIndex == null ? idx : edge.rawIndex, edge.data.name || node1.id + '-' + node2.id, node1.id, node2.id);
+                this.shapeList.push(ribbon);
+                edge.shape = ribbon;
+            }, this);
+        },
+        _buildEdgeCurves: function (series, serieIdx, graph, mainSerie, mainGraph) {
+            var serie = series[serieIdx];
+            var center = this.parseCenter(this.zr, mainSerie.center);
+            graph.eachEdge(function (e, idx) {
+                var node1 = mainGraph.getNodeById(e.node1.id);
+                var node2 = mainGraph.getNodeById(e.node2.id);
+                var shape1 = node1.shape;
+                var shape2 = node2.shape;
+                var queryTarget = this._getEdgeQueryTarget(serie, e.data);
+                var queryTargetEmphasis = this._getEdgeQueryTarget(serie, e.data, 'emphasis');
+                var curveShape = new BezierCurveShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z,
+                    style: {
+                        xStart: shape1.position[0],
+                        yStart: shape1.position[1],
+                        xEnd: shape2.position[0],
+                        yEnd: shape2.position[1],
+                        cpX1: center[0],
+                        cpY1: center[1],
+                        lineWidth: this.deepQuery(queryTarget, 'width'),
+                        strokeColor: this.deepQuery(queryTarget, 'color'),
+                        opacity: this.deepQuery(queryTarget, 'opacity')
+                    },
+                    highlightStyle: {
+                        lineWidth: this.deepQuery(queryTargetEmphasis, 'width'),
+                        strokeColor: this.deepQuery(queryTargetEmphasis, 'color'),
+                        opacity: this.deepQuery(queryTargetEmphasis, 'opacity')
+                    }
+                });
+                ecData.pack(curveShape, serie, serieIdx, e.data, e.rawIndex == null ? idx : e.rawIndex, e.data.name || e.node1.id + '-' + e.node2.id, e.node1.id, e.node2.id);
+                this.shapeList.push(curveShape);
+                e.shape = curveShape;
+            }, this);
+        },
+        _buildScales: function (serie, serieIdx, graph) {
+            var clockWise = serie.clockWise;
+            var center = this.parseCenter(this.zr, serie.center);
+            var radius = this.parseRadius(this.zr, serie.radius);
+            var sign = clockWise ? 1 : -1;
+            var sumValue = 0;
+            var maxValue = -Infinity;
+            var unitPostfix;
+            var unitScale;
+            if (serie.showScaleText) {
+                graph.eachNode(function (node) {
+                    var val = node.data.value;
+                    if (val > maxValue) {
                         maxValue = val;
                     }
                     sumValue += val;
@@ -25111,7 +27650,7 @@ define('zrender/zrender', [
                     if (theta < 0) {
                         theta += 360;
                     }
-                    var isRightSide = theta <= 90="" ||="" theta="">= 270;
+                    var isRightSide = theta <= 90 || theta >= 270;
                     var textShape = new TextShape({
                         zlevel: serie.zlevel,
                         z: serie.z - 1,
@@ -25238,7 +27777,672 @@ define('zrender/zrender', [
         },
         isCover: function (x, y) {
             var rect = this.getRect(this.style);
-            if (x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y <= 0="" 1="" 2="" 15="" rect.y="" +="" rect.height)="" {="" return="" area.isinsidepath(this._pathproxy.pathcommands,="" 0,="" 'fill',="" x,="" y);="" }="" };="" zrutil.inherits(ribbonshape,="" base);="" ribbonshape;="" });define('echarts="" data="" graph',="" [="" 'require',="" 'zrender="" tool="" util'="" ],="" function="" (require)="" var="" util="require('zrender/tool/util');" 'use="" strict';="" graph="function" (directed)="" this._directed="directed" ||="" false;="" this.nodes="[];" this.edges="[];" this._nodesmap="{};" this._edgesmap="{};" graph.prototype.isdirected="function" ()="" this._directed;="" graph.prototype.addnode="function" (id,="" data)="" if="" (this._nodesmap[id])="" this._nodesmap[id];="" node="new" graph.node(id,="" data);="" this.nodes.push(node);="" this._nodesmap[id]="node;" node;="" graph.prototype.getnodebyid="function" (id)="" graph.prototype.addedge="function" (n1,="" n2,="" (typeof="" n1="=" 'string')="" n2="=" (!n1="" !n2)="" return;="" key="n1.id" '-'="" n2.id;="" (this._edgesmap[key])="" this._edgesmap[key];="" edge="new" graph.edge(n1,="" (this._directed)="" n1.outedges.push(edge);="" n2.inedges.push(edge);="" n1.edges.push(edge);="" (n1="" !="=" n2)="" n2.edges.push(edge);="" this.edges.push(edge);="" this._edgesmap[key]="edge;" edge;="" graph.prototype.removeedge="function" (edge)="" n1.outedges.splice(util.indexof(n1.outedges,="" edge),="" 1);="" n2.inedges.splice(util.indexof(n2.inedges,="" n1.edges.splice(util.indexof(n1.edges,="" n2.edges.splice(util.indexof(n2.edges,="" delete="" this.edges.splice(util.indexof(this.edges,="" graph.prototype.getedge="function" this._edgesmap[n1="" n2];="" else="" n2]="" this._edgesmap[n2="" n1];="" graph.prototype.removenode="function" (node)="" (!node)="" this._nodesmap[node.id];="" this.nodes.splice(util.indexof(this.nodes,="" node),="" for="" (var="" i="0;" <="" this.edges.length;)="" (edge.node1="==" edge.node2="==" node)="" this.removeedge(edge);="" i++;="" graph.prototype.filternode="function" (cb,="" context)="" len="this.nodes.length;" len;)="" (cb.call(context,="" this.nodes[i],="" i))="" this.removenode(this.nodes[i]);="" len--;="" graph.prototype.filteredge="function" this.edges[i],="" this.removeedge(this.edges[i]);="" graph.prototype.eachnode="function" len;="" i++)="" (this.nodes[i])="" cb.call(context,="" i);="" graph.prototype.eachedge="function" (this.edges[i])="" graph.prototype.clear="function" this.nodes.length="0;" this.edges.length="0;" graph.prototype.breadthfirsttraverse="function" startnode,="" direction,="" startnode="==" (!startnode)="" edgetype="edges" ;="" (direction="==" 'out')="" 'in')="" this.nodes.length;="" this.nodes[i].__visited="false;" null))="" queue="[startNode];" while="" (queue.length)="" currentnode="queue.shift();" edges="currentNode[edgeType];" edges.length;="" e="edges[i];" othernode="e.node1" =="=" ?="" e.node2="" :="" e.node1;="" (!othernode.__visited)="" (cb.call(othernode,="" othernode,="" currentnode))="" queue.push(othernode);="" othernode.__visited="true;" graph.prototype.clone="function" graph(this._directed);="" graph.addnode(this.nodes[i].id,="" this.nodes[i].data);="" this.edges.length;="" graph.addedge(e.node1.id,="" e.node2.id,="" e.data);="" graph;="" this.id="id;" this.data="data" null;="" this.inedges="[];" this.outedges="[];" node.prototype.degree="function" node.prototype.indegree="function" this.inedges.length;="" node.prototype.outdegree="function" this.outedges.length;="" (node1,="" node2,="" this.node1="node1;" this.node2="node2;" graph.node="Node;" graph.edge="Edge;" graph.frommatrix="function" (nodesdata,="" matrix,="" directed)="" (!matrix="" !matrix.length="" matrix[0].length="" matrix.length="" nodesdata.length="" matrix.length)="" size="matrix.length;" graph(directed);="" size;="" nodesdata[i]);="" node.data.value="0;" node.data.outvalue="node.data.inValue" 0;="" j="0;" j++)="" item="matrix[i][j];" graph.nodes[i].data.outvalue="" graph.nodes[j].data.invalue="" graph.nodes[i].data.value="" graph.nodes[j].data.value="" (item="==" 0)="" continue;="" {});="" edge.data.weight="item;" (i="" j)="" (directed="" &&="" matrix[j][i])="" inedge="graph.addEdge(n2," n1,="" inedge.data.weight="matrix[j][i];" layout="" chord',="" ['require'],="" chordlayout="function" (opts)="" opts="opts" {};="" this.sort="opts.sort" this.sortsub="opts.sortSub" this.padding="0.05;" this.startangle="opts.startAngle" this.clockwise="opts.clockWise" false="" opts.clockwise;="" this.center="opts.center" ];="" this.directed="true;" chordlayout.prototype.run="function" (graphs)="" (!(graphs="" instanceof="" array))="" graphs="[graphs];" gl="graphs.length;" (!gl)="" graph0="graphs[0];" nl="graph0.nodes.length;" groups="[];" sumsize="0;" nl;="" g0node="graph0.nodes[i];" group="{" size:="" subgroups:="" [],="" node:="" groups.push(group);="" sumweight="0;" k="0;" graphs.length;="" k++)="" group.size="" node.outedges="" node.edges;="" w="e.layout.weight;" group.subgroups.push({="" weight:="" w,="" edge:="" e,="" graph:="" });="" multiplier="group.size" sumweight;="" group.subgroups.length;="" group.subgroups[j].weight="" *="multiplier;" (this.sortsub="==" 'ascending')="" group.subgroups.sort(comparesubgroups);="" (this.sort="==" 'descending')="" group.subgroups.reverse();="" groups.sort(comparegroups);="" groups.reverse();="" -="" nl)="" sumsize;="" angle="this.startAngle;" sign="this.clockWise" -1;="" group.node.layout.startangle="angle;" group.node.layout.endangle="angle" multiplier;="" group.node.layout.subgroups="[];" subgroup="group.subGroups[j];" subgroup.edge.layout.startangle="angle;" subgroup.weight="" subgroup.edge.layout.endangle="angle;" this.padding;="" comparesubgroups="function" (a,="" b)="" a.weight="" b.weight;="" comparegroups="function" a.size="" b.size;="" chordlayout;="" chart="" force',="" '.="" base',="" '..="" shape="" line',="" beziercurve',="" image',="" icon',="" config',="" ecdata',="" util',="" vector',="" chart'="" chartbase="require('./base');" forcelayout="require('../layout/Force');" lineshape="require('zrender/shape/Line');" beziercurveshape="require('zrender/shape/BezierCurve');" imageshape="require('zrender/shape/Image');" iconshape="require('../util/shape/Icon');" ecconfig="require('../config');" ecconfig.force="{" zlevel:="" 1,="" z:="" 2,="" center:="" '50%',="" '50%'="" '100%',="" preventoverlap:="" false,="" cooldown:="" 0.99,="" minradius:="" 10,="" maxradius:="" 20,="" ratioscaling:="" large:="" useworker:="" steps:="" scaling:="" gravity:="" symbol:="" 'circle',="" symbolsize:="" linksymbol:="" null,="" linksymbolsize:="" draggable:="" true,="" clickable:="" roam:="" itemstyle:="" normal:="" label:="" show:="" position:="" 'inside'="" },="" nodestyle:="" brushtype:="" 'both',="" bordercolor:="" '#5182ab',="" borderwidth:="" linkstyle:="" color:="" width:="" type:="" 'line'="" emphasis:="" {},="" opacity:="" ecdata="require('../util/ecData');" zrutil="require('zrender/tool/util');" zrconfig="require('zrender/config');" vec2="require('zrender/tool/vector');" force(ectheme,="" messagecenter,="" zr,="" option,="" mychart)="" self="this;" chartbase.call(this,="" ectheme,="" mychart);="" this.__nodepositionmap="{};" this._graph="new" graph(true);="" this._layout="new" forcelayout();="" this._layout.onupdate="function" self._step();="" this._steps="1;" this.ondragstart="function" ondragstart.apply(self,="" arguments);="" this.ondragend="function" ondragend.apply(self,="" this.ondrop="function" this.shapehandler.ondragstart="function" self.isdragstart="true;" this.onmousemove="function" onmousemove.apply(self,="" this.refresh(option);="" force.prototype="{" constructor:="" force,="" ecconfig.chart_type_force,="" _init:="" this.selectedmap="{};" legend="this.component.legend;" series="this.series;" seriename;="" this.clear();="" l="series.length;" l;="" serie="series[i];" (serie.type="==" ecconfig.chart_type_force)="" series[i]="this.reformOption(series[i]);" seriename="series[i].name" '';="" this.selectedmap[seriename]="legend" legend.isselected(seriename)="" true;="" (!this.selectedmap[seriename])="" this.buildmark(i);="" this._initserie(serie,="" break;="" this.animationeffect();="" _getnodecategory:="" (serie,="" serie.categories="" serie.categories[node.category="" 0];="" _getnodequerytarget:="" node,="" type)="" type="type" 'normal';="" category="this._getNodeCategory(serie," node.itemstyle="" node.itemstyle[type],="" category.itemstyle="" category.itemstyle[type],="" serie.itemstyle[type].nodestyle="" _getedgequerytarget:="" edge,="" edge.itemstyle="" edge.itemstyle[type],="" serie.itemstyle[type].linkstyle="" _initserie:="" serieidx)="" this._temperature="1;" (serie.matrix)="" (serie.links)="" this._buildlinkshapes(serie,="" serieidx);="" this._buildnodeshapes(serie,="" panable="serie.roam" true="" serie.roam="==" 'move';="" zoomable="serie.roam" 'scale';="" this.zr.modlayer(this.getzlevelbase(),="" panable:="" panable,="" zoomable:="" (this.query('markpoint.effect.show')="" this.query('markline.effect.show'))="" this.zr.modlayer(ecconfig.effect_zlevel,="" this._initlayout(serie);="" this._step();="" _getseriegraphfromdatamatrix:="" (serie)="" nodesdata="[];" count="0;" matrix="[];" serie.matrix.length;="" matrix[i]="serie.matrix[i].slice();" serie.nodes;="" data.length;="" in="" group)="" (key="==" 'name')="" node['id']="group['name'];" node[key]="group[key];" group);="" name="category" category.name="" group.name;="" this.selectedmap[name]="this.isSelected(name);" (this.selectedmap[name])="" nodesdata.push(node);="" count++;="" matrix.splice(count,="" matrix.length;="" matrix[j].splice(count,="" true);="" graph.eachnode(function="" (n,="" idx)="" n.layout="{" n.data.value,="" mass:="" n.rawindex="idx;" graph.eachedge(function="" (e)="" e.layout="{" e.data.weight="" _getseriegraphfromnodelinks:="" nodes="serie.data" n="nodes[i];" (!n="" n.ignore)="" n);="" n.name;="" node.rawindex="i;" 'number')="" (n1)="" (n2)="" e);="" edge.rawindex="i;" (n)="" value="n.data.value;" (value="=" null)="" n.edges.length;="" value,="" null="" _initlayout:="" minradius="this.query(serie," 'minradius');="" maxradius="this.query(serie," 'maxradius');="" 1;="" layout.center="this.parseCenter(this.zr," serie.center);="" layout.width="this.parsePercent(serie.size," this.zr.getwidth());="" layout.height="this.parsePercent(serie.size," this.zr.getheight());="" layout.large="serie.large;" layout.scaling="serie.scaling;" layout.ratioscaling="serie.ratioScaling;" layout.gravity="serie.gravity;" layout.temperature="1;" layout.cooldown="serie.coolDown;" layout.preventnodeedgeoverlap="serie.preventOverlap;" layout.preventnodeoverlap="serie.preventOverlap;" min="Infinity;" max="-Infinity;" gnode="graph.nodes[i];" max);="" min);="" divider="max" min;="" (divider=""> 0) {
+            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                return area.isInsidePath(this._pathProxy.pathCommands, 0, 'fill', x, y);
+            }
+        }
+    };
+    zrUtil.inherits(RibbonShape, Base);
+    return RibbonShape;
+});define('echarts/data/Graph', [
+    'require',
+    'zrender/tool/util'
+], function (require) {
+    var util = require('zrender/tool/util');
+    'use strict';
+    var Graph = function (directed) {
+        this._directed = directed || false;
+        this.nodes = [];
+        this.edges = [];
+        this._nodesMap = {};
+        this._edgesMap = {};
+    };
+    Graph.prototype.isDirected = function () {
+        return this._directed;
+    };
+    Graph.prototype.addNode = function (id, data) {
+        if (this._nodesMap[id]) {
+            return this._nodesMap[id];
+        }
+        var node = new Graph.Node(id, data);
+        this.nodes.push(node);
+        this._nodesMap[id] = node;
+        return node;
+    };
+    Graph.prototype.getNodeById = function (id) {
+        return this._nodesMap[id];
+    };
+    Graph.prototype.addEdge = function (n1, n2, data) {
+        if (typeof n1 == 'string') {
+            n1 = this._nodesMap[n1];
+        }
+        if (typeof n2 == 'string') {
+            n2 = this._nodesMap[n2];
+        }
+        if (!n1 || !n2) {
+            return;
+        }
+        var key = n1.id + '-' + n2.id;
+        if (this._edgesMap[key]) {
+            return this._edgesMap[key];
+        }
+        var edge = new Graph.Edge(n1, n2, data);
+        if (this._directed) {
+            n1.outEdges.push(edge);
+            n2.inEdges.push(edge);
+        }
+        n1.edges.push(edge);
+        if (n1 !== n2) {
+            n2.edges.push(edge);
+        }
+        this.edges.push(edge);
+        this._edgesMap[key] = edge;
+        return edge;
+    };
+    Graph.prototype.removeEdge = function (edge) {
+        var n1 = edge.node1;
+        var n2 = edge.node2;
+        var key = n1.id + '-' + n2.id;
+        if (this._directed) {
+            n1.outEdges.splice(util.indexOf(n1.outEdges, edge), 1);
+            n2.inEdges.splice(util.indexOf(n2.inEdges, edge), 1);
+        }
+        n1.edges.splice(util.indexOf(n1.edges, edge), 1);
+        if (n1 !== n2) {
+            n2.edges.splice(util.indexOf(n2.edges, edge), 1);
+        }
+        delete this._edgesMap[key];
+        this.edges.splice(util.indexOf(this.edges, edge), 1);
+    };
+    Graph.prototype.getEdge = function (n1, n2) {
+        if (typeof n1 !== 'string') {
+            n1 = n1.id;
+        }
+        if (typeof n2 !== 'string') {
+            n2 = n2.id;
+        }
+        if (this._directed) {
+            return this._edgesMap[n1 + '-' + n2];
+        } else {
+            return this._edgesMap[n1 + '-' + n2] || this._edgesMap[n2 + '-' + n1];
+        }
+    };
+    Graph.prototype.removeNode = function (node) {
+        if (typeof node === 'string') {
+            node = this._nodesMap[node];
+            if (!node) {
+                return;
+            }
+        }
+        delete this._nodesMap[node.id];
+        this.nodes.splice(util.indexOf(this.nodes, node), 1);
+        for (var i = 0; i < this.edges.length;) {
+            var edge = this.edges[i];
+            if (edge.node1 === node || edge.node2 === node) {
+                this.removeEdge(edge);
+            } else {
+                i++;
+            }
+        }
+    };
+    Graph.prototype.filterNode = function (cb, context) {
+        var len = this.nodes.length;
+        for (var i = 0; i < len;) {
+            if (cb.call(context, this.nodes[i], i)) {
+                i++;
+            } else {
+                this.removeNode(this.nodes[i]);
+                len--;
+            }
+        }
+    };
+    Graph.prototype.filterEdge = function (cb, context) {
+        var len = this.edges.length;
+        for (var i = 0; i < len;) {
+            if (cb.call(context, this.edges[i], i)) {
+                i++;
+            } else {
+                this.removeEdge(this.edges[i]);
+                len--;
+            }
+        }
+    };
+    Graph.prototype.eachNode = function (cb, context) {
+        var len = this.nodes.length;
+        for (var i = 0; i < len; i++) {
+            if (this.nodes[i]) {
+                cb.call(context, this.nodes[i], i);
+            }
+        }
+    };
+    Graph.prototype.eachEdge = function (cb, context) {
+        var len = this.edges.length;
+        for (var i = 0; i < len; i++) {
+            if (this.edges[i]) {
+                cb.call(context, this.edges[i], i);
+            }
+        }
+    };
+    Graph.prototype.clear = function () {
+        this.nodes.length = 0;
+        this.edges.length = 0;
+        this._nodesMap = {};
+        this._edgesMap = {};
+    };
+    Graph.prototype.breadthFirstTraverse = function (cb, startNode, direction, context) {
+        if (typeof startNode === 'string') {
+            startNode = this._nodesMap[startNode];
+        }
+        if (!startNode) {
+            return;
+        }
+        var edgeType = 'edges';
+        if (direction === 'out') {
+            edgeType = 'outEdges';
+        } else if (direction === 'in') {
+            edgeType = 'inEdges';
+        }
+        for (var i = 0; i < this.nodes.length; i++) {
+            this.nodes[i].__visited = false;
+        }
+        if (cb.call(context, startNode, null)) {
+            return;
+        }
+        var queue = [startNode];
+        while (queue.length) {
+            var currentNode = queue.shift();
+            var edges = currentNode[edgeType];
+            for (var i = 0; i < edges.length; i++) {
+                var e = edges[i];
+                var otherNode = e.node1 === currentNode ? e.node2 : e.node1;
+                if (!otherNode.__visited) {
+                    if (cb.call(otherNode, otherNode, currentNode)) {
+                        return;
+                    }
+                    queue.push(otherNode);
+                    otherNode.__visited = true;
+                }
+            }
+        }
+    };
+    Graph.prototype.clone = function () {
+        var graph = new Graph(this._directed);
+        for (var i = 0; i < this.nodes.length; i++) {
+            graph.addNode(this.nodes[i].id, this.nodes[i].data);
+        }
+        for (var i = 0; i < this.edges.length; i++) {
+            var e = this.edges[i];
+            graph.addEdge(e.node1.id, e.node2.id, e.data);
+        }
+        return graph;
+    };
+    var Node = function (id, data) {
+        this.id = id;
+        this.data = data || null;
+        this.inEdges = [];
+        this.outEdges = [];
+        this.edges = [];
+    };
+    Node.prototype.degree = function () {
+        return this.edges.length;
+    };
+    Node.prototype.inDegree = function () {
+        return this.inEdges.length;
+    };
+    Node.prototype.outDegree = function () {
+        return this.outEdges.length;
+    };
+    var Edge = function (node1, node2, data) {
+        this.node1 = node1;
+        this.node2 = node2;
+        this.data = data || null;
+    };
+    Graph.Node = Node;
+    Graph.Edge = Edge;
+    Graph.fromMatrix = function (nodesData, matrix, directed) {
+        if (!matrix || !matrix.length || matrix[0].length !== matrix.length || nodesData.length !== matrix.length) {
+            return;
+        }
+        var size = matrix.length;
+        var graph = new Graph(directed);
+        for (var i = 0; i < size; i++) {
+            var node = graph.addNode(nodesData[i].id, nodesData[i]);
+            node.data.value = 0;
+            if (directed) {
+                node.data.outValue = node.data.inValue = 0;
+            }
+        }
+        for (var i = 0; i < size; i++) {
+            for (var j = 0; j < size; j++) {
+                var item = matrix[i][j];
+                if (directed) {
+                    graph.nodes[i].data.outValue += item;
+                    graph.nodes[j].data.inValue += item;
+                }
+                graph.nodes[i].data.value += item;
+                graph.nodes[j].data.value += item;
+            }
+        }
+        for (var i = 0; i < size; i++) {
+            for (var j = i; j < size; j++) {
+                var item = matrix[i][j];
+                if (item === 0) {
+                    continue;
+                }
+                var n1 = graph.nodes[i];
+                var n2 = graph.nodes[j];
+                var edge = graph.addEdge(n1, n2, {});
+                edge.data.weight = item;
+                if (i !== j) {
+                    if (directed && matrix[j][i]) {
+                        var inEdge = graph.addEdge(n2, n1, {});
+                        inEdge.data.weight = matrix[j][i];
+                    }
+                }
+            }
+        }
+        return graph;
+    };
+    return Graph;
+});define('echarts/layout/Chord', ['require'], function (require) {
+    var ChordLayout = function (opts) {
+        opts = opts || {};
+        this.sort = opts.sort || null;
+        this.sortSub = opts.sortSub || null;
+        this.padding = 0.05;
+        this.startAngle = opts.startAngle || 0;
+        this.clockWise = opts.clockWise == null ? false : opts.clockWise;
+        this.center = opts.center || [
+            0,
+            0
+        ];
+        this.directed = true;
+    };
+    ChordLayout.prototype.run = function (graphs) {
+        if (!(graphs instanceof Array)) {
+            graphs = [graphs];
+        }
+        var gl = graphs.length;
+        if (!gl) {
+            return;
+        }
+        var graph0 = graphs[0];
+        var nl = graph0.nodes.length;
+        var groups = [];
+        var sumSize = 0;
+        for (var i = 0; i < nl; i++) {
+            var g0node = graph0.nodes[i];
+            var group = {
+                size: 0,
+                subGroups: [],
+                node: g0node
+            };
+            groups.push(group);
+            var sumWeight = 0;
+            for (var k = 0; k < graphs.length; k++) {
+                var graph = graphs[k];
+                var node = graph.getNodeById(g0node.id);
+                if (!node) {
+                    continue;
+                }
+                group.size += node.layout.size;
+                var edges = this.directed ? node.outEdges : node.edges;
+                for (var j = 0; j < edges.length; j++) {
+                    var e = edges[j];
+                    var w = e.layout.weight;
+                    group.subGroups.push({
+                        weight: w,
+                        edge: e,
+                        graph: graph
+                    });
+                    sumWeight += w;
+                }
+            }
+            sumSize += group.size;
+            var multiplier = group.size / sumWeight;
+            for (var j = 0; j < group.subGroups.length; j++) {
+                group.subGroups[j].weight *= multiplier;
+            }
+            if (this.sortSub === 'ascending') {
+                group.subGroups.sort(compareSubGroups);
+            } else if (this.sort === 'descending') {
+                group.subGroups.sort(compareSubGroups);
+                group.subGroups.reverse();
+            }
+        }
+        if (this.sort === 'ascending') {
+            groups.sort(compareGroups);
+        } else if (this.sort === 'descending') {
+            groups.sort(compareGroups);
+            groups.reverse();
+        }
+        var multiplier = (Math.PI * 2 - this.padding * nl) / sumSize;
+        var angle = this.startAngle;
+        var sign = this.clockWise ? 1 : -1;
+        for (var i = 0; i < nl; i++) {
+            var group = groups[i];
+            group.node.layout.startAngle = angle;
+            group.node.layout.endAngle = angle + sign * group.size * multiplier;
+            group.node.layout.subGroups = [];
+            for (var j = 0; j < group.subGroups.length; j++) {
+                var subGroup = group.subGroups[j];
+                subGroup.edge.layout.startAngle = angle;
+                angle += sign * subGroup.weight * multiplier;
+                subGroup.edge.layout.endAngle = angle;
+            }
+            angle = group.node.layout.endAngle + sign * this.padding;
+        }
+    };
+    var compareSubGroups = function (a, b) {
+        return a.weight - b.weight;
+    };
+    var compareGroups = function (a, b) {
+        return a.size - b.size;
+    };
+    return ChordLayout;
+});define('echarts/chart/force', [
+    'require',
+    './base',
+    '../data/Graph',
+    '../layout/Force',
+    'zrender/shape/Line',
+    'zrender/shape/BezierCurve',
+    'zrender/shape/Image',
+    '../util/shape/Icon',
+    '../config',
+    '../util/ecData',
+    'zrender/tool/util',
+    'zrender/config',
+    'zrender/tool/vector',
+    '../chart'
+], function (require) {
+    'use strict';
+    var ChartBase = require('./base');
+    var Graph = require('../data/Graph');
+    var ForceLayout = require('../layout/Force');
+    var LineShape = require('zrender/shape/Line');
+    var BezierCurveShape = require('zrender/shape/BezierCurve');
+    var ImageShape = require('zrender/shape/Image');
+    var IconShape = require('../util/shape/Icon');
+    var ecConfig = require('../config');
+    ecConfig.force = {
+        zlevel: 1,
+        z: 2,
+        center: [
+            '50%',
+            '50%'
+        ],
+        size: '100%',
+        preventOverlap: false,
+        coolDown: 0.99,
+        minRadius: 10,
+        maxRadius: 20,
+        ratioScaling: false,
+        large: false,
+        useWorker: false,
+        steps: 1,
+        scaling: 1,
+        gravity: 1,
+        symbol: 'circle',
+        symbolSize: 0,
+        linkSymbol: null,
+        linkSymbolSize: [
+            10,
+            15
+        ],
+        draggable: true,
+        clickable: true,
+        roam: false,
+        itemStyle: {
+            normal: {
+                label: {
+                    show: false,
+                    position: 'inside'
+                },
+                nodeStyle: {
+                    brushType: 'both',
+                    borderColor: '#5182ab',
+                    borderWidth: 1
+                },
+                linkStyle: {
+                    color: '#5182ab',
+                    width: 1,
+                    type: 'line'
+                }
+            },
+            emphasis: {
+                label: { show: false },
+                nodeStyle: {},
+                linkStyle: { opacity: 0 }
+            }
+        }
+    };
+    var ecData = require('../util/ecData');
+    var zrUtil = require('zrender/tool/util');
+    var zrConfig = require('zrender/config');
+    var vec2 = require('zrender/tool/vector');
+    function Force(ecTheme, messageCenter, zr, option, myChart) {
+        var self = this;
+        ChartBase.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.__nodePositionMap = {};
+        this._graph = new Graph(true);
+        this._layout = new ForceLayout();
+        this._layout.onupdate = function () {
+            self._step();
+        };
+        this._steps = 1;
+        this.ondragstart = function () {
+            ondragstart.apply(self, arguments);
+        };
+        this.ondragend = function () {
+            ondragend.apply(self, arguments);
+        };
+        this.ondrop = function () {
+        };
+        this.shapeHandler.ondragstart = function () {
+            self.isDragstart = true;
+        };
+        this.onmousemove = function () {
+            onmousemove.apply(self, arguments);
+        };
+        this.refresh(option);
+    }
+    Force.prototype = {
+        constructor: Force,
+        type: ecConfig.CHART_TYPE_FORCE,
+        _init: function () {
+            this.selectedMap = {};
+            var legend = this.component.legend;
+            var series = this.series;
+            var serieName;
+            this.clear();
+            for (var i = 0, l = series.length; i < l; i++) {
+                var serie = series[i];
+                if (serie.type === ecConfig.CHART_TYPE_FORCE) {
+                    series[i] = this.reformOption(series[i]);
+                    serieName = series[i].name || '';
+                    this.selectedMap[serieName] = legend ? legend.isSelected(serieName) : true;
+                    if (!this.selectedMap[serieName]) {
+                        continue;
+                    }
+                    this.buildMark(i);
+                    this._initSerie(serie, i);
+                    break;
+                }
+            }
+            this.animationEffect();
+        },
+        _getNodeCategory: function (serie, node) {
+            return serie.categories && serie.categories[node.category || 0];
+        },
+        _getNodeQueryTarget: function (serie, node, type) {
+            type = type || 'normal';
+            var category = this._getNodeCategory(serie, node) || {};
+            return [
+                node.itemStyle && node.itemStyle[type],
+                category && category.itemStyle && category.itemStyle[type],
+                serie.itemStyle[type].nodeStyle
+            ];
+        },
+        _getEdgeQueryTarget: function (serie, edge, type) {
+            type = type || 'normal';
+            return [
+                edge.itemStyle && edge.itemStyle[type],
+                serie.itemStyle[type].linkStyle
+            ];
+        },
+        _initSerie: function (serie, serieIdx) {
+            this._temperature = 1;
+            if (serie.matrix) {
+                this._graph = this._getSerieGraphFromDataMatrix(serie);
+            } else if (serie.links) {
+                this._graph = this._getSerieGraphFromNodeLinks(serie);
+            }
+            this._buildLinkShapes(serie, serieIdx);
+            this._buildNodeShapes(serie, serieIdx);
+            var panable = serie.roam === true || serie.roam === 'move';
+            var zoomable = serie.roam === true || serie.roam === 'scale';
+            this.zr.modLayer(this.getZlevelBase(), {
+                panable: panable,
+                zoomable: zoomable
+            });
+            if (this.query('markPoint.effect.show') || this.query('markLine.effect.show')) {
+                this.zr.modLayer(ecConfig.EFFECT_ZLEVEL, {
+                    panable: panable,
+                    zoomable: zoomable
+                });
+            }
+            this._initLayout(serie);
+            this._step();
+        },
+        _getSerieGraphFromDataMatrix: function (serie) {
+            var nodesData = [];
+            var count = 0;
+            var matrix = [];
+            for (var i = 0; i < serie.matrix.length; i++) {
+                matrix[i] = serie.matrix[i].slice();
+            }
+            var data = serie.data || serie.nodes;
+            for (var i = 0; i < data.length; i++) {
+                var node = {};
+                var group = data[i];
+                for (var key in group) {
+                    if (key === 'name') {
+                        node['id'] = group['name'];
+                    } else {
+                        node[key] = group[key];
+                    }
+                }
+                var category = this._getNodeCategory(serie, group);
+                var name = category ? category.name : group.name;
+                this.selectedMap[name] = this.isSelected(name);
+                if (this.selectedMap[name]) {
+                    nodesData.push(node);
+                    count++;
+                } else {
+                    matrix.splice(count, 1);
+                    for (var j = 0; j < matrix.length; j++) {
+                        matrix[j].splice(count, 1);
+                    }
+                }
+            }
+            var graph = Graph.fromMatrix(nodesData, matrix, true);
+            graph.eachNode(function (n, idx) {
+                n.layout = {
+                    size: n.data.value,
+                    mass: 0
+                };
+                n.rawIndex = idx;
+            });
+            graph.eachEdge(function (e) {
+                e.layout = { weight: e.data.weight };
+            });
+            return graph;
+        },
+        _getSerieGraphFromNodeLinks: function (serie) {
+            var graph = new Graph(true);
+            var nodes = serie.data || serie.nodes;
+            for (var i = 0, len = nodes.length; i < len; i++) {
+                var n = nodes[i];
+                if (!n || n.ignore) {
+                    continue;
+                }
+                var category = this._getNodeCategory(serie, n);
+                var name = category ? category.name : n.name;
+                this.selectedMap[name] = this.isSelected(name);
+                if (this.selectedMap[name]) {
+                    var node = graph.addNode(n.name, n);
+                    node.rawIndex = i;
+                }
+            }
+            for (var i = 0, len = serie.links.length; i < len; i++) {
+                var e = serie.links[i];
+                var n1 = e.source;
+                var n2 = e.target;
+                if (typeof n1 === 'number') {
+                    n1 = nodes[n1];
+                    if (n1) {
+                        n1 = n1.name;
+                    }
+                }
+                if (typeof n2 === 'number') {
+                    n2 = nodes[n2];
+                    if (n2) {
+                        n2 = n2.name;
+                    }
+                }
+                var edge = graph.addEdge(n1, n2, e);
+                if (edge) {
+                    edge.rawIndex = i;
+                }
+            }
+            graph.eachNode(function (n) {
+                var value = n.data.value;
+                if (value == null) {
+                    value = 0;
+                    for (var i = 0; i < n.edges.length; i++) {
+                        value += n.edges[i].data.weight || 0;
+                    }
+                }
+                n.layout = {
+                    size: value,
+                    mass: 0
+                };
+            });
+            graph.eachEdge(function (e) {
+                e.layout = { weight: e.data.weight == null ? 1 : e.data.weight };
+            });
+            return graph;
+        },
+        _initLayout: function (serie) {
+            var graph = this._graph;
+            var len = graph.nodes.length;
+            var minRadius = this.query(serie, 'minRadius');
+            var maxRadius = this.query(serie, 'maxRadius');
+            this._steps = serie.steps || 1;
+            var layout = this._layout;
+            layout.center = this.parseCenter(this.zr, serie.center);
+            layout.width = this.parsePercent(serie.size, this.zr.getWidth());
+            layout.height = this.parsePercent(serie.size, this.zr.getHeight());
+            layout.large = serie.large;
+            layout.scaling = serie.scaling;
+            layout.ratioScaling = serie.ratioScaling;
+            layout.gravity = serie.gravity;
+            layout.temperature = 1;
+            layout.coolDown = serie.coolDown;
+            layout.preventNodeEdgeOverlap = serie.preventOverlap;
+            layout.preventNodeOverlap = serie.preventOverlap;
+            var min = Infinity;
+            var max = -Infinity;
+            for (var i = 0; i < len; i++) {
+                var gNode = graph.nodes[i];
+                max = Math.max(gNode.layout.size, max);
+                min = Math.min(gNode.layout.size, min);
+            }
+            var divider = max - min;
+            for (var i = 0; i < len; i++) {
+                var gNode = graph.nodes[i];
+                if (divider > 0) {
                     gNode.layout.size = (gNode.layout.size - min) * (maxRadius - minRadius) / divider + minRadius;
                     gNode.layout.mass = gNode.layout.size / maxRadius;
                 } else {
@@ -25930,7 +29134,7 @@ define('zrender/zrender', [
         }
     };
     Region.prototype.contain = function (x, y) {
-        return this.bbox[0] <= x="" &&="" this.bbox[2]="">= x && this.bbox[1] <= y="" &&="" this.bbox[3]="">= y;
+        return this.bbox[0] <= x && this.bbox[2] >= x && this.bbox[1] <= y && this.bbox[3] >= y;
     };
     Region.prototype.setBBox = function (minX, minY, maxX, maxY) {
         this.bbox[0] = minX;
@@ -26212,7 +29416,50 @@ define('zrender/zrender', [
                 d = d - na.size - nb.size;
                 if (d > 0) {
                     factor = this.nodeToNodeRepulsionFactor(mass, d, this._k);
-                } else if (d <= 10="" 0)="" {="" factor="this._k" *="" this._k="" mass;="" }="" else="" d,="" this._k);="" if="" (!oneway)="" vec2.scaleandadd(na.force,="" na.force,="" v,="" 2);="" vec2.scaleandadd(nb.force,="" nb.force,="" -factor="" };="" }();="" forcelayout.prototype.applyedgeattraction="function" ()="" var="" v="vec2.create();" return="" function="" applyedgeattraction(edge)="" na="edge.node1;" nb="edge.node2;" vec2.sub(v,="" na.position,="" nb.position);="" d="vec2.len(v);" w;="" (this.edgeweightinfluence="==" w="1;" 1)="" this.edgeweightinfluence);="" factor;="" (this.preventoverlap)="" -="" na.size="" nb.size;="" (d="" <="0)" return;="" -factor);="" factor);="" forcelayout.prototype.applynodegravity="function" (node)="" this.center,="" node.position);="" (this.width=""> this.height) {
+                } else if (d <= 0) {
+                    factor = this._k * this._k * 10 * mass;
+                }
+            } else {
+                factor = this.nodeToNodeRepulsionFactor(mass, d, this._k);
+            }
+            if (!oneWay) {
+                vec2.scaleAndAdd(na.force, na.force, v, factor * 2);
+            }
+            vec2.scaleAndAdd(nb.force, nb.force, v, -factor * 2);
+        };
+    }();
+    ForceLayout.prototype.applyEdgeAttraction = function () {
+        var v = vec2.create();
+        return function applyEdgeAttraction(edge) {
+            var na = edge.node1;
+            var nb = edge.node2;
+            vec2.sub(v, na.position, nb.position);
+            var d = vec2.len(v);
+            var w;
+            if (this.edgeWeightInfluence === 0) {
+                w = 1;
+            } else if (this.edgeWeightInfluence == 1) {
+                w = edge.weight;
+            } else {
+                w = Math.pow(edge.weight, this.edgeWeightInfluence);
+            }
+            var factor;
+            if (this.preventOverlap) {
+                d = d - na.size - nb.size;
+                if (d <= 0) {
+                    return;
+                }
+            }
+            var factor = this.attractionFactor(w, d, this._k);
+            vec2.scaleAndAdd(na.force, na.force, v, -factor);
+            vec2.scaleAndAdd(nb.force, nb.force, v, factor);
+        };
+    }();
+    ForceLayout.prototype.applyNodeGravity = function () {
+        var v = vec2.create();
+        return function (node) {
+            vec2.sub(v, this.center, node.position);
+            if (this.width > this.height) {
                 v[1] *= this.width / this.height;
             } else {
                 v[0] *= this.height / this.width;
@@ -26576,7 +29823,28 @@ define('zrender/zrender', [
                 }
                 self._buildMap(mt, self._getProjectionData(mt, md, ms), vd, ms);
                 self._buildMark(mt, ms);
-                if (--self._mapDataRequireCounter <= 0)="" {="" self.addshapelist();="" self.zr.refreshnextframe();="" }="" self._buildheatmap(mt);="" };="" },="" _clearselected:="" function="" ()="" for="" (var="" k="" in="" this._selected)="" if="" (!this._activemaptype[this._maptypemap[k]])="" delete="" this._selected[k];="" this._maptypemap[k];="" _getsubmapdata:="" (maptype,="" mapdata)="" var="" subtype="mapType.replace(/^.*\|/," '');="" features="mapData.features;" i="0," l="features.length;" <="" l;="" i++)="" (features[i].properties="" &&="" features[i].properties.name="=" subtype)="" (subtype="=" 'united="" states="" of="" america'="" features.geometry.coordinates.length=""> 1) {
+                if (--self._mapDataRequireCounter <= 0) {
+                    self.addShapeList();
+                    self.zr.refreshNextFrame();
+                }
+                self._buildHeatmap(mt);
+            };
+        },
+        _clearSelected: function () {
+            for (var k in this._selected) {
+                if (!this._activeMapType[this._mapTypeMap[k]]) {
+                    delete this._selected[k];
+                    delete this._mapTypeMap[k];
+                }
+            }
+        },
+        _getSubMapData: function (mapType, mapData) {
+            var subType = mapType.replace(/^.*\|/, '');
+            var features = mapData.features;
+            for (var i = 0, l = features.length; i < l; i++) {
+                if (features[i].properties && features[i].properties.name == subType) {
+                    features = features[i];
+                    if (subType == 'United States of America' && features.geometry.coordinates.length > 1) {
                         features = {
                             geometry: {
                                 coordinates: features.geometry.coordinates.slice(5, 6),
@@ -27087,14 +30355,357 @@ define('zrender/zrender', [
                 top = transform.top;
                 width = transform.width;
                 height = transform.height;
-                if (mx >= left && mx <= left="" +="" width="" &&="" my="">= top && my <= top="" +="" height)="" {="" return="" maptype;="" }="" return;="" },="" __onmousewheel:="" function="" (params)="" if="" (this.shapelist.length="" <="0)" for="" (var="" i="0," l="this.shapeList.length;" l;="" i++)="" var="" shape="this.shapeList[i];" (shape.__animating)="" event="params.event;" mx="zrEvent.getX(event);" my="zrEvent.getY(event);" delta;="" eventdelta="zrEvent.getDelta(event);" maptypecontrol="params.mapTypeControl;" (!maptypecontrol)="" maptype="this._findMapTypeByPos(mx," my);="" (maptype="" &&="" this._roammap[maptype]="" !="move" )="" maptypecontrol[maptype]="true;" scalepolyline(shapestyle,="" delta)="" shapestyle.pointlist.length;="" point="shapeStyle.pointList[i];" point[0]="" *="delta;" point[1]="" controlpointlist="shapeStyle.controlPointList;" (controlpointlist)="" controlpointlist.length;="" scalemarkline(shapestyle,="" shapestyle.xstart="" shapestyle.ystart="" shapestyle.xend="" shapestyle.yend="" (shapestyle.cpx1="" shapestyle.cpx1="" shapestyle.cpy1="" havescale="false;" in="" maptypecontrol)="" (maptypecontrol[maptype])="" transform="this._mapDataMap[mapType].transform;" left="transform.left;" width="transform.width;" height="transform.height;" geoandpos="this.pos2geo(mapType," [="" -="" left,="" ]);="" (eventdelta=""> 0) {
+                if (mx >= left && mx <= left + width && my >= top && my <= top + height) {
+                    return mapType;
+                }
+            }
+            return;
+        },
+        __onmousewheel: function (params) {
+            if (this.shapeList.length <= 0) {
+                return;
+            }
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                var shape = this.shapeList[i];
+                if (shape.__animating) {
+                    return;
+                }
+            }
+            var event = params.event;
+            var mx = zrEvent.getX(event);
+            var my = zrEvent.getY(event);
+            var delta;
+            var eventDelta = zrEvent.getDelta(event);
+            var mapType;
+            var mapTypeControl = params.mapTypeControl;
+            if (!mapTypeControl) {
+                mapTypeControl = {};
+                mapType = this._findMapTypeByPos(mx, my);
+                if (mapType && this._roamMap[mapType] && this._roamMap[mapType] != 'move') {
+                    mapTypeControl[mapType] = true;
+                }
+            }
+            function scalePolyline(shapeStyle, delta) {
+                for (var i = 0; i < shapeStyle.pointList.length; i++) {
+                    var point = shapeStyle.pointList[i];
+                    point[0] *= delta;
+                    point[1] *= delta;
+                }
+                var controlPointList = shapeStyle.controlPointList;
+                if (controlPointList) {
+                    for (var i = 0; i < controlPointList.length; i++) {
+                        var point = controlPointList[i];
+                        point[0] *= delta;
+                        point[1] *= delta;
+                    }
+                }
+            }
+            function scaleMarkline(shapeStyle, delta) {
+                shapeStyle.xStart *= delta;
+                shapeStyle.yStart *= delta;
+                shapeStyle.xEnd *= delta;
+                shapeStyle.yEnd *= delta;
+                if (shapeStyle.cpX1 != null) {
+                    shapeStyle.cpX1 *= delta;
+                    shapeStyle.cpY1 *= delta;
+                }
+            }
+            var haveScale = false;
+            for (mapType in mapTypeControl) {
+                if (mapTypeControl[mapType]) {
+                    haveScale = true;
+                    var transform = this._mapDataMap[mapType].transform;
+                    var left = transform.left;
+                    var top = transform.top;
+                    var width = transform.width;
+                    var height = transform.height;
+                    var geoAndPos = this.pos2geo(mapType, [
+                        mx - left,
+                        my - top
+                    ]);
+                    if (eventDelta > 0) {
                         delta = 1.2;
                         if (this._scaleLimitMap[mapType].max != null && transform.baseScale >= this._scaleLimitMap[mapType].max) {
                             continue;
                         }
                     } else {
                         delta = 1 / 1.2;
-                        if (this._scaleLimitMap[mapType].min != null && transform.baseScale <= this._scalelimitmap[maptype].min)="" {="" continue;="" }="" transform.basescale="" *="delta;" transform.scale.x="" transform.scale.y="" transform.width="width" delta;="" transform.height="height" this._mapdatamap[maptype].hasroam="true;" this._mapdatamap[maptype].transform="transform;" geoandpos="this.geo2pos(mapType," geoandpos);="" transform.left="" -="geoAndPos[0]" (mx="" left);="" transform.top="" (my="" top);="" this.cleareffectshape(true);="" for="" (var="" i="0," l="this.shapeList.length;" <="" l;="" i++)="" var="" shape="this.shapeList[i];" if="" (shape._maptype="=" maptype)="" shapetype="shape.type;" shapestyle="shape.style;" shape.position[0]="transform.left;" shape.position[1]="transform.top;" switch="" (shapetype)="" case="" 'path':="" 'symbol':="" 'circle':="" 'rectangle':="" 'polygon':="" 'line':="" 'ellipse':="" 'heatmap':="" shape.scale[0]="" shape.scale[1]="" break;="" 'mark-line':="" scalemarkline(shapestyle,="" delta);="" 'polyline':="" scalepolyline(shapestyle,="" 'shape-bundle':="" j="0;" shapestyle.shapelist.length;="" j++)="" subshape="shapeStyle.shapeList[j];" (subshape.type="=" 'mark-line')="" scalemarkline(subshape.style,="" else="" 'polyline')="" scalepolyline(subshape.style,="" 'icon':="" 'image':="" shape._geo);="" shapestyle.x="shapeStyle._x" =="" geoandpos[0]="" shapestyle.width="" 2;="" shapestyle.y="shapeStyle._y" geoandpos[1]="" shapestyle.height="" default:="" (shapetype="=" 'text')="" shape._style.x="shape.highlightStyle.x" geoandpos[0];="" shape._style.y="shape.highlightStyle.y" geoandpos[1];="" this.zr.modshape(shape.id);="" (havescale)="" zrevent.stop(event);="" this.zr.refreshnextframe();="" self="this;" cleartimeout(this._refreshdelayticket);="" this._refreshdelayticket="setTimeout(function" ()="" &&="" self.shapelist="" self.animationeffect();="" },="" 100);="" this.messagecenter.dispatch(ecconfig.event.map_roam,="" params.event,="" type:="" 'scale'="" this.mychart);="" __onmousedown:="" function="" (params)="" (this.shapelist.length="" return;="" target="params.target;" (target="" target.draggable)="" event="params.event;" mx="zrEvent.getX(event);" my="zrEvent.getY(event);" maptype="this._findMapTypeByPos(mx," my);="" (maptype="" this._roammap[maptype]="" !="scale" )="" this._mousedown="true;" this._mx="mx;" this._my="my;" this._curmaptype="mapType;" this.zr.on(zrconfig.event.mouseup,="" this._onmouseup);="" settimeout(function="" self.zr.on(zrconfig.event.mousemove,="" self._onmousemove);="" __onmousemove:="" (!this._mousedown="" ||="" !this._isalive)="" transform="this._mapDataMap[this._curMapType].transform;" transform.hasroam="true;" mx;="" my;="" this._mapdatamap[this._curmaptype].transform="transform;" (this.shapelist[i]._maptype="=" this._curmaptype)="" this.shapelist[i].position[0]="transform.left;" this.shapelist[i].position[1]="transform.top;" this.zr.modshape(this.shapelist[i].id);="" 'move'="" this._justmove="true;" __onmouseup:="" self._justmove="" self.zr.un(zrconfig.event.mousemove,="" self.zr.un(zrconfig.event.mouseup,="" self._onmouseup);="" 120);="" __onroamcontroller:="" event.zrenderx="this.zr.getWidth()" event.zrendery="this.zr.getHeight()" maptypecontrol="params.mapTypeControl;" top="0;" left="0;" step="params.step;" (params.roamtype)="" 'scaleup':="" event.zrenderdelta="1;" this.__onmousewheel({="" event:="" event,="" maptypecontrol:="" });="" 'scaledown':="" 'up':="" 'down':="" 'left':="" 'right':="" transform;="" curmaptype;="" (curmaptype="" in="" maptypecontrol)="" (!this._mapdatamap[curmaptype]="" !this._activemaptype[curmaptype])="" this._mapdatamap[curmaptype].transform="transform;" curmaptype="this.shapeList[i]._mapType;" (!maptypecontrol[curmaptype]="" cleartimeout(this.dircetiontimer);="" this.dircetiontimer="setTimeout(function" 150);="" __ondrhoverlink:="" (param)="" value;="" (!this._hoverlinkmap[curmaptype]="" value="ecData.get(this.shapeList[i]," 'value');="" (value="">= param.valueMin && value <= param.valuemax)="" {="" this.zr.addhovershape(this.shapelist[i]);="" }="" },="" onclick:="" function="" (params)="" if="" (!this.isclick="" ||="" !params.target="" this._justmove="" params.target.type="=" 'icon')="" return;="" this.isclick="false;" var="" target="params.target;" name="target.style._name;" len="this.shapeList.length;" maptype="target._mapType" '';="" (this._selectedmode[maptype]="=" 'single')="" for="" (var="" p="" in="" this._selected)="" (this._selected[p]="" &&="" this._maptypemap[p]="=" maptype)="" i="0;" <="" len;="" i++)="" (this.shapelist[i].style._name="=" this.shapelist[i]._maptype="=" this.shapelist[i].style="this.shapeList[i]._style;" this.zr.modshape(this.shapelist[i].id);="" !="name" this._selected[name]="!this._selected[name];" (this._selected[name])="" else="" this.messagecenter.dispatch(ecconfig.event.map_selected,="" params.event,="" selected:="" this._selected,="" target:="" this.mychart);="" this.zr.refreshnextframe();="" self="this;" settimeout(function="" ()="" self.zr.trigger(zrconfig.event.mousemove,="" params.event);="" 100);="" refresh:="" (newoption)="" this.option="newOption;" this.series="newOption.series;" (this._mapdatarequirecounter=""> 0) {
+                        if (this._scaleLimitMap[mapType].min != null && transform.baseScale <= this._scaleLimitMap[mapType].min) {
+                            continue;
+                        }
+                    }
+                    transform.baseScale *= delta;
+                    transform.scale.x *= delta;
+                    transform.scale.y *= delta;
+                    transform.width = width * delta;
+                    transform.height = height * delta;
+                    this._mapDataMap[mapType].hasRoam = true;
+                    this._mapDataMap[mapType].transform = transform;
+                    geoAndPos = this.geo2pos(mapType, geoAndPos);
+                    transform.left -= geoAndPos[0] - (mx - left);
+                    transform.top -= geoAndPos[1] - (my - top);
+                    this._mapDataMap[mapType].transform = transform;
+                    this.clearEffectShape(true);
+                    for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                        var shape = this.shapeList[i];
+                        if (shape._mapType == mapType) {
+                            var shapeType = shape.type;
+                            var shapeStyle = shape.style;
+                            shape.position[0] = transform.left;
+                            shape.position[1] = transform.top;
+                            switch (shapeType) {
+                            case 'path':
+                            case 'symbol':
+                            case 'circle':
+                            case 'rectangle':
+                            case 'polygon':
+                            case 'line':
+                            case 'ellipse':
+                            case 'heatmap':
+                                shape.scale[0] *= delta;
+                                shape.scale[1] *= delta;
+                                break;
+                            case 'mark-line':
+                                scaleMarkline(shapeStyle, delta);
+                                break;
+                            case 'polyline':
+                                scalePolyline(shapeStyle, delta);
+                                break;
+                            case 'shape-bundle':
+                                for (var j = 0; j < shapeStyle.shapeList.length; j++) {
+                                    var subShape = shapeStyle.shapeList[j];
+                                    if (subShape.type == 'mark-line') {
+                                        scaleMarkline(subShape.style, delta);
+                                    } else if (subShape.type == 'polyline') {
+                                        scalePolyline(subShape.style, delta);
+                                    }
+                                }
+                                break;
+                            case 'icon':
+                            case 'image':
+                                geoAndPos = this.geo2pos(mapType, shape._geo);
+                                shapeStyle.x = shapeStyle._x = geoAndPos[0] - shapeStyle.width / 2;
+                                shapeStyle.y = shapeStyle._y = geoAndPos[1] - shapeStyle.height / 2;
+                                break;
+                            default:
+                                geoAndPos = this.geo2pos(mapType, shape._geo);
+                                shapeStyle.x = geoAndPos[0];
+                                shapeStyle.y = geoAndPos[1];
+                                if (shapeType == 'text') {
+                                    shape._style.x = shape.highlightStyle.x = geoAndPos[0];
+                                    shape._style.y = shape.highlightStyle.y = geoAndPos[1];
+                                }
+                            }
+                            this.zr.modShape(shape.id);
+                        }
+                    }
+                }
+            }
+            if (haveScale) {
+                zrEvent.stop(event);
+                this.zr.refreshNextFrame();
+                var self = this;
+                clearTimeout(this._refreshDelayTicket);
+                this._refreshDelayTicket = setTimeout(function () {
+                    self && self.shapeList && self.animationEffect();
+                }, 100);
+                this.messageCenter.dispatch(ecConfig.EVENT.MAP_ROAM, params.event, { type: 'scale' }, this.myChart);
+            }
+        },
+        __onmousedown: function (params) {
+            if (this.shapeList.length <= 0) {
+                return;
+            }
+            var target = params.target;
+            if (target && target.draggable) {
+                return;
+            }
+            var event = params.event;
+            var mx = zrEvent.getX(event);
+            var my = zrEvent.getY(event);
+            var mapType = this._findMapTypeByPos(mx, my);
+            if (mapType && this._roamMap[mapType] && this._roamMap[mapType] != 'scale') {
+                this._mousedown = true;
+                this._mx = mx;
+                this._my = my;
+                this._curMapType = mapType;
+                this.zr.on(zrConfig.EVENT.MOUSEUP, this._onmouseup);
+                var self = this;
+                setTimeout(function () {
+                    self.zr.on(zrConfig.EVENT.MOUSEMOVE, self._onmousemove);
+                }, 100);
+            }
+        },
+        __onmousemove: function (params) {
+            if (!this._mousedown || !this._isAlive) {
+                return;
+            }
+            var event = params.event;
+            var mx = zrEvent.getX(event);
+            var my = zrEvent.getY(event);
+            var transform = this._mapDataMap[this._curMapType].transform;
+            transform.hasRoam = true;
+            transform.left -= this._mx - mx;
+            transform.top -= this._my - my;
+            this._mx = mx;
+            this._my = my;
+            this._mapDataMap[this._curMapType].transform = transform;
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                if (this.shapeList[i]._mapType == this._curMapType) {
+                    this.shapeList[i].position[0] = transform.left;
+                    this.shapeList[i].position[1] = transform.top;
+                    this.zr.modShape(this.shapeList[i].id);
+                }
+            }
+            this.messageCenter.dispatch(ecConfig.EVENT.MAP_ROAM, params.event, { type: 'move' }, this.myChart);
+            this.clearEffectShape(true);
+            this.zr.refreshNextFrame();
+            this._justMove = true;
+            zrEvent.stop(event);
+        },
+        __onmouseup: function (params) {
+            var event = params.event;
+            this._mx = zrEvent.getX(event);
+            this._my = zrEvent.getY(event);
+            this._mousedown = false;
+            var self = this;
+            setTimeout(function () {
+                self._justMove && self.animationEffect();
+                self._justMove = false;
+                self.zr.un(zrConfig.EVENT.MOUSEMOVE, self._onmousemove);
+                self.zr.un(zrConfig.EVENT.MOUSEUP, self._onmouseup);
+            }, 120);
+        },
+        __onroamcontroller: function (params) {
+            var event = params.event;
+            event.zrenderX = this.zr.getWidth() / 2;
+            event.zrenderY = this.zr.getHeight() / 2;
+            var mapTypeControl = params.mapTypeControl;
+            var top = 0;
+            var left = 0;
+            var step = params.step;
+            switch (params.roamType) {
+            case 'scaleUp':
+                event.zrenderDelta = 1;
+                this.__onmousewheel({
+                    event: event,
+                    mapTypeControl: mapTypeControl
+                });
+                return;
+            case 'scaleDown':
+                event.zrenderDelta = -1;
+                this.__onmousewheel({
+                    event: event,
+                    mapTypeControl: mapTypeControl
+                });
+                return;
+            case 'up':
+                top = -step;
+                break;
+            case 'down':
+                top = step;
+                break;
+            case 'left':
+                left = -step;
+                break;
+            case 'right':
+                left = step;
+                break;
+            }
+            var transform;
+            var curMapType;
+            for (curMapType in mapTypeControl) {
+                if (!this._mapDataMap[curMapType] || !this._activeMapType[curMapType]) {
+                    continue;
+                }
+                transform = this._mapDataMap[curMapType].transform;
+                transform.hasRoam = true;
+                transform.left -= left;
+                transform.top -= top;
+                this._mapDataMap[curMapType].transform = transform;
+            }
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                curMapType = this.shapeList[i]._mapType;
+                if (!mapTypeControl[curMapType] || !this._activeMapType[curMapType]) {
+                    continue;
+                }
+                transform = this._mapDataMap[curMapType].transform;
+                this.shapeList[i].position[0] = transform.left;
+                this.shapeList[i].position[1] = transform.top;
+                this.zr.modShape(this.shapeList[i].id);
+            }
+            this.messageCenter.dispatch(ecConfig.EVENT.MAP_ROAM, params.event, { type: 'move' }, this.myChart);
+            this.clearEffectShape(true);
+            this.zr.refreshNextFrame();
+            clearTimeout(this.dircetionTimer);
+            var self = this;
+            this.dircetionTimer = setTimeout(function () {
+                self.animationEffect();
+            }, 150);
+        },
+        __ondrhoverlink: function (param) {
+            var curMapType;
+            var value;
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                curMapType = this.shapeList[i]._mapType;
+                if (!this._hoverLinkMap[curMapType] || !this._activeMapType[curMapType]) {
+                    continue;
+                }
+                value = ecData.get(this.shapeList[i], 'value');
+                if (value != null && value >= param.valueMin && value <= param.valueMax) {
+                    this.zr.addHoverShape(this.shapeList[i]);
+                }
+            }
+        },
+        onclick: function (params) {
+            if (!this.isClick || !params.target || this._justMove || params.target.type == 'icon') {
+                return;
+            }
+            this.isClick = false;
+            var target = params.target;
+            var name = target.style._name;
+            var len = this.shapeList.length;
+            var mapType = target._mapType || '';
+            if (this._selectedMode[mapType] == 'single') {
+                for (var p in this._selected) {
+                    if (this._selected[p] && this._mapTypeMap[p] == mapType) {
+                        for (var i = 0; i < len; i++) {
+                            if (this.shapeList[i].style._name == p && this.shapeList[i]._mapType == mapType) {
+                                this.shapeList[i].style = this.shapeList[i]._style;
+                                this.zr.modShape(this.shapeList[i].id);
+                            }
+                        }
+                        p != name && (this._selected[p] = false);
+                    }
+                }
+            }
+            this._selected[name] = !this._selected[name];
+            for (var i = 0; i < len; i++) {
+                if (this.shapeList[i].style._name == name && this.shapeList[i]._mapType == mapType) {
+                    if (this._selected[name]) {
+                        this.shapeList[i].style = this.shapeList[i].highlightStyle;
+                    } else {
+                        this.shapeList[i].style = this.shapeList[i]._style;
+                    }
+                    this.zr.modShape(this.shapeList[i].id);
+                }
+            }
+            this.messageCenter.dispatch(ecConfig.EVENT.MAP_SELECTED, params.event, {
+                selected: this._selected,
+                target: name
+            }, this.myChart);
+            this.zr.refreshNextFrame();
+            var self = this;
+            setTimeout(function () {
+                self.zr.trigger(zrConfig.EVENT.MOUSEMOVE, params.event);
+            }, 100);
+        },
+        refresh: function (newOption) {
+            if (newOption) {
+                this.option = newOption;
+                this.series = newOption.series;
+            }
+            if (this._mapDataRequireCounter > 0) {
                 this.clear();
             } else {
                 this.backupShapeList();
@@ -27454,7 +31065,10 @@ define('zrender/zrender', [
                 (-1 * yp - cyp) / ry
             ];
             var dTheta = vAngle(u, v);
-            if (vRatio(u, v) <= -1)="" {="" dtheta="Math.PI;" }="" if="" (vratio(u,="" v)="">= 1) {
+            if (vRatio(u, v) <= -1) {
+                dTheta = Math.PI;
+            }
+            if (vRatio(u, v) >= 1) {
                 dTheta = 0;
             }
             if (fs === 0 && dTheta > 0) {
@@ -42676,8 +46290,160 @@ define('zrender/zrender', [
             var angle;
             var sinAngle;
             var cosAngle;
-            for (var i = 0; i <= splitnumber;="" i++)="" {="" angle="startAngle" -="" totalangle="" splitnumber="" *="" i;="" sinangle="Math.sin(angle);" cosangle="Math.cos(angle);" this.shapelist.push(new="" lineshape({="" zlevel:="" serie.zlevel,="" z:="" serie.z="" +="" 1,="" hoverable:="" false,="" style:="" xstart:="" center[0]="" r,="" ystart:="" center[1]="" xend:="" r0,="" yend:="" strokecolor:="" color="==" 'auto'="" ?="" this._getcolor(seriesindex,="" min="" total="" i)="" :="" color,="" linetype:="" linestyle.type,="" linewidth:="" linestyle.width,="" shadowcolor:="" linestyle.shadowcolor,="" shadowblur:="" linestyle.shadowblur,="" shadowoffsetx:="" linestyle.shadowoffsetx,="" shadowoffsety:="" linestyle.shadowoffsety="" }="" }));="" },="" _buildaxistick:="" function="" (seriesindex)="" var="" serie="this.series[seriesIndex];" if="" (!serie.axistick.show)="" return;="" params="this._paramsMap[seriesIndex];" min;="" axistick="serie.axisTick;" ticksplit="axisTick.splitNumber;" length="this.parsePercent(axisTick.length," params.radius[1]);="" linestyle="axisTick.lineStyle;" center="params.center;" startangle="params.startAngle" math.pi="" 180;="" r="params.radius[1];" r0="r" length;="" angle;="" sinangle;="" cosangle;="" for="" (var="" i="0," l="splitNumber" ticksplit;="" <="l;" (i="" %="" 0)="" continue;="" _buildaxislabel:="" (!serie.axislabel.show)="" textstyle="serie.axisLabel.textStyle;" textfont="this.getFont(textStyle);" this.parsepercent(serie.splitline.length,="" params.radius[1])="" 5;="" value;="" value="accMath.accAdd(min," accmath.accmul(accmath.accdiv(total,="" splitnumber),="" i));="" 180);="" 360)="" 360;="" textshape({="" x:="" y:="" color:="" value)="" text:="" this._getlabeltext(serie.axislabel.formatter,="" value),="" textalign:="">= 110 && angle <= 250="" ?="" 'left'="" :="" angle="" <="70" ||="">= 290 ? 'right' : 'center',
-                        textBaseline: angle >= 10 && angle <= 170="" ?="" 'top'="" :="" angle="">= 190 && angle <= 350="" ?="" 'bottom'="" :="" 'middle',="" textfont:="" textfont,="" shadowcolor:="" textstyle.shadowcolor,="" shadowblur:="" textstyle.shadowblur,="" shadowoffsetx:="" textstyle.shadowoffsetx,="" shadowoffsety:="" textstyle.shadowoffsety="" }="" }));="" },="" _buildpointer:="" function="" (seriesindex)="" {="" var="" serie="this.series[seriesIndex];" if="" (!serie.pointer.show)="" return;="" total="serie.max" -="" serie.min;="" pointer="serie.pointer;" params="this._paramsMap[seriesIndex];" length="this.parsePercent(pointer.length," params.radius[1]);="" width="this.parsePercent(pointer.width," center="params.center;" value="this._getValue(seriesIndex);" <="" serie.max="" serie.max;="" angle="(params.startAngle" params.totalangle="" *="" (value="" serie.min))="" math.pi="" 180;="" color="pointer.color" =="=" 'auto'="" this._getcolor(seriesindex,="" value)="" pointer.color;="" pointshape="new" gaugepointershape({="" zlevel:="" serie.zlevel,="" z:="" serie.z="" +="" 1,="" clickable:="" this.query(serie,="" 'clickable'),="" style:="" x:="" center[0],="" y:="" center[1],="" r:="" length,="" startangle:="" params.startangle="" 180,="" angle:="" angle,="" color:="" color,="" width:="" width,="" pointer.shadowcolor,="" pointer.shadowblur,="" pointer.shadowoffsetx,="" pointer.shadowoffsety="" highlightstyle:="" brushtype:="" 'fill',=""> 2 ? 2 : width / 2,
+            for (var i = 0; i <= splitNumber; i++) {
+                angle = startAngle - totalAngle / splitNumber * i;
+                sinAngle = Math.sin(angle);
+                cosAngle = Math.cos(angle);
+                this.shapeList.push(new LineShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        xStart: center[0] + cosAngle * r,
+                        yStart: center[1] - sinAngle * r,
+                        xEnd: center[0] + cosAngle * r0,
+                        yEnd: center[1] - sinAngle * r0,
+                        strokeColor: color === 'auto' ? this._getColor(seriesIndex, min + total / splitNumber * i) : color,
+                        lineType: lineStyle.type,
+                        lineWidth: lineStyle.width,
+                        shadowColor: lineStyle.shadowColor,
+                        shadowBlur: lineStyle.shadowBlur,
+                        shadowOffsetX: lineStyle.shadowOffsetX,
+                        shadowOffsetY: lineStyle.shadowOffsetY
+                    }
+                }));
+            }
+        },
+        _buildAxisTick: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (!serie.axisTick.show) {
+                return;
+            }
+            var params = this._paramsMap[seriesIndex];
+            var splitNumber = serie.splitNumber;
+            var min = serie.min;
+            var total = serie.max - min;
+            var axisTick = serie.axisTick;
+            var tickSplit = axisTick.splitNumber;
+            var length = this.parsePercent(axisTick.length, params.radius[1]);
+            var lineStyle = axisTick.lineStyle;
+            var color = lineStyle.color;
+            var center = params.center;
+            var startAngle = params.startAngle * Math.PI / 180;
+            var totalAngle = params.totalAngle * Math.PI / 180;
+            var r = params.radius[1];
+            var r0 = r - length;
+            var angle;
+            var sinAngle;
+            var cosAngle;
+            for (var i = 0, l = splitNumber * tickSplit; i <= l; i++) {
+                if (i % tickSplit === 0) {
+                    continue;
+                }
+                angle = startAngle - totalAngle / l * i;
+                sinAngle = Math.sin(angle);
+                cosAngle = Math.cos(angle);
+                this.shapeList.push(new LineShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        xStart: center[0] + cosAngle * r,
+                        yStart: center[1] - sinAngle * r,
+                        xEnd: center[0] + cosAngle * r0,
+                        yEnd: center[1] - sinAngle * r0,
+                        strokeColor: color === 'auto' ? this._getColor(seriesIndex, min + total / l * i) : color,
+                        lineType: lineStyle.type,
+                        lineWidth: lineStyle.width,
+                        shadowColor: lineStyle.shadowColor,
+                        shadowBlur: lineStyle.shadowBlur,
+                        shadowOffsetX: lineStyle.shadowOffsetX,
+                        shadowOffsetY: lineStyle.shadowOffsetY
+                    }
+                }));
+            }
+        },
+        _buildAxisLabel: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (!serie.axisLabel.show) {
+                return;
+            }
+            var splitNumber = serie.splitNumber;
+            var min = serie.min;
+            var total = serie.max - min;
+            var textStyle = serie.axisLabel.textStyle;
+            var textFont = this.getFont(textStyle);
+            var color = textStyle.color;
+            var params = this._paramsMap[seriesIndex];
+            var center = params.center;
+            var startAngle = params.startAngle;
+            var totalAngle = params.totalAngle;
+            var r0 = params.radius[1] - this.parsePercent(serie.splitLine.length, params.radius[1]) - 5;
+            var angle;
+            var sinAngle;
+            var cosAngle;
+            var value;
+            for (var i = 0; i <= splitNumber; i++) {
+                value = accMath.accAdd(min, accMath.accMul(accMath.accDiv(total, splitNumber), i));
+                angle = startAngle - totalAngle / splitNumber * i;
+                sinAngle = Math.sin(angle * Math.PI / 180);
+                cosAngle = Math.cos(angle * Math.PI / 180);
+                angle = (angle + 360) % 360;
+                this.shapeList.push(new TextShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        x: center[0] + cosAngle * r0,
+                        y: center[1] - sinAngle * r0,
+                        color: color === 'auto' ? this._getColor(seriesIndex, value) : color,
+                        text: this._getLabelText(serie.axisLabel.formatter, value),
+                        textAlign: angle >= 110 && angle <= 250 ? 'left' : angle <= 70 || angle >= 290 ? 'right' : 'center',
+                        textBaseline: angle >= 10 && angle <= 170 ? 'top' : angle >= 190 && angle <= 350 ? 'bottom' : 'middle',
+                        textFont: textFont,
+                        shadowColor: textStyle.shadowColor,
+                        shadowBlur: textStyle.shadowBlur,
+                        shadowOffsetX: textStyle.shadowOffsetX,
+                        shadowOffsetY: textStyle.shadowOffsetY
+                    }
+                }));
+            }
+        },
+        _buildPointer: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (!serie.pointer.show) {
+                return;
+            }
+            var total = serie.max - serie.min;
+            var pointer = serie.pointer;
+            var params = this._paramsMap[seriesIndex];
+            var length = this.parsePercent(pointer.length, params.radius[1]);
+            var width = this.parsePercent(pointer.width, params.radius[1]);
+            var center = params.center;
+            var value = this._getValue(seriesIndex);
+            value = value < serie.max ? value : serie.max;
+            var angle = (params.startAngle - params.totalAngle / total * (value - serie.min)) * Math.PI / 180;
+            var color = pointer.color === 'auto' ? this._getColor(seriesIndex, value) : pointer.color;
+            var pointShape = new GaugePointerShape({
+                zlevel: serie.zlevel,
+                z: serie.z + 1,
+                clickable: this.query(serie, 'clickable'),
+                style: {
+                    x: center[0],
+                    y: center[1],
+                    r: length,
+                    startAngle: params.startAngle * Math.PI / 180,
+                    angle: angle,
+                    color: color,
+                    width: width,
+                    shadowColor: pointer.shadowColor,
+                    shadowBlur: pointer.shadowBlur,
+                    shadowOffsetX: pointer.shadowOffsetX,
+                    shadowOffsetY: pointer.shadowOffsetY
+                },
+                highlightStyle: {
+                    brushType: 'fill',
+                    width: width > 2 ? 2 : width / 2,
                     color: '#fff'
                 }
             });
@@ -43025,7 +46791,269 @@ define('zrender/zrender', [
             for (var i = 0, l = selectedData.length; i < l; i++) {
                 itemName = selectedData[i].name;
                 if (this.selectedMap[itemName] && !isNaN(selectedData[i].value)) {
-                    width = i <= 2="" 10="" l="" -="" ?="" this._getitemwidth(seriesindex,="" selecteddata[i="" +="" next].value)="" :="" serie.sort="==" 'descending'="" number.parsepercent(serie.minsize,="" location.width)="" number.parsepercent(serie.maxsize,="" location.width);="" switch="" (align)="" {="" case="" 'left':="" x="location.x;" break;="" 'right':="" location.width="" lastwidth;="" default:="" lastwidth="" 2;="" }="" polygon="this._buildItem(seriesIndex," selecteddata[i]._index,="" legend="" legend.getcolor(itemname)="" this.zr.getcolor(selecteddata[i]._index),="" x,="" lasty,="" lastwidth,="" width,="" height,="" align);="" lasty="" gap;="" lastpolygon="polygon.style.pointList;" pointlist.unshift([="" lastpolygon[0][0]="" 10,="" lastpolygon[0][1]="" ]);="" pointlist.push([="" lastpolygon[1][0]="" lastpolygon[1][1]="" if="" (i="==" 0)="" (lastwidth="==" align="=" 'center'="" &&="" (pointlist[0][0]="" 'right'="" pointlist[0][1]="" =="center" 15;="" (l="=" 1)="" else="" pointlist[pointlist.length="" 1][1]="" (funnelcase)="" lastpolygon[3][0]="" lastpolygon[3][1]="" lastpolygon[2][0]="" lastpolygon[2][1]="" funnelcase.style.pointlist="pointList;" },="" _buildfunnelcase:="" function="" (seriesindex)="" var="" serie="this.series[seriesIndex];" (this.deepquery([="" serie,="" this.option="" ],="" 'calculable'))="" location="this._paramsMap[seriesIndex].location;" gap="10;" funnelcase="{" hoverable:="" false,="" style:="" pointlistd:="" [="" location.x="" gap,="" location.y="" location.height="" ]="" brushtype:="" 'stroke',="" linewidth:="" 1,="" strokecolor:="" serie.calculableholdercolor="" ||="" this.ectheme.calculableholdercolor="" ecconfig.calculableholdercolor="" };="" ecdata.pack(funnelcase,="" seriesindex,="" undefined,="" -1);="" this.setcalculable(funnelcase);="" polygonshape(funnelcase);="" this.shapelist.push(funnelcase);="" return="" funnelcase;="" _getlocation:="" gridoption="this.series[seriesIndex];" zrwidth="this.zr.getWidth();" zrheight="this.zr.getHeight();" zrwidth);="" y="this.parsePercent(gridOption.y," zrheight);="" width="gridOption.width" this.parsepercent(gridoption.x2,="" zrwidth)="" this.parsepercent(gridoption.width,="" x:="" y:="" y,="" width:="" height:="" gridoption.height="=" null="" this.parsepercent(gridoption.y2,="" zrheight)="" this.parsepercent(gridoption.height,="" zrheight),="" centerx:="" _mapdata:="" funneldata="zrUtil.clone(serie.data);" for="" (var="" i="0," <="" l;="" i++)="" funneldata[i]._index="i;" numdescending(a,="" b)="" (a.value="==" '-')="" 1;="" (b.value="==" -1;="" b.value="" a.value;="" numascending(a,="" -numdescending(a,="" b);="" (serie.sort="" !="none" )="" funneldata.sort(serie.sort="==" numdescending="" numascending);="" funneldata;="" _builditem:="" (seriesindex,="" dataindex,="" defaultcolor,="" topwidth,="" bottomwidth,="" align)="" series="this.series;" data="serie.data[dataIndex];" ecdata.pack(polygon,="" series[seriesindex],="" series[seriesindex].data[dataindex],="" series[seriesindex].data[dataindex].name);="" this.shapelist.push(polygon);="" label="this.getLabel(seriesIndex," ecdata.pack(label,="" this.shapelist.push(label);="" (!this._needlabel(serie,="" data,="" false))="" label.invisible="true;" labelline="this.getLabelLine(seriesIndex," this.shapelist.push(labelline);="" (!this._needlabelline(serie,="" labelline.invisible="true;" polygonhoverconnect="[];" labelhoverconnect="[];" (this._needlabelline(serie,="" true))="" polygonhoverconnect.push(labelline.id);="" labelhoverconnect.push(labelline.id);="" (this._needlabel(serie,="" polygonhoverconnect.push(label.id);="" labelhoverconnect.push(polygon.id);="" polygon.hoverconnect="polygonHoverConnect;" label.hoverconnect="labelHoverConnect;" polygon;="" _getitemwidth:="" value)="" min="serie.min;" max="serie.max;" minsize="number.parsePercent(serie.minSize," maxsize="number.parsePercent(serie.maxSize," (value="" min)="" *="" (maxsize="" minsize)="" (max="" minsize;="" getpolygon:="" xlt,="" querytarget="[" ];="" normal="this.deepMerge(queryTarget," 'itemstyle.normal')="" {};="" emphasis="this.deepMerge(queryTarget," 'itemstyle.emphasis')="" normalcolor="this.getItemStyleColor(normal.color," data)="" defaultcolor;="" emphasiscolor="this.getItemStyleColor(emphasis.color," (typeof="" 'string'="" zrcolor.lift(normalcolor,="" -0.2)="" normalcolor);="" xlb;="" xlb="xLT;" (topwidth="" bottomwidth);="" bottomwidth)="" zlevel:="" serie.zlevel,="" z:="" serie.z,="" clickable:="" this.deepquery(querytarget,="" 'clickable'),="" pointlist:="" xlt="" height="" xlb,="" 'both',="" color:="" normalcolor,="" normal.borderwidth,="" normal.bordercolor="" highlightstyle:="" emphasiscolor,="" emphasis.borderwidth,="" emphasis.bordercolor="" this.setcalculable(polygon);="" polygon.draggable="true;" new="" polygonshape(polygon);="" getlabel:="" itemstyle="zrUtil.merge(zrUtil.clone(data.itemStyle)" {},="" serie.itemstyle);="" status="normal" ;="" labelcontrol="itemStyle[status].label;" textstyle="labelControl.textStyle" linelength="itemStyle[status].labelLine.length;" text="this.getLabelText(seriesIndex," status);="" textfont="this.getFont(textStyle);" textalign;="" textcolor="defaultColor;" labelcontrol.position="labelControl.position" itemstyle.normal.label.position;="" (labelcontrol.position="==" 'inner'="" 'inside'="" 'center')="" textalign="align;"> zrArea.getTextWidth(text, textFont) ? '#fff' : zrColor.reverse(defaultColor);
+                    width = i <= l - 2 ? this._getItemWidth(seriesIndex, selectedData[i + next].value) : serie.sort === 'descending' ? number.parsePercent(serie.minSize, location.width) : number.parsePercent(serie.maxSize, location.width);
+                    switch (align) {
+                    case 'left':
+                        x = location.x;
+                        break;
+                    case 'right':
+                        x = location.x + location.width - lastWidth;
+                        break;
+                    default:
+                        x = centerX - lastWidth / 2;
+                    }
+                    polygon = this._buildItem(seriesIndex, selectedData[i]._index, legend ? legend.getColor(itemName) : this.zr.getColor(selectedData[i]._index), x, lastY, lastWidth, width, height, align);
+                    lastY += height + gap;
+                    lastPolygon = polygon.style.pointList;
+                    pointList.unshift([
+                        lastPolygon[0][0] - 10,
+                        lastPolygon[0][1]
+                    ]);
+                    pointList.push([
+                        lastPolygon[1][0] + 10,
+                        lastPolygon[1][1]
+                    ]);
+                    if (i === 0) {
+                        if (lastWidth === 0) {
+                            lastPolygon = pointList.pop();
+                            align == 'center' && (pointList[0][0] += 10);
+                            align == 'right' && (pointList[0][0] = lastPolygon[0]);
+                            pointList[0][1] -= align == 'center' ? 10 : 15;
+                            if (l == 1) {
+                                lastPolygon = polygon.style.pointList;
+                            }
+                        } else {
+                            pointList[pointList.length - 1][1] -= 5;
+                            pointList[0][1] -= 5;
+                        }
+                    }
+                    lastWidth = width;
+                }
+            }
+            if (funnelCase) {
+                pointList.unshift([
+                    lastPolygon[3][0] - 10,
+                    lastPolygon[3][1]
+                ]);
+                pointList.push([
+                    lastPolygon[2][0] + 10,
+                    lastPolygon[2][1]
+                ]);
+                if (lastWidth === 0) {
+                    lastPolygon = pointList.pop();
+                    align == 'center' && (pointList[0][0] += 10);
+                    align == 'right' && (pointList[0][0] = lastPolygon[0]);
+                    pointList[0][1] += align == 'center' ? 10 : 15;
+                } else {
+                    pointList[pointList.length - 1][1] += 5;
+                    pointList[0][1] += 5;
+                }
+                funnelCase.style.pointList = pointList;
+            }
+        },
+        _buildFunnelCase: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (this.deepQuery([
+                    serie,
+                    this.option
+                ], 'calculable')) {
+                var location = this._paramsMap[seriesIndex].location;
+                var gap = 10;
+                var funnelCase = {
+                    hoverable: false,
+                    style: {
+                        pointListd: [
+                            [
+                                location.x - gap,
+                                location.y - gap
+                            ],
+                            [
+                                location.x + location.width + gap,
+                                location.y - gap
+                            ],
+                            [
+                                location.x + location.width + gap,
+                                location.y + location.height + gap
+                            ],
+                            [
+                                location.x - gap,
+                                location.y + location.height + gap
+                            ]
+                        ],
+                        brushType: 'stroke',
+                        lineWidth: 1,
+                        strokeColor: serie.calculableHolderColor || this.ecTheme.calculableHolderColor || ecConfig.calculableHolderColor
+                    }
+                };
+                ecData.pack(funnelCase, serie, seriesIndex, undefined, -1);
+                this.setCalculable(funnelCase);
+                funnelCase = new PolygonShape(funnelCase);
+                this.shapeList.push(funnelCase);
+                return funnelCase;
+            }
+        },
+        _getLocation: function (seriesIndex) {
+            var gridOption = this.series[seriesIndex];
+            var zrWidth = this.zr.getWidth();
+            var zrHeight = this.zr.getHeight();
+            var x = this.parsePercent(gridOption.x, zrWidth);
+            var y = this.parsePercent(gridOption.y, zrHeight);
+            var width = gridOption.width == null ? zrWidth - x - this.parsePercent(gridOption.x2, zrWidth) : this.parsePercent(gridOption.width, zrWidth);
+            return {
+                x: x,
+                y: y,
+                width: width,
+                height: gridOption.height == null ? zrHeight - y - this.parsePercent(gridOption.y2, zrHeight) : this.parsePercent(gridOption.height, zrHeight),
+                centerX: x + width / 2
+            };
+        },
+        _mapData: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            var funnelData = zrUtil.clone(serie.data);
+            for (var i = 0, l = funnelData.length; i < l; i++) {
+                funnelData[i]._index = i;
+            }
+            function numDescending(a, b) {
+                if (a.value === '-') {
+                    return 1;
+                } else if (b.value === '-') {
+                    return -1;
+                }
+                return b.value - a.value;
+            }
+            function numAscending(a, b) {
+                return -numDescending(a, b);
+            }
+            if (serie.sort != 'none') {
+                funnelData.sort(serie.sort === 'descending' ? numDescending : numAscending);
+            }
+            return funnelData;
+        },
+        _buildItem: function (seriesIndex, dataIndex, defaultColor, x, y, topWidth, bottomWidth, height, align) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var polygon = this.getPolygon(seriesIndex, dataIndex, defaultColor, x, y, topWidth, bottomWidth, height, align);
+            ecData.pack(polygon, series[seriesIndex], seriesIndex, series[seriesIndex].data[dataIndex], dataIndex, series[seriesIndex].data[dataIndex].name);
+            this.shapeList.push(polygon);
+            var label = this.getLabel(seriesIndex, dataIndex, defaultColor, x, y, topWidth, bottomWidth, height, align);
+            ecData.pack(label, series[seriesIndex], seriesIndex, series[seriesIndex].data[dataIndex], dataIndex, series[seriesIndex].data[dataIndex].name);
+            this.shapeList.push(label);
+            if (!this._needLabel(serie, data, false)) {
+                label.invisible = true;
+            }
+            var labelLine = this.getLabelLine(seriesIndex, dataIndex, defaultColor, x, y, topWidth, bottomWidth, height, align);
+            this.shapeList.push(labelLine);
+            if (!this._needLabelLine(serie, data, false)) {
+                labelLine.invisible = true;
+            }
+            var polygonHoverConnect = [];
+            var labelHoverConnect = [];
+            if (this._needLabelLine(serie, data, true)) {
+                polygonHoverConnect.push(labelLine.id);
+                labelHoverConnect.push(labelLine.id);
+            }
+            if (this._needLabel(serie, data, true)) {
+                polygonHoverConnect.push(label.id);
+                labelHoverConnect.push(polygon.id);
+            }
+            polygon.hoverConnect = polygonHoverConnect;
+            label.hoverConnect = labelHoverConnect;
+            return polygon;
+        },
+        _getItemWidth: function (seriesIndex, value) {
+            var serie = this.series[seriesIndex];
+            var location = this._paramsMap[seriesIndex].location;
+            var min = serie.min;
+            var max = serie.max;
+            var minSize = number.parsePercent(serie.minSize, location.width);
+            var maxSize = number.parsePercent(serie.maxSize, location.width);
+            return (value - min) * (maxSize - minSize) / (max - min) + minSize;
+        },
+        getPolygon: function (seriesIndex, dataIndex, defaultColor, xLT, y, topWidth, bottomWidth, height, align) {
+            var serie = this.series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var queryTarget = [
+                data,
+                serie
+            ];
+            var normal = this.deepMerge(queryTarget, 'itemStyle.normal') || {};
+            var emphasis = this.deepMerge(queryTarget, 'itemStyle.emphasis') || {};
+            var normalColor = this.getItemStyleColor(normal.color, seriesIndex, dataIndex, data) || defaultColor;
+            var emphasisColor = this.getItemStyleColor(emphasis.color, seriesIndex, dataIndex, data) || (typeof normalColor === 'string' ? zrColor.lift(normalColor, -0.2) : normalColor);
+            var xLB;
+            switch (align) {
+            case 'left':
+                xLB = xLT;
+                break;
+            case 'right':
+                xLB = xLT + (topWidth - bottomWidth);
+                break;
+            default:
+                xLB = xLT + (topWidth - bottomWidth) / 2;
+                break;
+            }
+            var polygon = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                clickable: this.deepQuery(queryTarget, 'clickable'),
+                style: {
+                    pointList: [
+                        [
+                            xLT,
+                            y
+                        ],
+                        [
+                            xLT + topWidth,
+                            y
+                        ],
+                        [
+                            xLB + bottomWidth,
+                            y + height
+                        ],
+                        [
+                            xLB,
+                            y + height
+                        ]
+                    ],
+                    brushType: 'both',
+                    color: normalColor,
+                    lineWidth: normal.borderWidth,
+                    strokeColor: normal.borderColor
+                },
+                highlightStyle: {
+                    color: emphasisColor,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor
+                }
+            };
+            if (this.deepQuery([
+                    data,
+                    serie,
+                    this.option
+                ], 'calculable')) {
+                this.setCalculable(polygon);
+                polygon.draggable = true;
+            }
+            return new PolygonShape(polygon);
+        },
+        getLabel: function (seriesIndex, dataIndex, defaultColor, x, y, topWidth, bottomWidth, height, align) {
+            var serie = this.series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var location = this._paramsMap[seriesIndex].location;
+            var itemStyle = zrUtil.merge(zrUtil.clone(data.itemStyle) || {}, serie.itemStyle);
+            var status = 'normal';
+            var labelControl = itemStyle[status].label;
+            var textStyle = labelControl.textStyle || {};
+            var lineLength = itemStyle[status].labelLine.length;
+            var text = this.getLabelText(seriesIndex, dataIndex, status);
+            var textFont = this.getFont(textStyle);
+            var textAlign;
+            var textColor = defaultColor;
+            labelControl.position = labelControl.position || itemStyle.normal.label.position;
+            if (labelControl.position === 'inner' || labelControl.position === 'inside' || labelControl.position === 'center') {
+                textAlign = align;
+                textColor = Math.max(topWidth, bottomWidth) / 2 > zrArea.getTextWidth(text, textFont) ? '#fff' : zrColor.reverse(defaultColor);
             } else if (labelControl.position === 'left') {
                 textAlign = 'right';
             } else {
@@ -43461,7 +47489,49 @@ define('zrender/zrender', [
         maxTime = ~~maxTime;
         var flagForOffset = function () {
             var length = maxTime - minTime + 1 + ~~intervalX;
-            if (length <= 0)="" {="" return="" [0];="" }="" var="" result="[];" while="" (length--)="" result.push(0);="" result;="" }();="" flagforpos="flagForOffset.slice(0);" bubbledata="[];" totalmaxy="0;" totaloffset="0;" for="" (var="" i="0;" <="" series.length;="" i++)="" j="0;" series[i].data.length;="" j++)="" e="series[i].data[j];" e.time="[];" e.value="[];" tmp;="" maxy="0;" k="0;" series[i].data[j].evolution.length;="" k++)="" tmp="series[i].data[j].evolution[k];" e.time.push(tmp.timescale);="" e.value.push(tmp.valuescale);="" tmp.valuescale);="" bubblebound(e,="" intervalx,="" mintime);="" e.y="findLocation(flagForPos," e,="" function="" (e,="" index)="" e.ypx[index];="" });="" e._offset="findLocation(flagForOffset," ()="" space;="" +="" maxy);="" e._offset);="" bubbledata.push(e);="" scaley(bubbledata,="" area,="" totalmaxy,="" totaloffset);="" maxy,="" offset)="" height="area.height;" offsetscale="offset"> 0.5 ? 0.5 : 1;
+            if (length <= 0) {
+                return [0];
+            }
+            var result = [];
+            while (length--) {
+                result.push(0);
+            }
+            return result;
+        }();
+        var flagForPos = flagForOffset.slice(0);
+        var bubbleData = [];
+        var totalMaxy = 0;
+        var totalOffset = 0;
+        for (var i = 0; i < series.length; i++) {
+            for (var j = 0; j < series[i].data.length; j++) {
+                var e = series[i].data[j];
+                e.time = [];
+                e.value = [];
+                var tmp;
+                var maxy = 0;
+                for (var k = 0; k < series[i].data[j].evolution.length; k++) {
+                    tmp = series[i].data[j].evolution[k];
+                    e.time.push(tmp.timeScale);
+                    e.value.push(tmp.valueScale);
+                    maxy = Math.max(maxy, tmp.valueScale);
+                }
+                bubbleBound(e, intervalX, minTime);
+                e.y = findLocation(flagForPos, e, function (e, index) {
+                    return e.ypx[index];
+                });
+                e._offset = findLocation(flagForOffset, e, function () {
+                    return space;
+                });
+                totalMaxy = Math.max(totalMaxy, e.y + maxy);
+                totalOffset = Math.max(totalOffset, e._offset);
+                bubbleData.push(e);
+            }
+        }
+        scaleY(bubbleData, area, totalMaxy, totalOffset);
+    }
+    function scaleY(bubbleData, area, maxY, offset) {
+        var height = area.height;
+        var offsetScale = offset / height > 0.5 ? 0.5 : 1;
         var yBase = area.y;
         var yScale = (area.height - offset) / maxY;
         for (var i = 0, length = bubbleData.length; i < length; i++) {
@@ -43638,7 +47708,386 @@ define('zrender/zrender', [
             var approximateValue = Math.abs(scaleAnchor / scale);
             if (approximateValue > 0.999 && approximateValue < 1.001) {
                 return coincideLengthAnchor;
-            } else if (approximateValue <= 0.999)="" {="" coincidelengthanchormax="coincideLengthAnchor;" coincidelengthanchor="(coincideLengthAnchor" +="" coincidelengthanchormin)="" 2;="" return="" this._getcoincidelength(value0,="" value1,="" value2,="" r0,="" r1,="" coincidelengthanchor,="" coincidelengthanchormin,="" coincidelengthanchormax);="" }="" else="" coincidelengthanchormin="coincideLengthAnchor;" coincidelengthanchormax)="" },="" _builditem:="" function="" (seriesindex,="" dataindex,="" dataitem,="" x,="" y,="" r)="" var="" series="this.series;" serie="series[seriesIndex];" circle="this.getCircle(seriesIndex," r);="" ecdata.pack(circle,="" serie,="" seriesindex,="" dataitem.name);="" this.shapelist.push(circle);="" if="" (serie.itemstyle.normal.label.show)="" label="this.getLabel(seriesIndex," ecdata.pack(label,="" serie.data[dataindex],="" serie.data[dataindex].name);="" this.shapelist.push(label);="" _buildcoincideitem:="" y0,="" y1,="" rightlargearcflag,="" leftlargearcflag)="" querytarget="[" ];="" normal="this.deepMerge(queryTarget," 'itemstyle.normal')="" ||="" {};="" emphasis="this.deepMerge(queryTarget," 'itemstyle.emphasis')="" normalcolor="normal.color" this.zr.getcolor(dataindex);="" emphasiscolor="emphasis.color" path="M" x="" ','="" y0="" 'a'="" r0="" ',0,'="" rightlargearcflag="" ',1,'="" y1="" r1="" leftlargearcflag="" y0;="" style="{" color:="" normalcolor,="" path:="" };="" shape="{" zlevel:="" serie.zlevel,="" z:="" serie.z,="" style:="" style,="" highlightstyle:="" emphasiscolor,="" linewidth:="" emphasis.borderwidth,="" strokecolor:="" emphasis.bordercolor="" pathshape(shape);="" (shape.buildpatharray)="" shape.style.patharray="shape.buildPathArray(style.path);" ecdata.pack(shape,="" series[seriesindex],="" 0,="" this.shapelist.push(shape);="" getcircle:="" clickable:="" true,="" x:="" y:="" r:="" r,="" brushtype:="" 'fill',="" opacity:="" 1,="" (this.deepquery([="" this.option="" ],="" 'calculable'))="" this.setcalculable(circle);="" circle.draggable="true;" new="" circleshape(circle);="" getlabel:="" itemstyle="serie.itemStyle;" status="normal" ;="" labelcontrol="itemStyle[status].label;" textstyle="labelControl.textStyle" text="this.getLabelText(dataIndex," status);="" textfont="this.getFont(textStyle);" textcolor="normal.color" textsize="textStyle.fontSize" 12;="" textshape="{" y="" -="" r="" textsize,="" textstyle.color="" textcolor,="" text:="" text,="" textfont:="" textfont,="" textalign:="" 'center'="" textshape(textshape);="" getlabeltext:="" (dataindex,="" status)="" formatter="this.deepQuery([" 'itemstyle.'="" '.label.formatter');="" (formatter)="" (typeof="" 'function')="" formatter(serie.name,="" dataitem.name,="" dataitem.value);="" 'string')="" '{a0}').replace('{b}',="" '{b0}').replace('{c}',="" '{c0}');="" serie.name).replace('{b0}',="" dataitem.name).replace('{c0}',="" formatter;="" dataitem.name;="" refresh:="" (newoption)="" this.series="newOption.series;" this._buildshape();="" zrutil.inherits(venn,="" chartbase);="" require('..="" chart').define('venn',="" venn);="" venn;="" });define('echarts="" chart="" treemap',="" [="" 'require',="" '.="" base',="" 'zrender="" tool="" area',="" rectangle',="" text',="" line',="" '..="" layout="" data="" tree',="" config',="" util="" ecdata',="" event',="" util',="" color',="" chart'="" (require)="" chartbase="require('./base');" toolarea="require('zrender/tool/area');" rectangleshape="require('zrender/shape/Rectangle');" lineshape="require('zrender/shape/Line');" treemaplayout="require('../layout/TreeMap');" tree="require('../data/Tree');" ecconfig="require('../config');" ecconfig.treemap="{" calculable:="" false,="" center:="" '50%',="" '50%'="" size:="" '80%',="" '80%'="" root:="" '',="" itemstyle:="" normal:="" label:="" show:="" 5,="" 12,="" textstyle:="" align:="" 'left',="" '#000',="" fontfamily:="" 'arial',="" fontsize:="" 13,="" fontstyle:="" 'normal',="" fontweight:="" 'normal'="" breadcrumb:="" {}="" borderwidth:="" bordercolor:="" '#ccc',="" childborderwidth:="" childbordercolor:="" '#ccc'="" emphasis:="" ecdata="require('../util/ecData');" zrconfig="require('zrender/config');" zrevent="require('zrender/tool/event');" zrutil="require('zrender/tool/util');" zrcolor="require('zrender/tool/color');" treemap(ectheme,="" messagecenter,="" zr,="" option,="" mychart)="" chartbase.call(this,="" ectheme,="" mychart);="" this.refresh(option);="" self="this;" self._onclick="function" (params)="" self.__onclick(params);="" self.zr.on(zrconfig.event.click,="" self._onclick);="" treemap.prototype="{" type:="" ecconfig.chart_type_treemap,="" this.clear();="" this._treesmap="{};" legend="this.component.legend;" for="" (var="" i="0;" <="" series.length;="" i++)="" (series[i].type="==" ecconfig.chart_type_treemap)="" series[i]="this.reformOption(series[i]);" seriesname="series[i].name" '';="" this.selectedmap[seriesname]="legend" ?="" legend.isselected(seriesname)="" :="" true;="" (!this.selectedmap[seriesname])="" continue;="" this._buildseries(series[i],="" i);="" _buildseries:="" (series,="" seriesindex)="" series.data);="" this._treesmap[seriesindex]="tree;" treeroot="series.root" &&="" tree.getnodebyid(series.root)="" tree.root;="" this._buildtreemap(treeroot,="" seriesindex);="" _buildtreemap:="" (treeroot,="" shapelist="this.shapeList;" shapelist.length;)="" (ecdata.get(shape,="" 'seriesindex')="==" this.zr.delshape(shapelist[i]);="" shapelist.splice(i,="" 1);="" i++;="" currentshapelen="shapeList.length;" treemapwidth="this.parsePercent(series.size[0]," this.zr.getwidth())="" 400;="" treemapheight="this.parsePercent(series.size[1]," this.zr.getheight())="" 500;="" center="this.parseCenter(this.zr," series.center);="" treemapx="center[0]" *="" 0.5;="" treemapy="center[1]" treemaparea="treemapWidth" treemapheight;="" sum="0;" areaarr="[];" children="treeRoot.children;" children.length;="" j="0;" j++)="" areaarr.push(children[j].data.value="" sum);="" treemaplayout({="" treemapx,="" treemapy,="" width:="" treemapwidth,="" height:="" });="" locationarr="treeMapLayout.run(areaArr);" k="0;" locationarr.length;="" k++)="" dataitem="children[k].data;" rect="locationArr[k];" dataitem.itemstyle,="" itemstylemerged="this.deepMerge(queryTarget);" (!itemstylemerged.normal.color)="" itemstylemerged.normal.color="this.zr.getColor(k);" (!itemstylemerged.emphasis.color)="" itemstylemerged.emphasis.color="itemStyleMerged.normal.color;" this._builditem(dataitem,="" itemstylemerged,="" rect,="" k);="" (dataitem.children)="" this._buildchildrentreemap(dataitem.children,="" (this.query(series,="" 'itemstyle.normal.breadcrumb.show'))="" this._buildbreadcrumb(treeroot,="" treemapheight);="" shapelist.length;="" this.zr.addshape(shapelist[i]);="" (dataitem,="" itemstyle,="" dataindex)="" rectangle="this.getRectangle(dataItem," rect);="" ecdata.pack(rectangle,="" this.shapelist.push(rectangle);="" getrectangle:="" rect)="" hoverable="this.option.hoverable;" this.getzlevelbase(),="" this.getzbase(),="" hoverable:="" hoverable,="" zrutil.merge({="" rect.x,="" rect.y,="" rect.width,="" rect.height,="" 'both',="" normal.color,="" normal.borderwidth,="" normal.bordercolor="" textshape.style,="" true),="" emphasis.color,="" textshape.highlightstyle,="" true)="" rectangleshape(rectangleshape);="" (itemstyle,="" name,="" value)="" normaltextstyle="itemStyle.normal.label.textStyle;" itemstyle.emphasis.label.textstyle,="" emphasistextstyle="this.deepMerge(queryTarget);" value,="" formatter);="" textwidth="toolArea.getTextWidth(text," textfont);="" textheight="toolArea.getTextHeight(text," emphasisformatter="this.deepQuery([" itemstyle.emphasis,="" itemstyle.normal="" 'label.formatter');="" emphasistext="this.getLabelText(name," emphasisformatter);="" emphasistextfont="this.getFont(emphasisTextStyle);" emphasistextwidth="toolArea.getTextWidth(text," emphasistextfont);="" emphasistextheight="toolArea.getTextHeight(text," (!itemstyle.normal.label.show)="" (itemstyle.normal.label.x=""> rect.width || itemStyle.normal.label.y + textHeight > rect.height) {
+            } else if (approximateValue <= 0.999) {
+                coincideLengthAnchorMax = coincideLengthAnchor;
+                coincideLengthAnchor = (coincideLengthAnchor + coincideLengthAnchorMin) / 2;
+                return this._getCoincideLength(value0, value1, value2, r0, r1, coincideLengthAnchor, coincideLengthAnchorMin, coincideLengthAnchorMax);
+            } else {
+                coincideLengthAnchorMin = coincideLengthAnchor;
+                coincideLengthAnchor = (coincideLengthAnchor + coincideLengthAnchorMax) / 2;
+                return this._getCoincideLength(value0, value1, value2, r0, r1, coincideLengthAnchor, coincideLengthAnchorMin, coincideLengthAnchorMax);
+            }
+        },
+        _buildItem: function (seriesIndex, dataIndex, dataItem, x, y, r) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var circle = this.getCircle(seriesIndex, dataIndex, dataItem, x, y, r);
+            ecData.pack(circle, serie, seriesIndex, dataItem, dataIndex, dataItem.name);
+            this.shapeList.push(circle);
+            if (serie.itemStyle.normal.label.show) {
+                var label = this.getLabel(seriesIndex, dataIndex, dataItem, x, y, r);
+                ecData.pack(label, serie, seriesIndex, serie.data[dataIndex], dataIndex, serie.data[dataIndex].name);
+                this.shapeList.push(label);
+            }
+        },
+        _buildCoincideItem: function (seriesIndex, dataIndex, dataItem, x, y0, y1, r0, r1, rightLargeArcFlag, leftLargeArcFlag) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var queryTarget = [
+                dataItem,
+                serie
+            ];
+            var normal = this.deepMerge(queryTarget, 'itemStyle.normal') || {};
+            var emphasis = this.deepMerge(queryTarget, 'itemStyle.emphasis') || {};
+            var normalColor = normal.color || this.zr.getColor(dataIndex);
+            var emphasisColor = emphasis.color || this.zr.getColor(dataIndex);
+            var path = 'M' + x + ',' + y0 + 'A' + r0 + ',' + r0 + ',0,' + rightLargeArcFlag + ',1,' + x + ',' + y1 + 'A' + r1 + ',' + r1 + ',0,' + leftLargeArcFlag + ',1,' + x + ',' + y0;
+            var style = {
+                color: normalColor,
+                path: path
+            };
+            var shape = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                style: style,
+                highlightStyle: {
+                    color: emphasisColor,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor
+                }
+            };
+            shape = new PathShape(shape);
+            if (shape.buildPathArray) {
+                shape.style.pathArray = shape.buildPathArray(style.path);
+            }
+            ecData.pack(shape, series[seriesIndex], 0, dataItem, dataIndex, dataItem.name);
+            this.shapeList.push(shape);
+        },
+        getCircle: function (seriesIndex, dataIndex, dataItem, x, y, r) {
+            var serie = this.series[seriesIndex];
+            var queryTarget = [
+                dataItem,
+                serie
+            ];
+            var normal = this.deepMerge(queryTarget, 'itemStyle.normal') || {};
+            var emphasis = this.deepMerge(queryTarget, 'itemStyle.emphasis') || {};
+            var normalColor = normal.color || this.zr.getColor(dataIndex);
+            var emphasisColor = emphasis.color || this.zr.getColor(dataIndex);
+            var circle = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                clickable: true,
+                style: {
+                    x: x,
+                    y: y,
+                    r: r,
+                    brushType: 'fill',
+                    opacity: 1,
+                    color: normalColor
+                },
+                highlightStyle: {
+                    color: emphasisColor,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor
+                }
+            };
+            if (this.deepQuery([
+                    dataItem,
+                    serie,
+                    this.option
+                ], 'calculable')) {
+                this.setCalculable(circle);
+                circle.draggable = true;
+            }
+            return new CircleShape(circle);
+        },
+        getLabel: function (seriesIndex, dataIndex, dataItem, x, y, r) {
+            var serie = this.series[seriesIndex];
+            var itemStyle = serie.itemStyle;
+            var queryTarget = [
+                dataItem,
+                serie
+            ];
+            var normal = this.deepMerge(queryTarget, 'itemStyle.normal') || {};
+            var status = 'normal';
+            var labelControl = itemStyle[status].label;
+            var textStyle = labelControl.textStyle || {};
+            var text = this.getLabelText(dataIndex, dataItem, status);
+            var textFont = this.getFont(textStyle);
+            var textColor = normal.color || this.zr.getColor(dataIndex);
+            var textSize = textStyle.fontSize || 12;
+            var textShape = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                style: {
+                    x: x,
+                    y: y - r - textSize,
+                    color: textStyle.color || textColor,
+                    text: text,
+                    textFont: textFont,
+                    textAlign: 'center'
+                }
+            };
+            return new TextShape(textShape);
+        },
+        getLabelText: function (dataIndex, dataItem, status) {
+            var series = this.series;
+            var serie = series[0];
+            var formatter = this.deepQuery([
+                dataItem,
+                serie
+            ], 'itemStyle.' + status + '.label.formatter');
+            if (formatter) {
+                if (typeof formatter == 'function') {
+                    return formatter(serie.name, dataItem.name, dataItem.value);
+                } else if (typeof formatter == 'string') {
+                    formatter = formatter.replace('{a}', '{a0}').replace('{b}', '{b0}').replace('{c}', '{c0}');
+                    formatter = formatter.replace('{a0}', serie.name).replace('{b0}', dataItem.name).replace('{c0}', dataItem.value);
+                    return formatter;
+                }
+            } else {
+                return dataItem.name;
+            }
+        },
+        refresh: function (newOption) {
+            if (newOption) {
+                this.option = newOption;
+                this.series = newOption.series;
+            }
+            this._buildShape();
+        }
+    };
+    zrUtil.inherits(Venn, ChartBase);
+    require('../chart').define('venn', Venn);
+    return Venn;
+});define('echarts/chart/treemap', [
+    'require',
+    './base',
+    'zrender/tool/area',
+    'zrender/shape/Rectangle',
+    'zrender/shape/Text',
+    'zrender/shape/Line',
+    '../layout/TreeMap',
+    '../data/Tree',
+    '../config',
+    '../util/ecData',
+    'zrender/config',
+    'zrender/tool/event',
+    'zrender/tool/util',
+    'zrender/tool/color',
+    '../chart'
+], function (require) {
+    var ChartBase = require('./base');
+    var toolArea = require('zrender/tool/area');
+    var RectangleShape = require('zrender/shape/Rectangle');
+    var TextShape = require('zrender/shape/Text');
+    var LineShape = require('zrender/shape/Line');
+    var TreeMapLayout = require('../layout/TreeMap');
+    var Tree = require('../data/Tree');
+    var ecConfig = require('../config');
+    ecConfig.treemap = {
+        zlevel: 0,
+        z: 1,
+        calculable: false,
+        clickable: true,
+        center: [
+            '50%',
+            '50%'
+        ],
+        size: [
+            '80%',
+            '80%'
+        ],
+        root: '',
+        itemStyle: {
+            normal: {
+                label: {
+                    show: true,
+                    x: 5,
+                    y: 12,
+                    textStyle: {
+                        align: 'left',
+                        color: '#000',
+                        fontFamily: 'Arial',
+                        fontSize: 13,
+                        fontStyle: 'normal',
+                        fontWeight: 'normal'
+                    }
+                },
+                breadcrumb: {
+                    show: true,
+                    textStyle: {}
+                },
+                borderWidth: 1,
+                borderColor: '#ccc',
+                childBorderWidth: 1,
+                childBorderColor: '#ccc'
+            },
+            emphasis: {}
+        }
+    };
+    var ecData = require('../util/ecData');
+    var zrConfig = require('zrender/config');
+    var zrEvent = require('zrender/tool/event');
+    var zrUtil = require('zrender/tool/util');
+    var zrColor = require('zrender/tool/color');
+    function Treemap(ecTheme, messageCenter, zr, option, myChart) {
+        ChartBase.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.refresh(option);
+        var self = this;
+        self._onclick = function (params) {
+            return self.__onclick(params);
+        };
+        self.zr.on(zrConfig.EVENT.CLICK, self._onclick);
+    }
+    Treemap.prototype = {
+        type: ecConfig.CHART_TYPE_TREEMAP,
+        refresh: function (newOption) {
+            this.clear();
+            if (newOption) {
+                this.option = newOption;
+                this.series = this.option.series;
+            }
+            this._treesMap = {};
+            var series = this.series;
+            var legend = this.component.legend;
+            for (var i = 0; i < series.length; i++) {
+                if (series[i].type === ecConfig.CHART_TYPE_TREEMAP) {
+                    series[i] = this.reformOption(series[i]);
+                    var seriesName = series[i].name || '';
+                    this.selectedMap[seriesName] = legend ? legend.isSelected(seriesName) : true;
+                    if (!this.selectedMap[seriesName]) {
+                        continue;
+                    }
+                    this._buildSeries(series[i], i);
+                }
+            }
+        },
+        _buildSeries: function (series, seriesIndex) {
+            var tree = Tree.fromOptionData(series.name, series.data);
+            this._treesMap[seriesIndex] = tree;
+            var treeRoot = series.root && tree.getNodeById(series.root) || tree.root;
+            this._buildTreemap(treeRoot, seriesIndex);
+        },
+        _buildTreemap: function (treeRoot, seriesIndex) {
+            var shapeList = this.shapeList;
+            for (var i = 0; i < shapeList.length;) {
+                var shape = shapeList[i];
+                if (ecData.get(shape, 'seriesIndex') === seriesIndex) {
+                    this.zr.delShape(shapeList[i]);
+                    shapeList.splice(i, 1);
+                } else {
+                    i++;
+                }
+            }
+            var currentShapeLen = shapeList.length;
+            var series = this.series[seriesIndex];
+            var itemStyle = series.itemStyle;
+            var treemapWidth = this.parsePercent(series.size[0], this.zr.getWidth()) || 400;
+            var treemapHeight = this.parsePercent(series.size[1], this.zr.getHeight()) || 500;
+            var center = this.parseCenter(this.zr, series.center);
+            var treemapX = center[0] - treemapWidth * 0.5;
+            var treemapY = center[1] - treemapHeight * 0.5;
+            var treemapArea = treemapWidth * treemapHeight;
+            var sum = 0;
+            var areaArr = [];
+            var children = treeRoot.children;
+            for (var i = 0; i < children.length; i++) {
+                sum += children[i].data.value;
+            }
+            for (var j = 0; j < children.length; j++) {
+                areaArr.push(children[j].data.value * treemapArea / sum);
+            }
+            var treeMapLayout = new TreeMapLayout({
+                x: treemapX,
+                y: treemapY,
+                width: treemapWidth,
+                height: treemapHeight
+            });
+            var locationArr = treeMapLayout.run(areaArr);
+            for (var k = 0; k < locationArr.length; k++) {
+                var dataItem = children[k].data;
+                var rect = locationArr[k];
+                var queryTarget = [
+                    dataItem.itemStyle,
+                    itemStyle
+                ];
+                var itemStyleMerged = this.deepMerge(queryTarget);
+                if (!itemStyleMerged.normal.color) {
+                    itemStyleMerged.normal.color = this.zr.getColor(k);
+                }
+                if (!itemStyleMerged.emphasis.color) {
+                    itemStyleMerged.emphasis.color = itemStyleMerged.normal.color;
+                }
+                this._buildItem(dataItem, itemStyleMerged, rect, seriesIndex, k);
+                if (dataItem.children) {
+                    this._buildChildrenTreemap(dataItem.children, itemStyleMerged, rect, seriesIndex);
+                }
+            }
+            if (this.query(series, 'itemStyle.normal.breadcrumb.show')) {
+                this._buildBreadcrumb(treeRoot, seriesIndex, treemapX, treemapY + treemapHeight);
+            }
+            for (var i = currentShapeLen; i < shapeList.length; i++) {
+                this.zr.addShape(shapeList[i]);
+            }
+        },
+        _buildItem: function (dataItem, itemStyle, rect, seriesIndex, dataIndex) {
+            var series = this.series;
+            var rectangle = this.getRectangle(dataItem, itemStyle, rect);
+            ecData.pack(rectangle, series[seriesIndex], seriesIndex, dataItem, dataIndex, dataItem.name);
+            this.shapeList.push(rectangle);
+        },
+        getRectangle: function (dataItem, itemStyle, rect) {
+            var emphasis = itemStyle.emphasis;
+            var normal = itemStyle.normal;
+            var textShape = this.getLabel(itemStyle, rect, dataItem.name, dataItem.value);
+            var hoverable = this.option.hoverable;
+            var rectangleShape = {
+                zlevel: this.getZlevelBase(),
+                z: this.getZBase(),
+                hoverable: hoverable,
+                clickable: true,
+                style: zrUtil.merge({
+                    x: rect.x,
+                    y: rect.y,
+                    width: rect.width,
+                    height: rect.height,
+                    brushType: 'both',
+                    color: normal.color,
+                    lineWidth: normal.borderWidth,
+                    strokeColor: normal.borderColor
+                }, textShape.style, true),
+                highlightStyle: zrUtil.merge({
+                    color: emphasis.color,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor
+                }, textShape.highlightStyle, true)
+            };
+            return new RectangleShape(rectangleShape);
+        },
+        getLabel: function (itemStyle, rect, name, value) {
+            var normalTextStyle = itemStyle.normal.label.textStyle;
+            var queryTarget = [
+                itemStyle.emphasis.label.textStyle,
+                normalTextStyle
+            ];
+            var emphasisTextStyle = this.deepMerge(queryTarget);
+            var formatter = itemStyle.normal.label.formatter;
+            var text = this.getLabelText(name, value, formatter);
+            var textFont = this.getFont(normalTextStyle);
+            var textWidth = toolArea.getTextWidth(text, textFont);
+            var textHeight = toolArea.getTextHeight(text, textFont);
+            var emphasisFormatter = this.deepQuery([
+                itemStyle.emphasis,
+                itemStyle.normal
+            ], 'label.formatter');
+            var emphasisText = this.getLabelText(name, value, emphasisFormatter);
+            var emphasisTextFont = this.getFont(emphasisTextStyle);
+            var emphasisTextWidth = toolArea.getTextWidth(text, emphasisTextFont);
+            var emphasisTextHeight = toolArea.getTextHeight(text, emphasisTextFont);
+            if (!itemStyle.normal.label.show) {
+                text = '';
+            } else if (itemStyle.normal.label.x + textWidth > rect.width || itemStyle.normal.label.y + textHeight > rect.height) {
                 text = '';
             }
             if (!itemStyle.emphasis.label.show) {
@@ -43905,7 +48354,37 @@ define('zrender/zrender', [
         ratio0 = ratio0 > 1 ? 1 / ratio0 : ratio0;
         var ratio1 = shapeArr1[0].height / shapeArr1[0].width;
         ratio1 = ratio1 > 1 ? 1 / ratio1 : ratio1;
-        if (Math.abs(ratio0 - 1) <= math.abs(ratio1="" -="" 1))="" {="" return="" true;="" }="" false;="" };="" treemaplayout;="" });define('echarts="" data="" tree',="" [="" 'require',="" 'zrender="" tool="" util'="" ],="" function="" (require)="" var="" zrutil="require('zrender/tool/util');" treenode(id,="" data)="" this.id="id;" this.depth="0;" this.height="0;" this.children="[];" this.parent="null;" this.data="data" ||="" null;="" treenode.prototype.add="function" (child)="" children="this.children;" if="" (child.parent="==" this)="" return;="" children.push(child);="" child.parent="this;" treenode.prototype.remove="function" idx="zrUtil.indexOf(children," child);="" (idx="">= 0) {
+        if (Math.abs(ratio0 - 1) <= Math.abs(ratio1 - 1)) {
+            return true;
+        }
+        return false;
+    };
+    return TreeMapLayout;
+});define('echarts/data/Tree', [
+    'require',
+    'zrender/tool/util'
+], function (require) {
+    var zrUtil = require('zrender/tool/util');
+    function TreeNode(id, data) {
+        this.id = id;
+        this.depth = 0;
+        this.height = 0;
+        this.children = [];
+        this.parent = null;
+        this.data = data || null;
+    }
+    TreeNode.prototype.add = function (child) {
+        var children = this.children;
+        if (child.parent === this) {
+            return;
+        }
+        children.push(child);
+        child.parent = this;
+    };
+    TreeNode.prototype.remove = function (child) {
+        var children = this.children;
+        var idx = zrUtil.indexOf(children, child);
+        if (idx >= 0) {
             children.splice(idx, 1);
             child.parent = null;
         }
@@ -45079,7 +49558,8 @@ define('zrender/zrender', [
                         var last;
                         for (var j = 0; j < h; j++) {
                             last = 0;
-                            for (var i = 0; i <= w;="" i++)="" {="" board[x="" +="" i]="" |="last" <<="" msx="" (i="" <="" w="" ?="" (last="sprite[j" *="" i])="">>> sx : 0);
+                            for (var i = 0; i <= w; i++) {
+                                board[x + i] |= last << msx | (i < w ? (last = sprite[j * w + i]) >>> sx : 0);
                             }
                             x += sw;
                         }
@@ -45101,7 +49581,8 @@ define('zrender/zrender', [
                 var last;
                 for (var j = 0; j < h; j++) {
                     last = 0;
-                    for (var i = 0; i <= w;="" i++)="" {="" if="" ((last="" <<="" msx="" |="" (i="" <="" w="" ?="" (last="sprite[j" *="" +="" i])="">>> sx : 0)) & board[x + i]) {
+                    for (var i = 0; i <= w; i++) {
+                        if ((last << msx | (i < w ? (last = sprite[j * w + i]) >>> sx : 0)) & board[x + i]) {
                             return true;
                         }
                     }
@@ -45110,7 +49591,41 @@ define('zrender/zrender', [
                 return false;
             }
             function collideRects(a, maxBounds) {
-                return maxBounds.row[a.y] && maxBounds.cloumn[a.x] && a.x >= maxBounds.row[a.y].start && a.x <= maxbounds.row[a.y].end="" &&="" a.y="">= maxBounds.cloumn[a.x].start && a.y <= 31="" maxbounds.cloumn[a.x].end;="" }="" },="" _autocaltextsize:="" function="" (data,="" shapearea,="" maxwidth,="" maxheight,="" minsize)="" {="" var="" sizesum="sum(data," (k)="" return="" k.size;="" });="" i="data.length;" maxareapre="0.25;" mintextsize="minSize;" cw="this.defaultOption.cw;" ch="this.defaultOption.ch;" c="this.defaultOption.c;" ratio="this.defaultOption.ratio;" cloudradians="this.defaultOption.cloudRadians;" d;="" dpre;="" while="" (i--)="" d="data[i];" dpre="d.size" sizesum;="" if="" (maxareapre)="" d.areapre="dpre" <="" ?="" :="" maxareapre;="" else="" d.area="shapeArea" *="" d.areapre;="" d.totalarea="shapeArea;" measuretextwithitbyarea(d);="" measuretextwithitbyarea(d)="" c.clearrect(0,="" 0,="" (cw="" <<="" 5)="" ratio,="" ratio);="" c.save();="" c.font="d.style" +="" '="" d.weight="" ~~((d.size="" 1)="" ratio)="" 'px="" d.font;="" w="c.measureText(d.text" 'm').width="" h="d.size" 1;="">> 5 << 5;
+                return maxBounds.row[a.y] && maxBounds.cloumn[a.x] && a.x >= maxBounds.row[a.y].start && a.x <= maxBounds.row[a.y].end && a.y >= maxBounds.cloumn[a.x].start && a.y <= maxBounds.cloumn[a.x].end;
+            }
+        },
+        _autoCalTextSize: function (data, shapeArea, maxwidth, maxheight, minSize) {
+            var sizesum = sum(data, function (k) {
+                return k.size;
+            });
+            var i = data.length;
+            var maxareapre = 0.25;
+            var minTextSize = minSize;
+            var cw = this.defaultOption.cw;
+            var ch = this.defaultOption.ch;
+            var c = this.defaultOption.c;
+            var ratio = this.defaultOption.ratio;
+            var cloudRadians = this.defaultOption.cloudRadians;
+            var d;
+            var dpre;
+            while (i--) {
+                d = data[i];
+                dpre = d.size / sizesum;
+                if (maxareapre) {
+                    d.areapre = dpre < maxareapre ? dpre : maxareapre;
+                } else {
+                    d.areapre = dpre;
+                }
+                d.area = shapeArea * d.areapre;
+                d.totalarea = shapeArea;
+                measureTextWitHitByarea(d);
+            }
+            function measureTextWitHitByarea(d) {
+                c.clearRect(0, 0, (cw << 5) / ratio, ch / ratio);
+                c.save();
+                c.font = d.style + ' ' + d.weight + ' ' + ~~((d.size + 1) / ratio) + 'px ' + d.font;
+                var w = c.measureText(d.text + 'm').width * ratio, h = d.size << 1;
+                w = w + 31 >> 5 << 5;
                 c.restore();
                 d.aw = w;
                 d.ah = h;
@@ -45125,7 +49640,11 @@ define('zrender/zrender', [
                     rw = Math.max(Math.abs(wcr + hsr), Math.abs(wcr - hsr)) + 31 >> 5 << 5;
                     rh = ~~Math.max(Math.abs(wsr + hcr), Math.abs(wsr - hcr));
                 }
-                if (d.size <= mintextsize="" ||="" d.rotate="" &&="" w="" *="" h="" <="d.area" rw="" rh="" {="" d.area="w" h;="" return;="" }="" if="" (d.rotate=""> maxwidth && rh > maxheight) {
+                if (d.size <= minTextSize || d.rotate && w * h <= d.area && rw <= maxwidth && rh <= maxheight || w * h <= d.area && w <= maxwidth && h <= maxheight) {
+                    d.area = w * h;
+                    return;
+                }
+                if (d.rotate && rw > maxwidth && rh > maxheight) {
                     k = Math.min(maxwidth / rw, maxheight / rh);
                 } else if (w > maxwidth || h > maxheight) {
                     k = Math.min(maxwidth / w, maxheight / h);
@@ -45363,4 +49882,3 @@ _global['echarts'] = echarts;
 _global['zrender'] = zrender;
 
 })(window);
-</=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></g_vml_:fill></g_vml_:fill',></g_vml_:fill></g_vml_:stroke',></g_vml_:shape',></g_vml_:group',></=></=></=></=></=></=></=></=></=></=>

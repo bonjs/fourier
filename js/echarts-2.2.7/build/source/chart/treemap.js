@@ -492,7 +492,37 @@ define('echarts/chart/treemap', [
         ratio0 = ratio0 > 1 ? 1 / ratio0 : ratio0;
         var ratio1 = shapeArr1[0].height / shapeArr1[0].width;
         ratio1 = ratio1 > 1 ? 1 / ratio1 : ratio1;
-        if (Math.abs(ratio0 - 1) <= math.abs(ratio1="" -="" 1))="" {="" return="" true;="" }="" false;="" };="" treemaplayout;="" });define('echarts="" data="" tree',="" [="" 'require',="" 'zrender="" tool="" util'="" ],="" function="" (require)="" var="" zrutil="require('zrender/tool/util');" treenode(id,="" data)="" this.id="id;" this.depth="0;" this.height="0;" this.children="[];" this.parent="null;" this.data="data" ||="" null;="" treenode.prototype.add="function" (child)="" children="this.children;" if="" (child.parent="==" this)="" return;="" children.push(child);="" child.parent="this;" treenode.prototype.remove="function" idx="zrUtil.indexOf(children," child);="" (idx="">= 0) {
+        if (Math.abs(ratio0 - 1) <= Math.abs(ratio1 - 1)) {
+            return true;
+        }
+        return false;
+    };
+    return TreeMapLayout;
+});define('echarts/data/Tree', [
+    'require',
+    'zrender/tool/util'
+], function (require) {
+    var zrUtil = require('zrender/tool/util');
+    function TreeNode(id, data) {
+        this.id = id;
+        this.depth = 0;
+        this.height = 0;
+        this.children = [];
+        this.parent = null;
+        this.data = data || null;
+    }
+    TreeNode.prototype.add = function (child) {
+        var children = this.children;
+        if (child.parent === this) {
+            return;
+        }
+        children.push(child);
+        child.parent = this;
+    };
+    TreeNode.prototype.remove = function (child) {
+        var children = this.children;
+        var idx = zrUtil.indexOf(children, child);
+        if (idx >= 0) {
             children.splice(idx, 1);
             child.parent = null;
         }
@@ -599,4 +629,4 @@ define('echarts/chart/treemap', [
         return treeList;
     };
     return Tree;
-});</=>
+});

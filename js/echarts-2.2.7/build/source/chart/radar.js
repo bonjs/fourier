@@ -427,7 +427,71 @@ define('echarts/chart/radar', [
                     if (!value) {
                         return;
                     }
-                    for (var j = 1; j <= splitnumber;="" j="" +="interval" 1)="" {="" newstyle="zrUtil.merge({}," style);="" text="accMath.accAdd(value.min," accmath.accmul(value.step,="" j));="" if="" (typeof="" formatter="==" 'function')="" }="" else="" 'string')="" '{a0}').replace('{a0}',="" text);="" newstyle.text="text;" newstyle.x="j" *="" vector[0]="" splitnumber="" math.cos(theta)="" offset="" center[0];="" newstyle.y="j" vector[1]="" math.sin(theta)="" center[1];="" this.shapelist.push(new="" textshape({="" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" style:="" newstyle,="" draggable:="" false,="" hoverable:="" false="" }));="" },="" _buildtext:="" function="" (index)="" var="" item="this.polar[index];" __ecindicator="item.__ecIndicator;" vector;="" indicator="this.deepQuery(this._queryTarget," 'indicator');="" center="this.getCenter(index);" style;="" textalign;="" name;="" rotation;="" x="0;" y="0;" margin;="" textstyle;="" for="" (var="" i="0;" <="" indicator.length;="" i++)="" name="this.deepQuery([" indicator[i],="" item,="" this.option="" ],="" 'name');="" (!name.show)="" continue;="" textstyle="this.deepQuery([" name,="" 'textstyle');="" style="{};" style.textfont="this.getFont(textStyle);" style.color="textStyle.color;" name.formatter="=" style.text="name.formatter.call(this.myChart," indicator[i].text,="" i);="" indicator[i].text);="" __ecindicator[i].text="style.text;" vector="__ecIndicator[i].vector;" (math.round(vector[0])=""> 0) {
+                    for (var j = 1; j <= splitNumber; j += interval + 1) {
+                        newStyle = zrUtil.merge({}, style);
+                        text = accMath.accAdd(value.min, accMath.accMul(value.step, j));
+                        if (typeof formatter === 'function') {
+                            text = formatter(text);
+                        } else if (typeof formatter === 'string') {
+                            text = formatter.replace('{a}', '{a0}').replace('{a0}', text);
+                        } else {
+                            text = this.numAddCommas(text);
+                        }
+                        newStyle.text = text;
+                        newStyle.x = j * vector[0] / splitNumber + Math.cos(theta) * offset + center[0];
+                        newStyle.y = j * vector[1] / splitNumber + Math.sin(theta) * offset + center[1];
+                        this.shapeList.push(new TextShape({
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            style: newStyle,
+                            draggable: false,
+                            hoverable: false
+                        }));
+                    }
+                }
+            }
+        },
+        _buildText: function (index) {
+            var item = this.polar[index];
+            var __ecIndicator = item.__ecIndicator;
+            var vector;
+            var indicator = this.deepQuery(this._queryTarget, 'indicator');
+            var center = this.getCenter(index);
+            var style;
+            var textAlign;
+            var name;
+            var rotation;
+            var x = 0;
+            var y = 0;
+            var margin;
+            var textStyle;
+            for (var i = 0; i < indicator.length; i++) {
+                name = this.deepQuery([
+                    indicator[i],
+                    item,
+                    this.option
+                ], 'name');
+                if (!name.show) {
+                    continue;
+                }
+                textStyle = this.deepQuery([
+                    name,
+                    item,
+                    this.option
+                ], 'textStyle');
+                style = {};
+                style.textFont = this.getFont(textStyle);
+                style.color = textStyle.color;
+                if (typeof name.formatter == 'function') {
+                    style.text = name.formatter.call(this.myChart, indicator[i].text, i);
+                } else if (typeof name.formatter == 'string') {
+                    style.text = name.formatter.replace('{value}', indicator[i].text);
+                } else {
+                    style.text = indicator[i].text;
+                }
+                __ecIndicator[i].text = style.text;
+                vector = __ecIndicator[i].vector;
+                if (Math.round(vector[0]) > 0) {
                     textAlign = 'left';
                 } else if (Math.round(vector[0]) < 0) {
                     textAlign = 'right';
@@ -679,7 +743,51 @@ define('echarts/chart/radar', [
                 if (!scale && min >= 0 && max >= 0) {
                     min = 0;
                 }
-                if (!scale && min <= 0="" &&="" max="" <="0)" {="" }="" var="" stepopt="smartSteps(min," max,="" splitnumber,="" opts);="" __ecindicator[i].value="{" min:="" stepopt.min,="" max:="" stepopt.max,="" step:="" stepopt.step="" };="" },="" _getseriesdata:="" function="" (index)="" data="[];" serie;="" seriedata;="" legend="this.component.legend;" polarindex;="" for="" (var="" i="0;" this.series.length;="" i++)="" serie="this.series[i];" if="" (serie.type="" !="ecConfig.CHART_TYPE_RADAR)" continue;="" seriedata="serie.data" ||="" [];="" j="0;" seriedata.length;="" j++)="" polarindex="this.deepQuery([" seriedata[j],="" serie,="" this.option="" ],="" 'polarindex')="" 0;="" (polarindex="=" index="" (!legend="" legend.isselected(seriedata[j].name)))="" data.push(seriedata[j]);="" return="" data;="" _findvalue:="" (data,="" index,="" boundarygap)="" max;="" min;="" one;="" (!data="" data.length="==" 0)="" return;="" _compare(item)="" (item=""> max || max === undefined) && (max = item);
+                if (!scale && min <= 0 && max <= 0) {
+                    max = 0;
+                }
+                var stepOpt = smartSteps(min, max, splitNumber, opts);
+                __ecIndicator[i].value = {
+                    min: stepOpt.min,
+                    max: stepOpt.max,
+                    step: stepOpt.step
+                };
+            }
+        },
+        _getSeriesData: function (index) {
+            var data = [];
+            var serie;
+            var serieData;
+            var legend = this.component.legend;
+            var polarIndex;
+            for (var i = 0; i < this.series.length; i++) {
+                serie = this.series[i];
+                if (serie.type != ecConfig.CHART_TYPE_RADAR) {
+                    continue;
+                }
+                serieData = serie.data || [];
+                for (var j = 0; j < serieData.length; j++) {
+                    polarIndex = this.deepQuery([
+                        serieData[j],
+                        serie,
+                        this.option
+                    ], 'polarIndex') || 0;
+                    if (polarIndex == index && (!legend || legend.isSelected(serieData[j].name))) {
+                        data.push(serieData[j]);
+                    }
+                }
+            }
+            return data;
+        },
+        _findValue: function (data, index, splitNumber, boundaryGap) {
+            var max;
+            var min;
+            var one;
+            if (!data || data.length === 0) {
+                return;
+            }
+            function _compare(item) {
+                (item > max || max === undefined) && (max = item);
                 (item < min || min === undefined) && (min = item);
             }
             if (data.length == 1) {
@@ -831,4 +939,4 @@ define('echarts/chart/radar', [
         polar2cartesian: polar2cartesian,
         cartesian2polar: cartesian2polar
     };
-});</=></=>
+});

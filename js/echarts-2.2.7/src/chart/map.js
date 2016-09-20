@@ -345,7 +345,34 @@ define(function (require) {
                     ms                   // 系列
                 );
                 self._buildMark(mt, ms);
-                if (--self._mapDataRequireCounter <= 0)="" {="" self.addshapelist();="" self.zr.refreshnextframe();="" }="" self._buildheatmap(mt);="" };="" },="" _clearselected="" :="" function()="" for="" (var="" k="" in="" this._selected)="" if="" (!this._activemaptype[this._maptypemap[k]])="" delete="" this._selected[k];="" this._maptypemap[k];="" _getsubmapdata="" function="" (maptype,="" mapdata)="" var="" subtype="mapType.replace(/^.*\|/," '');="" features="mapData.features;" i="0," l="features.length;" <="" l;="" i++)="" (features[i].properties="" &&="" features[i].properties.name="=" )="" (subtype="=" 'united="" states="" of="" america'="" features.geometry.coordinates.length=""> 1 // 未被简化
+                if (--self._mapDataRequireCounter <= 0) {
+                    self.addShapeList();
+                    self.zr.refreshNextFrame();
+                }
+
+                self._buildHeatmap(mt);
+            };
+        },
+
+        _clearSelected : function() {
+            for (var k in this._selected) {
+                if (!this._activeMapType[this._mapTypeMap[k]]) {
+                    delete this._selected[k];
+                    delete this._mapTypeMap[k];
+                }
+            }
+        },
+
+        _getSubMapData : function (mapType, mapData) {
+            var subType = mapType.replace(/^.*\|/, '');
+            var features = mapData.features;
+            for (var i = 0, l = features.length; i < l; i++) {
+                if (features[i].properties
+                    && features[i].properties.name == subType
+                ) {
+                    features = features[i];
+                    if (subType == 'United States of America'
+                        && features.geometry.coordinates.length > 1 // 未被简化
                     ) {
                         features = {
                             geometry: {
@@ -1103,8 +1130,38 @@ define(function (require) {
                 width = transform.width;
                 height = transform.height;
                 if (mx >= left
-                    && mx <= (left="" +="" width)="" &&="" my="">= top
-                    && my <= (top="" +="" height)="" )="" {="" return="" maptype;="" }="" return;="" },="" **="" *="" 滚轮缩放="" __onmousewheel="" :="" function="" (params)="" if="" (this.shapelist.length="" <="0)" for="" (var="" i="0," l="this.shapeList.length;" l;="" i++)="" var="" shape="this.shapeList[i];" any="" is="" still="" animating="" (shape.__animating)="" event="params.event;" mx="zrEvent.getX(event);" my="zrEvent.getY(event);" delta;="" eventdelta="zrEvent.getDelta(event);"> 0 ? (-1) : 1;
+                    && mx <= (left + width)
+                    && my >= top
+                    && my <= (top + height)
+                ) {
+                    return mapType;
+                }
+            }
+            return;
+        },
+
+        /**
+         * 滚轮缩放
+         */
+        __onmousewheel : function (params) {
+            if (this.shapeList.length <= 0) {
+                return;
+            }
+
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                var shape = this.shapeList[i];
+                // If any shape is still animating
+                if (shape.__animating) {
+                    return;
+                }
+            }
+
+            var event = params.event;
+            var mx = zrEvent.getX(event);
+            var my = zrEvent.getY(event);
+            var delta;
+            var eventDelta = zrEvent.getDelta(event);
+            //eventDelta = eventDelta > 0 ? (-1) : 1;
             var mapType;
             var mapTypeControl = params.mapTypeControl;
             if (!mapTypeControl) {
@@ -1165,7 +1222,367 @@ define(function (require) {
                     else {
                         delta = 1 / 1.2;    // 缩小
                         if (this._scaleLimitMap[mapType].min != null
-                            && transform.baseScale <= 100="" this._scalelimitmap[maptype].min="" )="" {="" continue;="" 缩放限制="" }="" transform.basescale="" *="delta;" transform.scale.x="" transform.scale.y="" transform.width="width" delta;="" transform.height="height" this._mapdatamap[maptype].hasroam="true;" this._mapdatamap[maptype].transform="transform;" 经纬度转位置="" geoandpos="this.geo2pos(mapType," geoandpos);="" 保持视觉中心="" transform.left="" -="geoAndPos[0]" (mx="" left);="" transform.top="" (my="" top);="" this.cleareffectshape(true);="" for="" (var="" i="0," l="this.shapeList.length;" <="" l;="" i++)="" var="" shape="this.shapeList[i];" if(shape._maptype="=" maptype)="" shapetype="shape.type;" shapestyle="shape.style;" shape.position[0]="transform.left;" shape.position[1]="transform.top;" switch="" (shapetype)="" case="" 'path':="" 'symbol':="" 'circle':="" 'rectangle':="" 'polygon':="" 'line':="" 'ellipse':="" 'heatmap':="" shape.scale[0]="" shape.scale[1]="" break;="" 'mark-line':="" scalemarkline(shapestyle,="" delta);="" 'polyline':="" scalepolyline(shapestyle,="" 'shape-bundle':="" j="0;" shapestyle.shapelist.length;="" j++)="" subshape="shapeStyle.shapeList[j];" if="" (subshape.type="=" 'mark-line')="" scalemarkline(subshape.style,="" else="" 'polyline')="" scalepolyline(subshape.style,="" 'icon':="" 'image':="" shape._geo);="" shapestyle.x="shapeStyle._x" =="" geoandpos[0]="" shapestyle.width="" 2;="" shapestyle.y="shapeStyle._y" geoandpos[1]="" shapestyle.height="" default:="" (shapetype="=" 'text')="" shape._style.x="shape.highlightStyle.x" geoandpos[0];="" shape._style.y="shape.highlightStyle.y" geoandpos[1];="" this.zr.modshape(shape.id);="" (havescale)="" zrevent.stop(event);="" this.zr.refreshnextframe();="" self="this;" cleartimeout(this._refreshdelayticket);="" this._refreshdelayticket="setTimeout(" function(){="" &&="" self.shapelist="" self.animationeffect();="" },="" );="" this.messagecenter.dispatch(="" ecconfig.event.map_roam,="" params.event,="" {type="" :="" 'scale'},="" this.mychart="" __onmousedown="" function="" (params)="" (this.shapelist.length="" return;="" target="params.target;" (target="" target.draggable)="" event="params.event;" mx="zrEvent.getX(event);" my="zrEvent.getY(event);" maptype="this._findMapTypeByPos(mx," my);="" (maptype="" this._roammap[maptype]="" !="scale" this._mousedown="true;" this._mx="mx;" this._my="my;" this._curmaptype="mapType;" this.zr.on(zrconfig.event.mouseup,="" this._onmouseup);="" settimeout(function="" (){="" self.zr.on(zrconfig.event.mousemove,="" self._onmousemove);="" },100);="" __onmousemove="" (!this._mousedown="" ||="" !this._isalive)="" transform="this._mapDataMap[this._curMapType].transform;" transform.hasroam="true;" mx;="" my;="" this._mapdatamap[this._curmaptype].transform="transform;" if(this.shapelist[i]._maptype="=" this._curmaptype)="" this.shapelist[i].position[0]="transform.left;" this.shapelist[i].position[1]="transform.top;" this.zr.modshape(this.shapelist[i].id);="" 'move'},="" this._justmove="true;" __onmouseup="" self._justmove="" self.zr.un(zrconfig.event.mousemove,="" self.zr.un(zrconfig.event.mouseup,="" self._onmouseup);="" },120);="" **="" 漫游组件事件响应="" __onroamcontroller:="" function(params)="" event.zrenderx="this.zr.getWidth()" event.zrendery="this.zr.getHeight()" maptypecontrol="params.mapTypeControl;" top="0;" left="0;" step="params.step;" switch(params.roamtype)="" 'scaleup':="" event.zrenderdelta="1;" this.__onmousewheel({="" event:="" event,="" maptypecontrol:="" });="" 'scaledown':="" 'up':="" 'down':="" 'left':="" 'right':="" transform;="" curmaptype;="" (curmaptype="" in="" maptypecontrol)="" (!this._mapdatamap[curmaptype]="" !this._activemaptype[curmaptype])="" this._mapdatamap[curmaptype].transform="transform;" curmaptype="this.shapeList[i]._mapType;" (!maptypecontrol[curmaptype]="" cleartimeout(this.dircetiontimer);="" this.dircetiontimer="setTimeout(function()" 150);="" datarange="" hoverlink="" 事件响应="" __ondrhoverlink="" function(param)="" value;="" (!this._hoverlinkmap[curmaptype]="" value="ecData.get(this.shapeList[i]," 'value');="" (value="">= param.valueMin && value <= param.valuemax)="" {="" this.zr.addhovershape(this.shapelist[i]);="" }="" },="" **="" *="" 点击响应="" onclick="" :="" function="" (params)="" if="" (!this.isclick="" ||="" !params.target="" this._justmove="" params.target.type="=" 'icon')="" 没有在当前实例上发生点击直接返回="" return;="" this.isclick="false;" var="" target="params.target;" name="target.style._name;" len="this.shapeList.length;" maptype="target._mapType" '';="" (this._selectedmode[maptype]="=" 'single')="" for="" (var="" p="" in="" this._selected)="" 同一地图类型="" (this._selected[p]="" &&="" this._maptypemap[p]="=" maptype)="" 复位那些生效shape（包括文字）="" i="0;" <="" len;="" i++)="" (this.shapelist[i].style._name="=" this.shapelist[i]._maptype="=" )="" this.shapelist[i].style="this.shapeList[i]._style;" this.zr.modshape(this.shapelist[i].id);="" !="name" this._selected[name]="!this._selected[name];" 更新当前点击shape（包括文字）="" (this._selected[name])="" else="" this.messagecenter.dispatch(="" ecconfig.event.map_selected,="" params.event,="" selected this._selected,="" this.mychart="" );="" this.zr.refreshnextframe();="" self="this;" settimeout(function(){="" self.zr.trigger(="" zrconfig.event.mousemove,="" params.event="" },100);="" 刷新="" refresh="" (newoption)="" this.option="newOption;" this.series="newOption.series;" (this._mapdatarequirecounter=""> 0) {
+                            && transform.baseScale <= this._scaleLimitMap[mapType].min
+                        ) {
+                            continue;     // 缩放限制
+                        }
+                    }
+
+                    transform.baseScale *= delta;
+                    transform.scale.x *= delta;
+                    transform.scale.y *= delta;
+                    transform.width = width * delta;
+                    transform.height = height * delta;
+
+                    this._mapDataMap[mapType].hasRoam = true;
+                    this._mapDataMap[mapType].transform = transform;
+                    // 经纬度转位置
+                    geoAndPos = this.geo2pos(mapType, geoAndPos);
+                    // 保持视觉中心
+                    transform.left -= geoAndPos[0] - (mx - left);
+                    transform.top -= geoAndPos[1] - (my - top);
+                    this._mapDataMap[mapType].transform = transform;
+
+                    this.clearEffectShape(true);
+                    for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                        var shape = this.shapeList[i];
+                        if(shape._mapType == mapType) {
+                            var shapeType = shape.type;
+                            var shapeStyle = shape.style;
+                            shape.position[0] = transform.left;
+                            shape.position[1] = transform.top;
+
+                            switch (shapeType) {
+                                case 'path':
+                                case 'symbol':
+                                case 'circle':
+                                case 'rectangle':
+                                case 'polygon':
+                                case 'line':
+                                case 'ellipse':
+                                case 'heatmap':
+                                    shape.scale[0] *= delta;
+                                    shape.scale[1] *= delta;
+                                    break;
+                                case 'mark-line':
+                                    scaleMarkline(shapeStyle, delta);
+                                    break;
+                                case 'polyline':
+                                    scalePolyline(shapeStyle, delta);
+                                    break;
+                                case 'shape-bundle':
+                                    for (var j = 0; j < shapeStyle.shapeList.length; j++) {
+                                        var subShape = shapeStyle.shapeList[j];
+                                        if (subShape.type == 'mark-line') {
+                                            scaleMarkline(subShape.style, delta);
+                                        }
+                                        else if (subShape.type == 'polyline') {
+                                            scalePolyline(subShape.style, delta);
+                                        }
+                                    }
+                                    break;
+                                case 'icon':
+                                case 'image':
+                                    geoAndPos = this.geo2pos(mapType, shape._geo);
+                                    shapeStyle.x = shapeStyle._x =
+                                        geoAndPos[0] - shapeStyle.width / 2;
+                                    shapeStyle.y = shapeStyle._y =
+                                        geoAndPos[1] - shapeStyle.height / 2;
+                                    break;
+                                default:
+                                    geoAndPos = this.geo2pos(mapType, shape._geo);
+                                    shapeStyle.x = geoAndPos[0];
+                                    shapeStyle.y = geoAndPos[1];
+                                    if (shapeType == 'text') {
+                                        shape._style.x = shape.highlightStyle.x
+                                                                   = geoAndPos[0];
+                                        shape._style.y = shape.highlightStyle.y
+                                                                   = geoAndPos[1];
+                                    }
+                            }
+
+                            this.zr.modShape(shape.id);
+                        }
+                    }
+                }
+            }
+            if (haveScale) {
+                zrEvent.stop(event);
+                this.zr.refreshNextFrame();
+
+                var self = this;
+                clearTimeout(this._refreshDelayTicket);
+                this._refreshDelayTicket = setTimeout(
+                    function(){
+                        self && self.shapeList && self.animationEffect();
+                    },
+                    100
+                );
+
+                this.messageCenter.dispatch(
+                    ecConfig.EVENT.MAP_ROAM,
+                    params.event,
+                    {type : 'scale'},
+                    this.myChart
+                );
+            }
+        },
+
+        __onmousedown : function (params) {
+            if (this.shapeList.length <= 0) {
+                return;
+            }
+            var target = params.target;
+            if (target && target.draggable) {
+                return;
+            }
+            var event = params.event;
+            var mx = zrEvent.getX(event);
+            var my = zrEvent.getY(event);
+            var mapType = this._findMapTypeByPos(mx, my);
+            if (mapType && this._roamMap[mapType] && this._roamMap[mapType] != 'scale') {
+                this._mousedown = true;
+                this._mx = mx;
+                this._my = my;
+                this._curMapType = mapType;
+                this.zr.on(zrConfig.EVENT.MOUSEUP, this._onmouseup);
+                var self = this;
+                setTimeout(function (){
+                    self.zr.on(zrConfig.EVENT.MOUSEMOVE, self._onmousemove);
+                },100);
+            }
+
+        },
+
+        __onmousemove : function (params) {
+            if (!this._mousedown || !this._isAlive) {
+                return;
+            }
+            var event = params.event;
+            var mx = zrEvent.getX(event);
+            var my = zrEvent.getY(event);
+            var transform = this._mapDataMap[this._curMapType].transform;
+            transform.hasRoam = true;
+            transform.left -= this._mx - mx;
+            transform.top -= this._my - my;
+            this._mx = mx;
+            this._my = my;
+            this._mapDataMap[this._curMapType].transform = transform;
+
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                if(this.shapeList[i]._mapType == this._curMapType) {
+                    this.shapeList[i].position[0] = transform.left;
+                    this.shapeList[i].position[1] = transform.top;
+                    this.zr.modShape(this.shapeList[i].id);
+                }
+            }
+
+            this.messageCenter.dispatch(
+                ecConfig.EVENT.MAP_ROAM,
+                params.event,
+                {type : 'move'},
+                this.myChart
+            );
+
+            this.clearEffectShape(true);
+            this.zr.refreshNextFrame();
+
+            this._justMove = true;
+            zrEvent.stop(event);
+        },
+
+        __onmouseup : function (params) {
+            var event = params.event;
+            this._mx = zrEvent.getX(event);
+            this._my = zrEvent.getY(event);
+            this._mousedown = false;
+            var self = this;
+            setTimeout(function (){
+                self._justMove && self.animationEffect();
+                self._justMove = false;
+                self.zr.un(zrConfig.EVENT.MOUSEMOVE, self._onmousemove);
+                self.zr.un(zrConfig.EVENT.MOUSEUP, self._onmouseup);
+            },120);
+        },
+
+        /**
+         * 漫游组件事件响应
+         */
+        __onroamcontroller: function(params) {
+            var event = params.event;
+            event.zrenderX = this.zr.getWidth() / 2;
+            event.zrenderY = this.zr.getHeight() / 2;
+            var mapTypeControl = params.mapTypeControl;
+            var top = 0;
+            var left = 0;
+            var step = params.step;
+
+            switch(params.roamType) {
+                case 'scaleUp':
+                    event.zrenderDelta = 1;
+                    this.__onmousewheel({
+                        event: event,
+                        mapTypeControl: mapTypeControl
+                    });
+                    return;
+                case 'scaleDown':
+                    event.zrenderDelta = -1;
+                    this.__onmousewheel({
+                        event: event,
+                        mapTypeControl: mapTypeControl
+                    });
+                    return;
+                case 'up':
+                    top = -step;
+                    break;
+                case 'down':
+                    top = step;
+                    break;
+                case 'left':
+                    left = -step;
+                    break;
+                case 'right':
+                    left = step;
+                    break;
+            }
+
+            var transform;
+            var curMapType;
+            for (curMapType in mapTypeControl) {
+                if (!this._mapDataMap[curMapType] || !this._activeMapType[curMapType]) {
+                    continue;
+                }
+                transform = this._mapDataMap[curMapType].transform;
+                transform.hasRoam = true;
+                transform.left -= left;
+                transform.top -= top;
+                this._mapDataMap[curMapType].transform = transform;
+            }
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                curMapType = this.shapeList[i]._mapType;
+                if (!mapTypeControl[curMapType] || !this._activeMapType[curMapType]) {
+                    continue;
+                }
+                transform = this._mapDataMap[curMapType].transform;
+                this.shapeList[i].position[0] = transform.left;
+                this.shapeList[i].position[1] = transform.top;
+                this.zr.modShape(this.shapeList[i].id);
+            }
+
+            this.messageCenter.dispatch(
+                ecConfig.EVENT.MAP_ROAM,
+                params.event,
+                {type : 'move'},
+                this.myChart
+            );
+
+            this.clearEffectShape(true);
+            this.zr.refreshNextFrame();
+
+            clearTimeout(this.dircetionTimer);
+            var self = this;
+            this.dircetionTimer = setTimeout(function() {
+                self.animationEffect();
+            }, 150);
+        },
+
+        /**
+         * dataRange hoverlink 事件响应
+         */
+        __ondrhoverlink : function(param) {
+            var curMapType;
+            var value;
+            for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                curMapType = this.shapeList[i]._mapType;
+                if (!this._hoverLinkMap[curMapType] || !this._activeMapType[curMapType]) {
+                    continue;
+                }
+                value = ecData.get(this.shapeList[i], 'value');
+                if (value != null && value >= param.valueMin && value <= param.valueMax) {
+                    this.zr.addHoverShape(this.shapeList[i]);
+                }
+            }
+        },
+
+        /**
+         * 点击响应
+         */
+        onclick : function (params) {
+            if (!this.isClick || !params.target || this._justMove || params.target.type == 'icon') {
+                // 没有在当前实例上发生点击直接返回
+                return;
+            }
+            this.isClick = false;
+
+            var target = params.target;
+            var name = target.style._name;
+            var len = this.shapeList.length;
+            var mapType = target._mapType || '';
+
+            if (this._selectedMode[mapType] == 'single') {
+                for (var p in this._selected) {
+                    // 同一地图类型
+                    if (this._selected[p] && this._mapTypeMap[p] == mapType) {
+                        // 复位那些生效shape（包括文字）
+                        for (var i = 0; i < len; i++) {
+                            if (this.shapeList[i].style._name == p
+                                && this.shapeList[i]._mapType == mapType
+                            ) {
+                                this.shapeList[i].style = this.shapeList[i]._style;
+                                this.zr.modShape(this.shapeList[i].id);
+                            }
+                        }
+                        p != name && (this._selected[p] = false);
+                    }
+                }
+            }
+
+            this._selected[name] = !this._selected[name];
+
+            // 更新当前点击shape（包括文字）
+            for (var i = 0; i < len; i++) {
+                if (this.shapeList[i].style._name == name
+                    && this.shapeList[i]._mapType == mapType
+                ) {
+                   if (this._selected[name]) {
+                        this.shapeList[i].style = this.shapeList[i].highlightStyle;
+                    }
+                    else {
+                        this.shapeList[i].style = this.shapeList[i]._style;
+                    }
+                    this.zr.modShape(this.shapeList[i].id);
+                }
+            }
+            this.messageCenter.dispatch(
+                ecConfig.EVENT.MAP_SELECTED,
+                params.event,
+                {
+                    selected : this._selected,
+                    target : name
+                },
+                this.myChart
+            );
+            this.zr.refreshNextFrame();
+
+            var self = this;
+            setTimeout(function(){
+                self.zr.trigger(
+                    zrConfig.EVENT.MOUSEMOVE,
+                    params.event
+                );
+            },100);
+        },
+
+        /**
+         * 刷新
+         */
+        refresh : function (newOption) {
+            if (newOption) {
+                this.option = newOption;
+                this.series = newOption.series;
+            }
+
+            if (this._mapDataRequireCounter > 0) {
                 this.clear();
             }
             else {
@@ -1300,4 +1717,4 @@ define(function (require) {
     require('../chart').define('map', Map);
 
     return Map;
-});</=></=></=></=></=>
+});

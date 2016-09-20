@@ -205,8 +205,160 @@ define('echarts/chart/gauge', [
             var angle;
             var sinAngle;
             var cosAngle;
-            for (var i = 0; i <= splitnumber;="" i++)="" {="" angle="startAngle" -="" totalangle="" splitnumber="" *="" i;="" sinangle="Math.sin(angle);" cosangle="Math.cos(angle);" this.shapelist.push(new="" lineshape({="" zlevel:="" serie.zlevel,="" z:="" serie.z="" +="" 1,="" hoverable:="" false,="" style:="" xstart:="" center[0]="" r,="" ystart:="" center[1]="" xend:="" r0,="" yend:="" strokecolor:="" color="==" 'auto'="" ?="" this._getcolor(seriesindex,="" min="" total="" i)="" :="" color,="" linetype:="" linestyle.type,="" linewidth:="" linestyle.width,="" shadowcolor:="" linestyle.shadowcolor,="" shadowblur:="" linestyle.shadowblur,="" shadowoffsetx:="" linestyle.shadowoffsetx,="" shadowoffsety:="" linestyle.shadowoffsety="" }="" }));="" },="" _buildaxistick:="" function="" (seriesindex)="" var="" serie="this.series[seriesIndex];" if="" (!serie.axistick.show)="" return;="" params="this._paramsMap[seriesIndex];" min;="" axistick="serie.axisTick;" ticksplit="axisTick.splitNumber;" length="this.parsePercent(axisTick.length," params.radius[1]);="" linestyle="axisTick.lineStyle;" center="params.center;" startangle="params.startAngle" math.pi="" 180;="" r="params.radius[1];" r0="r" length;="" angle;="" sinangle;="" cosangle;="" for="" (var="" i="0," l="splitNumber" ticksplit;="" <="l;" (i="" %="" 0)="" continue;="" _buildaxislabel:="" (!serie.axislabel.show)="" textstyle="serie.axisLabel.textStyle;" textfont="this.getFont(textStyle);" this.parsepercent(serie.splitline.length,="" params.radius[1])="" 5;="" value;="" value="accMath.accAdd(min," accmath.accmul(accmath.accdiv(total,="" splitnumber),="" i));="" 180);="" 360)="" 360;="" textshape({="" x:="" y:="" color:="" value)="" text:="" this._getlabeltext(serie.axislabel.formatter,="" value),="" textalign:="">= 110 && angle <= 250="" ?="" 'left'="" :="" angle="" <="70" ||="">= 290 ? 'right' : 'center',
-                        textBaseline: angle >= 10 && angle <= 170="" ?="" 'top'="" :="" angle="">= 190 && angle <= 350="" ?="" 'bottom'="" :="" 'middle',="" textfont:="" textfont,="" shadowcolor:="" textstyle.shadowcolor,="" shadowblur:="" textstyle.shadowblur,="" shadowoffsetx:="" textstyle.shadowoffsetx,="" shadowoffsety:="" textstyle.shadowoffsety="" }="" }));="" },="" _buildpointer:="" function="" (seriesindex)="" {="" var="" serie="this.series[seriesIndex];" if="" (!serie.pointer.show)="" return;="" total="serie.max" -="" serie.min;="" pointer="serie.pointer;" params="this._paramsMap[seriesIndex];" length="this.parsePercent(pointer.length," params.radius[1]);="" width="this.parsePercent(pointer.width," center="params.center;" value="this._getValue(seriesIndex);" <="" serie.max="" serie.max;="" angle="(params.startAngle" params.totalangle="" *="" (value="" serie.min))="" math.pi="" 180;="" color="pointer.color" =="=" 'auto'="" this._getcolor(seriesindex,="" value)="" pointer.color;="" pointshape="new" gaugepointershape({="" zlevel:="" serie.zlevel,="" z:="" serie.z="" +="" 1,="" clickable:="" this.query(serie,="" 'clickable'),="" style:="" x:="" center[0],="" y:="" center[1],="" r:="" length,="" startangle:="" params.startangle="" 180,="" angle:="" angle,="" color:="" color,="" width:="" width,="" pointer.shadowcolor,="" pointer.shadowblur,="" pointer.shadowoffsetx,="" pointer.shadowoffsety="" highlightstyle:="" brushtype:="" 'fill',=""> 2 ? 2 : width / 2,
+            for (var i = 0; i <= splitNumber; i++) {
+                angle = startAngle - totalAngle / splitNumber * i;
+                sinAngle = Math.sin(angle);
+                cosAngle = Math.cos(angle);
+                this.shapeList.push(new LineShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        xStart: center[0] + cosAngle * r,
+                        yStart: center[1] - sinAngle * r,
+                        xEnd: center[0] + cosAngle * r0,
+                        yEnd: center[1] - sinAngle * r0,
+                        strokeColor: color === 'auto' ? this._getColor(seriesIndex, min + total / splitNumber * i) : color,
+                        lineType: lineStyle.type,
+                        lineWidth: lineStyle.width,
+                        shadowColor: lineStyle.shadowColor,
+                        shadowBlur: lineStyle.shadowBlur,
+                        shadowOffsetX: lineStyle.shadowOffsetX,
+                        shadowOffsetY: lineStyle.shadowOffsetY
+                    }
+                }));
+            }
+        },
+        _buildAxisTick: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (!serie.axisTick.show) {
+                return;
+            }
+            var params = this._paramsMap[seriesIndex];
+            var splitNumber = serie.splitNumber;
+            var min = serie.min;
+            var total = serie.max - min;
+            var axisTick = serie.axisTick;
+            var tickSplit = axisTick.splitNumber;
+            var length = this.parsePercent(axisTick.length, params.radius[1]);
+            var lineStyle = axisTick.lineStyle;
+            var color = lineStyle.color;
+            var center = params.center;
+            var startAngle = params.startAngle * Math.PI / 180;
+            var totalAngle = params.totalAngle * Math.PI / 180;
+            var r = params.radius[1];
+            var r0 = r - length;
+            var angle;
+            var sinAngle;
+            var cosAngle;
+            for (var i = 0, l = splitNumber * tickSplit; i <= l; i++) {
+                if (i % tickSplit === 0) {
+                    continue;
+                }
+                angle = startAngle - totalAngle / l * i;
+                sinAngle = Math.sin(angle);
+                cosAngle = Math.cos(angle);
+                this.shapeList.push(new LineShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        xStart: center[0] + cosAngle * r,
+                        yStart: center[1] - sinAngle * r,
+                        xEnd: center[0] + cosAngle * r0,
+                        yEnd: center[1] - sinAngle * r0,
+                        strokeColor: color === 'auto' ? this._getColor(seriesIndex, min + total / l * i) : color,
+                        lineType: lineStyle.type,
+                        lineWidth: lineStyle.width,
+                        shadowColor: lineStyle.shadowColor,
+                        shadowBlur: lineStyle.shadowBlur,
+                        shadowOffsetX: lineStyle.shadowOffsetX,
+                        shadowOffsetY: lineStyle.shadowOffsetY
+                    }
+                }));
+            }
+        },
+        _buildAxisLabel: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (!serie.axisLabel.show) {
+                return;
+            }
+            var splitNumber = serie.splitNumber;
+            var min = serie.min;
+            var total = serie.max - min;
+            var textStyle = serie.axisLabel.textStyle;
+            var textFont = this.getFont(textStyle);
+            var color = textStyle.color;
+            var params = this._paramsMap[seriesIndex];
+            var center = params.center;
+            var startAngle = params.startAngle;
+            var totalAngle = params.totalAngle;
+            var r0 = params.radius[1] - this.parsePercent(serie.splitLine.length, params.radius[1]) - 5;
+            var angle;
+            var sinAngle;
+            var cosAngle;
+            var value;
+            for (var i = 0; i <= splitNumber; i++) {
+                value = accMath.accAdd(min, accMath.accMul(accMath.accDiv(total, splitNumber), i));
+                angle = startAngle - totalAngle / splitNumber * i;
+                sinAngle = Math.sin(angle * Math.PI / 180);
+                cosAngle = Math.cos(angle * Math.PI / 180);
+                angle = (angle + 360) % 360;
+                this.shapeList.push(new TextShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        x: center[0] + cosAngle * r0,
+                        y: center[1] - sinAngle * r0,
+                        color: color === 'auto' ? this._getColor(seriesIndex, value) : color,
+                        text: this._getLabelText(serie.axisLabel.formatter, value),
+                        textAlign: angle >= 110 && angle <= 250 ? 'left' : angle <= 70 || angle >= 290 ? 'right' : 'center',
+                        textBaseline: angle >= 10 && angle <= 170 ? 'top' : angle >= 190 && angle <= 350 ? 'bottom' : 'middle',
+                        textFont: textFont,
+                        shadowColor: textStyle.shadowColor,
+                        shadowBlur: textStyle.shadowBlur,
+                        shadowOffsetX: textStyle.shadowOffsetX,
+                        shadowOffsetY: textStyle.shadowOffsetY
+                    }
+                }));
+            }
+        },
+        _buildPointer: function (seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (!serie.pointer.show) {
+                return;
+            }
+            var total = serie.max - serie.min;
+            var pointer = serie.pointer;
+            var params = this._paramsMap[seriesIndex];
+            var length = this.parsePercent(pointer.length, params.radius[1]);
+            var width = this.parsePercent(pointer.width, params.radius[1]);
+            var center = params.center;
+            var value = this._getValue(seriesIndex);
+            value = value < serie.max ? value : serie.max;
+            var angle = (params.startAngle - params.totalAngle / total * (value - serie.min)) * Math.PI / 180;
+            var color = pointer.color === 'auto' ? this._getColor(seriesIndex, value) : pointer.color;
+            var pointShape = new GaugePointerShape({
+                zlevel: serie.zlevel,
+                z: serie.z + 1,
+                clickable: this.query(serie, 'clickable'),
+                style: {
+                    x: center[0],
+                    y: center[1],
+                    r: length,
+                    startAngle: params.startAngle * Math.PI / 180,
+                    angle: angle,
+                    color: color,
+                    width: width,
+                    shadowColor: pointer.shadowColor,
+                    shadowBlur: pointer.shadowBlur,
+                    shadowOffsetX: pointer.shadowOffsetX,
+                    shadowOffsetY: pointer.shadowOffsetY
+                },
+                highlightStyle: {
+                    brushType: 'fill',
+                    width: width > 2 ? 2 : width / 2,
                     color: '#fff'
                 }
             });
@@ -422,4 +574,4 @@ define('echarts/chart/gauge', [
     };
     zrUtil.inherits(GaugePointer, Base);
     return GaugePointer;
-});</=></=></=></=>
+});

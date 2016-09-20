@@ -1252,7 +1252,7 @@ define('echarts/chart/force', [
         }
     };
     Region.prototype.contain = function (x, y) {
-        return this.bbox[0] <= x="" &&="" this.bbox[2]="">= x && this.bbox[1] <= y="" &&="" this.bbox[3]="">= y;
+        return this.bbox[0] <= x && this.bbox[2] >= x && this.bbox[1] <= y && this.bbox[3] >= y;
     };
     Region.prototype.setBBox = function (minX, minY, maxX, maxY) {
         this.bbox[0] = minX;
@@ -1534,7 +1534,50 @@ define('echarts/chart/force', [
                 d = d - na.size - nb.size;
                 if (d > 0) {
                     factor = this.nodeToNodeRepulsionFactor(mass, d, this._k);
-                } else if (d <= 10="" 0)="" {="" factor="this._k" *="" this._k="" mass;="" }="" else="" d,="" this._k);="" if="" (!oneway)="" vec2.scaleandadd(na.force,="" na.force,="" v,="" 2);="" vec2.scaleandadd(nb.force,="" nb.force,="" -factor="" };="" }();="" forcelayout.prototype.applyedgeattraction="function" ()="" var="" v="vec2.create();" return="" function="" applyedgeattraction(edge)="" na="edge.node1;" nb="edge.node2;" vec2.sub(v,="" na.position,="" nb.position);="" d="vec2.len(v);" w;="" (this.edgeweightinfluence="==" w="1;" 1)="" this.edgeweightinfluence);="" factor;="" (this.preventoverlap)="" -="" na.size="" nb.size;="" (d="" <="0)" return;="" -factor);="" factor);="" forcelayout.prototype.applynodegravity="function" (node)="" this.center,="" node.position);="" (this.width=""> this.height) {
+                } else if (d <= 0) {
+                    factor = this._k * this._k * 10 * mass;
+                }
+            } else {
+                factor = this.nodeToNodeRepulsionFactor(mass, d, this._k);
+            }
+            if (!oneWay) {
+                vec2.scaleAndAdd(na.force, na.force, v, factor * 2);
+            }
+            vec2.scaleAndAdd(nb.force, nb.force, v, -factor * 2);
+        };
+    }();
+    ForceLayout.prototype.applyEdgeAttraction = function () {
+        var v = vec2.create();
+        return function applyEdgeAttraction(edge) {
+            var na = edge.node1;
+            var nb = edge.node2;
+            vec2.sub(v, na.position, nb.position);
+            var d = vec2.len(v);
+            var w;
+            if (this.edgeWeightInfluence === 0) {
+                w = 1;
+            } else if (this.edgeWeightInfluence == 1) {
+                w = edge.weight;
+            } else {
+                w = Math.pow(edge.weight, this.edgeWeightInfluence);
+            }
+            var factor;
+            if (this.preventOverlap) {
+                d = d - na.size - nb.size;
+                if (d <= 0) {
+                    return;
+                }
+            }
+            var factor = this.attractionFactor(w, d, this._k);
+            vec2.scaleAndAdd(na.force, na.force, v, -factor);
+            vec2.scaleAndAdd(nb.force, nb.force, v, factor);
+        };
+    }();
+    ForceLayout.prototype.applyNodeGravity = function () {
+        var v = vec2.create();
+        return function (node) {
+            vec2.sub(v, this.center, node.position);
+            if (this.width > this.height) {
                 v[1] *= this.width / this.height;
             } else {
                 v[0] *= this.height / this.width;
@@ -1651,4 +1694,4 @@ define('echarts/chart/force', [
         };
     }
     return ForceLayout;
-});</=></=></=>
+});

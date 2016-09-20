@@ -170,7 +170,328 @@ define(function (require) {
             for (var i = 0, l = selectedData.length; i < l; i++) {
                 itemName = selectedData[i].name;
                 if (this.selectedMap[itemName] && !isNaN(selectedData[i].value)) {
-                    width = i <= 2="" 10="" l="" -="" ?="" this._getitemwidth(seriesindex,="" selecteddata[i="" +="" next].value)="" :="" serie.sort="==" 'descending'="" number.parsepercent(serie.minsize,="" location.width)="" number.parsepercent(serie.maxsize,="" location.width);="" switch="" (align)="" {="" case="" 'left':="" x="location.x;" break;="" 'right':="" location.width="" lastwidth;="" default:="" lastwidth="" 2;="" }="" polygon="this._buildItem(" seriesindex,="" selecteddata[i]._index,="" legend="" color="" legend.getcolor(itemname)="" this.zr.getcolor(selecteddata[i]._index),="" x,="" lasty,="" lastwidth,="" width,="" height,="" align="" );="" lasty="" gap;="" lastpolygon="polygon.style.pointList;" pointlist.unshift([lastpolygon[0][0]="" 10,="" lastpolygon[0][1]]);="" 左="" pointlist.push([lastpolygon[1][0]="" lastpolygon[1][1]]);="" 右="" if="" (i="==" 0)="" (lastwidth="==" 'center'="" &&="" (pointlist[0][0]="" 'right'="" pointlist[0][1]="" =="center" 15;="" (l="=" 1)="" else="" pointlist[pointlist.length="" 1][1]="" (funnelcase)="" pointlist.unshift([lastpolygon[3][0]="" lastpolygon[3][1]]);="" pointlist.push([lastpolygon[2][0]="" lastpolygon[2][1]]);="" funnelcase.style.pointlist="pointList;" },="" _buildfunnelcase:="" function(seriesindex)="" var="" serie="this.series[seriesIndex];" (this.deepquery([serie,="" this.option],="" 'calculable'))="" location="this._paramsMap[seriesIndex].location;" gap="10;" funnelcase="{" hoverable:="" false,="" style:="" pointlistd:="" [="" [location.x="" gap,="" location.y="" gap],="" location.height="" gap]="" ],="" brushtype:="" 'stroke',="" linewidth:="" 1,="" strokecolor:="" serie.calculableholdercolor="" ||="" this.ectheme.calculableholdercolor="" ecconfig.calculableholdercolor="" };="" ecdata.pack(funnelcase,="" serie,="" undefined,="" -1);="" this.setcalculable(funnelcase);="" polygonshape(funnelcase);="" this.shapelist.push(funnelcase);="" return="" funnelcase;="" _getlocation:="" function="" (seriesindex)="" gridoption="this.series[seriesIndex];" zrwidth="this.zr.getWidth();" zrheight="this.zr.getHeight();" zrwidth);="" y="this.parsePercent(gridOption.y," zrheight);="" width="gridOption.width" (zrwidth="" this.parsepercent(gridoption.x2,="" zrwidth))="" this.parsepercent(gridoption.width,="" x:="" y:="" y,="" width:="" height:="" gridoption.height="=" null="" (zrheight="" this.parsepercent(gridoption.y2,="" zrheight))="" this.parsepercent(gridoption.height,="" zrheight),="" centerx:="" _mapdata:="" funneldata="zrUtil.clone(serie.data);" for="" (var="" i="0," <="" l;="" i++)="" funneldata[i]._index="i;" numdescending="" (a,="" b)="" (a.value="==" '-')="" 1;="" (b.value="==" -1;="" b.value="" a.value;="" numascending="" -numdescending(a,="" b);="" (serie.sort="" !="none" )="" funneldata.sort(serie.sort="==" numascending);="" funneldata;="" **="" *="" 构建单个扇形及指标="" _builditem:="" (="" dataindex,="" defaultcolor,="" topwidth,="" bottomwidth,="" series="this.series;" data="serie.data[dataIndex];" 漏斗="" ecdata.pack(="" polygon,="" series[seriesindex],="" series[seriesindex].data[dataindex],="" series[seriesindex].data[dataindex].name="" this.shapelist.push(polygon);="" 文本标签="" label="this.getLabel(" label,="" this.shapelist.push(label);="" 特定状态下是否需要显示文本标签="" (!this._needlabel(serie,="" data,false))="" label.invisible="true;" 文本标签视觉引导线="" labelline="this.getLabelLine(" this.shapelist.push(labelline);="" 特定状态下是否需要显示文本标签引导线="" (!this._needlabelline(serie,="" labelline.invisible="true;" polygonhoverconnect="[];" labelhoverconnect="[];" (this._needlabelline(serie,="" data,="" true))="" polygonhoverconnect.push(labelline.id);="" labelhoverconnect.push(labelline.id);="" (this._needlabel(serie,="" polygonhoverconnect.push(label.id);="" labelhoverconnect.push(polygon.id);="" polygon.hoverconnect="polygonHoverConnect;" label.hoverconnect="labelHoverConnect;" polygon;="" 根据值计算宽度="" _getitemwidth:="" (seriesindex,="" value)="" min="serie.min;" max="serie.max;" minsize="number.parsePercent(serie.minSize," maxsize="number.parsePercent(serie.maxSize," (value="" min)="" (maxsize="" minsize)="" (max="" minsize;="" 构建扇形="" getpolygon:="" xlt,="" querytarget="[data," serie];="" 多级控制="" normal="this.deepMerge(queryTarget," 'itemstyle.normal')="" {};="" emphasis="this.deepMerge(queryTarget,'itemStyle.emphasis')" normalcolor="this.getItemStyleColor(normal.color," data)="" defaultcolor;="" emphasiscolor="this.getItemStyleColor(emphasis.color," (typeof="" 'string'="" zrcolor.lift(normalcolor,="" -0.2)="" xlb;="" xlb="xLT;" (topwidth="" bottomwidth);="" bottomwidth)="" zlevel:="" serie.zlevel,="" z:="" serie.z,="" clickable:="" this.deepquery(querytarget,="" 'clickable'),="" pointlist:="" [xlt,="" y],="" [xlt="" [xlb="" height],="" [xlb,="" height]="" 'both',="" color:="" normalcolor,="" normal.borderwidth,="" normal.bordercolor="" highlightstyle:="" emphasiscolor,="" emphasis.borderwidth,="" emphasis.bordercolor="" (this.deepquery([data,="" this.setcalculable(polygon);="" polygon.draggable="true;" new="" polygonshape(polygon);="" 需要显示则会有返回构建好的shape，否则返回undefined="" getlabel:="" serie里有默认配置，放心大胆的用！="" itemstyle="zrUtil.merge(" zrutil.clone(data.itemstyle)="" {},="" serie.itemstyle="" status="normal" ;="" label配置="" labelcontrol="itemStyle[status].label;" textstyle="labelControl.textStyle" linelength="itemStyle[status].labelLine.length;" text="this.getLabelText(seriesIndex," status);="" textfont="this.getFont(textStyle);" textalign;="" textcolor="defaultColor;" labelcontrol.position="labelControl.position" itemstyle.normal.label.position;="" (labelcontrol.position="==" 'inner'="" 'inside'="" 内部="" textalign="align;"> zrArea.getTextWidth(text, textFont)
+                    width = i <= l - 2
+                            ? this._getItemWidth(seriesIndex, selectedData[i + next].value)
+                            : serie.sort === 'descending'
+                              ? number.parsePercent(serie.minSize, location.width)
+                              : number.parsePercent(serie.maxSize, location.width);
+                    switch (align) {
+                        case 'left':
+                            x = location.x;
+                            break;
+                        case 'right':
+                            x = location.x + location.width - lastWidth;
+                            break;
+                        default:
+                            x = centerX - lastWidth / 2;
+                    }
+                    polygon = this._buildItem(
+                        seriesIndex, selectedData[i]._index,
+                        legend // color
+                            ? legend.getColor(itemName) 
+                            : this.zr.getColor(selectedData[i]._index),
+                        x, lastY, lastWidth, width, height, align
+                    );
+                    lastY += height + gap;
+                    lastPolygon = polygon.style.pointList;
+                    
+                    pointList.unshift([lastPolygon[0][0] - 10, lastPolygon[0][1]]); // 左
+                    pointList.push([lastPolygon[1][0] + 10, lastPolygon[1][1]]);    // 右
+                    if (i === 0) {
+                        if (lastWidth === 0) {
+                            lastPolygon = pointList.pop();
+                            align == 'center' && (pointList[0][0] += 10);
+                            align == 'right' && (pointList[0][0] = lastPolygon[0]);
+                            pointList[0][1] -= align == 'center' ? 10 : 15;
+                            if (l == 1) {
+                                lastPolygon = polygon.style.pointList;
+                            }
+                        }
+                        else {
+                            pointList[pointList.length - 1][1] -= 5;
+                            pointList[0][1] -=5;
+                        }
+                    }
+                    lastWidth = width;
+                }
+            }
+            
+            if (funnelCase) {
+                pointList.unshift([lastPolygon[3][0] - 10, lastPolygon[3][1]]); // 左
+                pointList.push([lastPolygon[2][0] + 10, lastPolygon[2][1]]);    // 右
+                if (lastWidth === 0) {
+                    lastPolygon = pointList.pop();
+                    align == 'center' && (pointList[0][0] += 10);
+                    align == 'right' && (pointList[0][0] = lastPolygon[0]);
+                    pointList[0][1] += align == 'center' ? 10 : 15;
+                }
+                else {
+                    pointList[pointList.length - 1][1] += 5;
+                    pointList[0][1] +=5;
+                }
+                funnelCase.style.pointList = pointList;
+            }
+        },
+        
+        _buildFunnelCase: function(seriesIndex) {
+            var serie = this.series[seriesIndex];
+            if (this.deepQuery([serie, this.option], 'calculable')) {
+                var location = this._paramsMap[seriesIndex].location;
+                var gap = 10;
+                var funnelCase = {
+                    hoverable: false,
+                    style: {
+                        pointListd: [
+                            [location.x - gap, location.y - gap],
+                            [location.x + location.width + gap, location.y - gap],
+                            [location.x + location.width + gap, location.y + location.height + gap],
+                            [location.x - gap, location.y + location.height + gap]
+                        ],
+                        brushType: 'stroke',
+                        lineWidth: 1,
+                        strokeColor: serie.calculableHolderColor
+                                     || this.ecTheme.calculableHolderColor
+                                     || ecConfig.calculableHolderColor
+                    }
+                };
+                ecData.pack(funnelCase, serie, seriesIndex, undefined, -1);
+                this.setCalculable(funnelCase);
+                funnelCase = new PolygonShape(funnelCase);
+                this.shapeList.push(funnelCase);
+                return funnelCase;
+            }
+        },
+        
+        _getLocation: function (seriesIndex) {
+            var gridOption = this.series[seriesIndex];
+            var zrWidth = this.zr.getWidth();
+            var zrHeight = this.zr.getHeight();
+            var x = this.parsePercent(gridOption.x, zrWidth);
+            var y = this.parsePercent(gridOption.y, zrHeight);
+
+            var width = gridOption.width == null
+                        ? (zrWidth - x - this.parsePercent(gridOption.x2, zrWidth))
+                        : this.parsePercent(gridOption.width, zrWidth);
+
+            return {
+                x: x,
+                y: y,
+                width: width,
+                height: gridOption.height == null
+                        ? (zrHeight - y - this.parsePercent(gridOption.y2, zrHeight))
+                        : this.parsePercent(gridOption.height, zrHeight),
+                centerX: x + width / 2
+            };
+        },
+        
+        _mapData: function(seriesIndex) {
+            var serie = this.series[seriesIndex];
+            var funnelData = zrUtil.clone(serie.data);
+            for (var i = 0, l = funnelData.length; i < l; i++) {
+                funnelData[i]._index = i;
+            }
+            function numDescending (a, b) {
+                if (a.value === '-') {
+                    return 1;
+                }
+                else if (b.value === '-') {
+                    return -1;
+                }
+                return b.value - a.value;
+            }
+            function numAscending (a, b) {
+                return -numDescending(a, b);
+            }
+            if (serie.sort != 'none') {
+                funnelData.sort(serie.sort === 'descending' ? numDescending : numAscending);
+            }
+            
+            return funnelData;
+        },
+        
+        /**
+         * 构建单个扇形及指标
+         */
+        _buildItem: function (
+            seriesIndex, dataIndex, defaultColor,
+            x, y, topWidth, bottomWidth, height, align
+        ) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            
+            // 漏斗
+            var polygon = this.getPolygon(
+                    seriesIndex, dataIndex, defaultColor,
+                    x, y, topWidth, bottomWidth, height, align
+                );
+            ecData.pack(
+                polygon,
+                series[seriesIndex], seriesIndex,
+                series[seriesIndex].data[dataIndex], dataIndex,
+                series[seriesIndex].data[dataIndex].name
+            );
+            this.shapeList.push(polygon);
+
+            // 文本标签
+            var label = this.getLabel(
+                    seriesIndex, dataIndex, defaultColor,
+                    x, y, topWidth, bottomWidth, height, align
+                );
+            ecData.pack(
+                label,
+                series[seriesIndex], seriesIndex,
+                series[seriesIndex].data[dataIndex], dataIndex,
+                series[seriesIndex].data[dataIndex].name
+            );
+            this.shapeList.push(label);
+            // 特定状态下是否需要显示文本标签
+            if (!this._needLabel(serie, data,false)) {
+                label.invisible = true;
+            }
+
+            // 文本标签视觉引导线
+            var labelLine = this.getLabelLine(
+                    seriesIndex, dataIndex, defaultColor,
+                    x, y, topWidth, bottomWidth, height, align
+                );
+            this.shapeList.push(labelLine);
+            // 特定状态下是否需要显示文本标签引导线
+            if (!this._needLabelLine(serie, data,false)) {
+                labelLine.invisible = true;
+            }
+            
+            var polygonHoverConnect = [];
+            var labelHoverConnect = [];
+            if (this._needLabelLine(serie, data, true)) {
+                polygonHoverConnect.push(labelLine.id);
+                labelHoverConnect.push(labelLine.id);
+            }
+            if (this._needLabel(serie, data, true)) {
+                polygonHoverConnect.push(label.id);
+                labelHoverConnect.push(polygon.id);
+            }
+            polygon.hoverConnect = polygonHoverConnect;
+            label.hoverConnect = labelHoverConnect;
+            
+            return polygon;
+        },
+
+        /**
+         * 根据值计算宽度 
+         */
+        _getItemWidth: function (seriesIndex, value) {
+            var serie = this.series[seriesIndex];
+            var location = this._paramsMap[seriesIndex].location;
+            var min = serie.min;
+            var max = serie.max;
+            var minSize = number.parsePercent(serie.minSize, location.width);
+            var maxSize = number.parsePercent(serie.maxSize, location.width);
+            return (value - min) * (maxSize - minSize) / (max - min) + minSize;
+        },
+        
+        /**
+         * 构建扇形
+         */
+        getPolygon: function (
+            seriesIndex, dataIndex, defaultColor,
+            xLT, y, topWidth, bottomWidth, height, align
+        ) {
+            var serie = this.series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var queryTarget = [data, serie];
+
+            // 多级控制
+            var normal = this.deepMerge(queryTarget, 'itemStyle.normal') || {};
+            var emphasis = this.deepMerge(queryTarget,'itemStyle.emphasis') || {};
+
+            var normalColor = this.getItemStyleColor(normal.color, seriesIndex, dataIndex, data)
+                              || defaultColor;
+            
+            var emphasisColor = this.getItemStyleColor(emphasis.color, seriesIndex, dataIndex, data)
+                || (typeof normalColor === 'string'
+                    ? zrColor.lift(normalColor, -0.2)
+                    : normalColor
+                );
+            
+            var  xLB;
+            switch (align) {
+                case 'left':
+                    xLB = xLT;
+                    break;
+                case 'right':
+                    xLB = xLT + (topWidth - bottomWidth);
+                    break;
+                default:
+                    xLB = xLT + (topWidth - bottomWidth) / 2;
+                    break;
+            }
+            var polygon = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                clickable: this.deepQuery(queryTarget, 'clickable'),
+                style: {
+                    pointList: [
+                        [xLT, y],
+                        [xLT + topWidth, y],
+                        [xLB + bottomWidth, y + height],
+                        [xLB, y + height]
+                    ],
+                    brushType: 'both',
+                    color: normalColor,
+                    lineWidth: normal.borderWidth,
+                    strokeColor: normal.borderColor
+                },
+                highlightStyle: {
+                    color: emphasisColor,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor
+                }
+            };
+            
+            if (this.deepQuery([data, serie, this.option], 'calculable')) {
+                this.setCalculable(polygon);
+                polygon.draggable = true;
+            }
+
+            return new PolygonShape(polygon);
+        },
+
+        /**
+         * 需要显示则会有返回构建好的shape，否则返回undefined
+         */
+        getLabel: function (
+            seriesIndex, dataIndex, defaultColor,
+            x, y, topWidth, bottomWidth, height, align
+        ) {
+            var serie = this.series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var location = this._paramsMap[seriesIndex].location;
+            // serie里有默认配置，放心大胆的用！
+            var itemStyle = zrUtil.merge(
+                    zrUtil.clone(data.itemStyle) || {},
+                    serie.itemStyle
+                );
+            var status = 'normal';
+            // label配置
+            var labelControl = itemStyle[status].label;
+            var textStyle = labelControl.textStyle || {};
+            var lineLength = itemStyle[status].labelLine.length;
+
+            var text = this.getLabelText(seriesIndex, dataIndex, status);
+            var textFont = this.getFont(textStyle);
+            var textAlign;
+            var textColor = defaultColor;
+            labelControl.position = labelControl.position 
+                                    || itemStyle.normal.label.position;
+            if (labelControl.position === 'inner'
+                || labelControl.position === 'inside'
+                || labelControl.position === 'center'
+            ) {
+                // 内部
+                textAlign = align;
+                textColor = 
+                    Math.max(topWidth, bottomWidth) / 2 > zrArea.getTextWidth(text, textFont)
                     ? '#fff' : zrColor.reverse(defaultColor);
             }
             else if (labelControl.position === 'left'){
@@ -454,4 +775,4 @@ define(function (require) {
     require('../chart').define('funnel', Funnel);
     
     return Funnel;
-});</=>
+});

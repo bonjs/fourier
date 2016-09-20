@@ -162,5 +162,20 @@ define(function (require) {
         isCover : function (x, y) {
             var rect = this.style;
             if (x >= rect.x
-                && x <= (rect.x="" +="" rect.width)="" &&="" y="">= rect.y
-                && y </=>
+                && x <= (rect.x + rect.width)
+                && y >= rect.y
+                && y <= (rect.y + rect.height)
+            ) {
+                // 矩形内
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    };
+
+    zrUtil.inherits(Chain, Base);
+
+    return Chain;
+});

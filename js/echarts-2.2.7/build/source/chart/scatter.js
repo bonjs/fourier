@@ -1234,13 +1234,17 @@ define('echarts/chart/scatter', [
             var width = this._calculableLocation.width;
             var height = this._calculableLocation.height;
             if (this.dataRangeOption.orient == 'horizontal') {
-                if (shape.style.x + dx <= x)="" {="" shape.style.x="x;" }="" else="" if="" (shape.style.x="" +="" dx="" shape.style.width="">= x + width) {
+                if (shape.style.x + dx <= x) {
+                    shape.style.x = x;
+                } else if (shape.style.x + dx + shape.style.width >= x + width) {
                     shape.style.x = x + width - shape.style.width;
                 } else {
                     shape.style.x += dx;
                 }
             } else {
-                if (shape.style.y + dy <= y)="" {="" shape.style.y="y;" }="" else="" if="" (shape.style.y="" +="" dy="" shape.style.height="">= y + height) {
+                if (shape.style.y + dy <= y) {
+                    shape.style.y = y;
+                } else if (shape.style.y + dy + shape.style.height >= y + height) {
                     shape.style.y = y + height - shape.style.height;
                 } else {
                     shape.style.y += dy;
@@ -1643,7 +1647,7 @@ define('echarts/chart/scatter', [
             } else {
                 var splitRangeList = this._splitList;
                 for (var i = 0, len = splitRangeList.length; i < len; i++) {
-                    if (splitRangeList[i].min <= value="" &&="" splitrangelist[i].max="">= value) {
+                    if (splitRangeList[i].min <= value && splitRangeList[i].max >= value) {
                         idx = i;
                         break;
                     }
@@ -1692,4 +1696,13 @@ define('echarts/chart/scatter', [
             x = originPos[0];
             y = originPos[1];
             var rect = this.style.rect;
-            if (x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y </=></=></=></=>
+            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    zrUtil.inherits(HandlePolygon, Base);
+    return HandlePolygon;
+});

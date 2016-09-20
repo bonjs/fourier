@@ -695,7 +695,215 @@ define(function (require) {
             for (var i = 0; i < total; i++) {
                 var idx0 = Math.floor(len / total * i);
                 var idx1 = Math.min(Math.floor(len / total * (i + 1)), len);
-                if (idx1 <= idx0)="" {="" continue;="" }="" for="" (var="" j="idx0;" <="" idx1;="" j++)="" windowdata[j="" -="" idx0]="orient" =="=" 'horizontal'="" ?="" singlepl[j][1]="" :="" singlepl[j][0];="" windowdata.length="idx1" idx0;="" var="" filteredval="filter(windowData);" nearestidx="-1;" mindist="Infinity;" 寻找值最相似的点，使用其其它属性="" val="orient" dist="Math.abs(val" filteredval);="" if="" (dist="" mindist)="" newitem="singlePL[nearestIdx].slice();" (orient="==" 'horizontal')="" newitem[1]="filteredVal;" else="" newitem[0]="filteredVal;" newlist.push(newitem);="" return="" newlist;="" },="" _getsmooth:="" function="" (issmooth="" *,="" pointlist,="" orient*="" )="" (issmooth)="" *="" 不科学啊，发现0.3通用了="" delta;="" delta="Math.abs(pointList[0][0]" pointlist[1][0]);="" pointlist[1][1]);="" 0.3;="" 0;="" **="" 生成空数据所需的可计算提示图形="" _getcalculableitem:="" (seriesindex,="" dataindex,="" name,="" x,="" y,="" orient)="" series="this.series;" color="series[seriesIndex].calculableHolderColor" ||="" this.ectheme.calculableholdercolor="" ecconfig.calculableholdercolor;="" itemshape="this._getSymbol(" seriesindex,="" orient="" );="" itemshape.style.color="color;" itemshape.style.strokecolor="color;" itemshape.rotation="[0,0];" itemshape.hoverable="false;" itemshape.draggable="false;" itemshape.style.text="undefined;" itemshape;="" 生成折线图上的拐点图形="" _getsymbol:="" serie="series[seriesIndex];" data="serie.data[dataIndex];" serie,="" data,="" this._sindex2shapemap[seriesindex],="" this._sindex2colormap[seriesindex],="" '#fff',="" 'vertical'="" 翻转="" itemshape.zlevel="serie.zlevel;" itemshape.z="serie.z" +="" 1;="" (this.deepquery([data,="" this.option],="" 'calculable'))="" this.setcalculable(itemshape);="" 位置转换="" getmarkcoord:="" mpdata)="" xmarkmap="this.xMarkMap[seriesIndex];" xaxis="this.component.xAxis.getAxis(serie.xAxisIndex);" yaxis="this.component.yAxis.getAxis(serie.yAxisIndex);" (mpdata.type="" &&="" 'max'="" mpdata.type="==" 'min'="" 'average')="" 特殊值内置支持="" valueindex="mpData.valueIndex" !="null" mpdata.valueindex="" xmarkmap.maxx0="" '1'="" '';="" [="" xmarkmap[mpdata.type="" 'x'="" valueindex],="" 'y'="" 'line'="" valueindex]="" ];="" typeof="" mpdata.xaxis="" xaxis.getcoordbyindex="" xaxis.getcoordbyindex(mpdata.xaxis="" 0)="" xaxis.getcoord(mpdata.xaxis="" 0),="" mpdata.yaxis="" yaxis.getcoordbyindex="" yaxis.getcoordbyindex(mpdata.yaxis="" yaxis.getcoord(mpdata.yaxis="" 刷新="" refresh:="" (newoption)="" this.option="newOption;" this.series="newOption.series;" this.backupshapelist();="" this._buildshape();="" ontooltiphover:="" (param,="" tipshape)="" seriesindex="param.seriesIndex;" dataindex="param.dataIndex;" seriespl;="" singlepl;="" len="seriesIndex.length;" while="" (len--)="" seriespl="this.finalPLMap[seriesIndex[len]];" (seriespl)="" i="0," l="seriesPL.length;" l;="" i++)="" singlepl="seriesPL[i];" k="singlePL.length;" k;="" (dataindex="==" singlepl[j][2])="" tipshape.push(this._getsymbol(="" seriesindex[len],="" singlepl[j][2],="" singlepl[j][3],="" name="" singlepl[j][0],="" x="" singlepl[j][1],="" y="" ));="" 动态数据增加动画="" adddataanimation:="" (params,="" done)="" animap="{};" seriesindex索引参数="" animap[params[i][0]]="params[i];" x;="" dx;="" y;="" dy;="" seriesindex;="" pointlist;="" ishorizontal;="" 是否横向布局，="" anicount="0;" animationdone()="" anicount--;="" (anicount="==" done="" done();="" animationduring(target)="" 强制更新曲线控制点="" target.style.controlpointlist="null;">= 0; i--) {
+                if (idx1 <= idx0) {
+                    continue;
+                }
+
+                for (var j = idx0; j < idx1; j++) {
+                    windowData[j - idx0] = orient === 'horizontal'
+                        ? singlePL[j][1] : singlePL[j][0];
+                }
+
+                windowData.length = idx1 - idx0;
+                var filteredVal = filter(windowData);
+                var nearestIdx = -1;
+                var minDist = Infinity;
+                // 寻找值最相似的点，使用其其它属性
+                for (var j = idx0; j < idx1; j++) {
+                    var val = orient === 'horizontal'
+                        ? singlePL[j][1] : singlePL[j][0];
+                    var dist = Math.abs(val - filteredVal);
+                    if (dist < minDist) {
+                        nearestIdx = j;
+                        minDist = dist;
+                    }
+                }
+
+                var newItem = singlePL[nearestIdx].slice();
+                if (orient === 'horizontal') {
+                    newItem[1] = filteredVal;
+                }
+                else {
+                    newItem[0] = filteredVal;
+                }
+                newList.push(newItem);
+            }
+            return newList;
+        },
+
+        _getSmooth: function (isSmooth/*, pointList, orient*/) {
+            if (isSmooth) {
+                /* 不科学啊，发现0.3通用了
+                var delta;
+                if (orient === 'horizontal') {
+                    delta = Math.abs(pointList[0][0] - pointList[1][0]);
+                }
+                else {
+                    delta = Math.abs(pointList[0][1] - pointList[1][1]);
+                }
+                */
+                return 0.3;
+            }
+            else {
+                return 0;
+            }
+        },
+
+        /**
+         * 生成空数据所需的可计算提示图形
+         */
+        _getCalculableItem: function (seriesIndex, dataIndex, name, x, y, orient) {
+            var series = this.series;
+            var color = series[seriesIndex].calculableHolderColor
+                        || this.ecTheme.calculableHolderColor
+                        || ecConfig.calculableHolderColor;
+
+            var itemShape = this._getSymbol(
+                seriesIndex, dataIndex, name,
+                x, y, orient
+            );
+            itemShape.style.color = color;
+            itemShape.style.strokeColor = color;
+            itemShape.rotation = [0,0];
+            itemShape.hoverable = false;
+            itemShape.draggable = false;
+            itemShape.style.text = undefined;
+
+            return itemShape;
+        },
+
+        /**
+         * 生成折线图上的拐点图形
+         */
+        _getSymbol: function (seriesIndex, dataIndex, name, x, y, orient) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            
+            var itemShape = this.getSymbolShape(
+                serie, seriesIndex, data, dataIndex, name, 
+                x, y,
+                this._sIndex2ShapeMap[seriesIndex], 
+                this._sIndex2ColorMap[seriesIndex],
+                '#fff',
+                orient === 'vertical' ? 'horizontal' : 'vertical' // 翻转
+            );
+            itemShape.zlevel = serie.zlevel;
+            itemShape.z = serie.z + 1;
+            
+            if (this.deepQuery([data, serie, this.option], 'calculable')) {
+                this.setCalculable(itemShape);
+                itemShape.draggable = true;
+            }
+            
+            return itemShape;
+        },
+
+        // 位置转换
+        getMarkCoord: function (seriesIndex, mpData) {
+            var serie = this.series[seriesIndex];
+            var xMarkMap = this.xMarkMap[seriesIndex];
+            var xAxis = this.component.xAxis.getAxis(serie.xAxisIndex);
+            var yAxis = this.component.yAxis.getAxis(serie.yAxisIndex);
+            
+            if (mpData.type
+                && (mpData.type === 'max' || mpData.type === 'min' || mpData.type === 'average')
+            ) {
+                // 特殊值内置支持
+                var valueIndex = mpData.valueIndex != null 
+                                 ? mpData.valueIndex 
+                                 : xMarkMap.maxX0 != null 
+                                   ? '1' : '';
+                return [
+                    xMarkMap[mpData.type + 'X' + valueIndex],
+                    xMarkMap[mpData.type + 'Y' + valueIndex],
+                    xMarkMap[mpData.type + 'Line' + valueIndex],
+                    xMarkMap[mpData.type + valueIndex]
+                ];
+            }
+            
+            return [
+                typeof mpData.xAxis != 'string' && xAxis.getCoordByIndex
+                    ? xAxis.getCoordByIndex(mpData.xAxis || 0)
+                    : xAxis.getCoord(mpData.xAxis || 0),
+                
+                typeof mpData.yAxis != 'string' && yAxis.getCoordByIndex
+                    ? yAxis.getCoordByIndex(mpData.yAxis || 0)
+                    : yAxis.getCoord(mpData.yAxis || 0)
+            ];
+        },
+        
+        /**
+         * 刷新
+         */
+        refresh: function (newOption) {
+            if (newOption) {
+                this.option = newOption;
+                this.series = newOption.series;
+            }
+            
+            this.backupShapeList();
+            this._buildShape();
+        },
+        
+        ontooltipHover: function (param, tipShape) {
+            var seriesIndex = param.seriesIndex;
+            var dataIndex = param.dataIndex;
+            var seriesPL;
+            var singlePL;
+            var len = seriesIndex.length;
+            while (len--) {
+                seriesPL = this.finalPLMap[seriesIndex[len]];
+                if (seriesPL) {
+                    for (var i = 0, l = seriesPL.length; i < l; i++) {
+                        singlePL = seriesPL[i];
+                        for (var j = 0, k = singlePL.length; j < k; j++) {
+                            if (dataIndex === singlePL[j][2]) {
+                                tipShape.push(this._getSymbol(
+                                    seriesIndex[len],   // seriesIndex
+                                    singlePL[j][2],     // dataIndex
+                                    singlePL[j][3],     // name
+                                    singlePL[j][0],     // x
+                                    singlePL[j][1],     // y
+                                    'horizontal'
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        /**
+         * 动态数据增加动画 
+         */
+        addDataAnimation: function (params, done) {
+            var series = this.series;
+            var aniMap = {}; // seriesIndex索引参数
+            for (var i = 0, l = params.length; i < l; i++) {
+                aniMap[params[i][0]] = params[i];
+            }
+            var x;
+            var dx;
+            var y;
+            var dy;
+            var seriesIndex;
+            var pointList;
+            var isHorizontal; // 是否横向布局， isHorizontal;
+
+            var aniCount = 0;
+            function animationDone() {
+                aniCount--;
+                if (aniCount === 0) {
+                    done && done();
+                }
+            }
+            function animationDuring(target) {
+                // 强制更新曲线控制点
+                target.style.controlPointList = null;
+            }
+
+            for (var i = this.shapeList.length - 1; i >= 0; i--) {
                 seriesIndex = this.shapeList[i]._seriesIndex;
                 if (aniMap[seriesIndex] && !aniMap[seriesIndex][3]) {
                     // 有数据删除才有移动的动画
@@ -847,4 +1055,4 @@ define(function (require) {
     require('../chart').define('line', Line);
     
     return Line;
-});</=>
+});

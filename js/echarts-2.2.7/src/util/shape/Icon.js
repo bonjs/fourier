@@ -628,5 +628,13 @@ define(function (require) {
             // 提高交互体验，太小的图形包围盒四向扩大4px
             var delta = (rect.height < 8 || rect.width < 8 ) ? 4 : 0;
             return x >= rect.x - delta
-                && x <= (rect.x="" +="" rect.width="" delta)="" &&="" y="">= rect.y - delta
-                && y </=>
+                && x <= (rect.x + rect.width + delta)
+                && y >= rect.y - delta
+                && y <= (rect.y + rect.height + delta);
+        }
+    };
+
+    zrUtil.inherits(Icon, Base);
+    
+    return Icon;
+});

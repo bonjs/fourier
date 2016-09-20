@@ -276,7 +276,49 @@ define('echarts/chart/eventRiver', [
         maxTime = ~~maxTime;
         var flagForOffset = function () {
             var length = maxTime - minTime + 1 + ~~intervalX;
-            if (length <= 0)="" {="" return="" [0];="" }="" var="" result="[];" while="" (length--)="" result.push(0);="" result;="" }();="" flagforpos="flagForOffset.slice(0);" bubbledata="[];" totalmaxy="0;" totaloffset="0;" for="" (var="" i="0;" <="" series.length;="" i++)="" j="0;" series[i].data.length;="" j++)="" e="series[i].data[j];" e.time="[];" e.value="[];" tmp;="" maxy="0;" k="0;" series[i].data[j].evolution.length;="" k++)="" tmp="series[i].data[j].evolution[k];" e.time.push(tmp.timescale);="" e.value.push(tmp.valuescale);="" tmp.valuescale);="" bubblebound(e,="" intervalx,="" mintime);="" e.y="findLocation(flagForPos," e,="" function="" (e,="" index)="" e.ypx[index];="" });="" e._offset="findLocation(flagForOffset," ()="" space;="" +="" maxy);="" e._offset);="" bubbledata.push(e);="" scaley(bubbledata,="" area,="" totalmaxy,="" totaloffset);="" maxy,="" offset)="" height="area.height;" offsetscale="offset"> 0.5 ? 0.5 : 1;
+            if (length <= 0) {
+                return [0];
+            }
+            var result = [];
+            while (length--) {
+                result.push(0);
+            }
+            return result;
+        }();
+        var flagForPos = flagForOffset.slice(0);
+        var bubbleData = [];
+        var totalMaxy = 0;
+        var totalOffset = 0;
+        for (var i = 0; i < series.length; i++) {
+            for (var j = 0; j < series[i].data.length; j++) {
+                var e = series[i].data[j];
+                e.time = [];
+                e.value = [];
+                var tmp;
+                var maxy = 0;
+                for (var k = 0; k < series[i].data[j].evolution.length; k++) {
+                    tmp = series[i].data[j].evolution[k];
+                    e.time.push(tmp.timeScale);
+                    e.value.push(tmp.valueScale);
+                    maxy = Math.max(maxy, tmp.valueScale);
+                }
+                bubbleBound(e, intervalX, minTime);
+                e.y = findLocation(flagForPos, e, function (e, index) {
+                    return e.ypx[index];
+                });
+                e._offset = findLocation(flagForOffset, e, function () {
+                    return space;
+                });
+                totalMaxy = Math.max(totalMaxy, e.y + maxy);
+                totalOffset = Math.max(totalOffset, e._offset);
+                bubbleData.push(e);
+            }
+        }
+        scaleY(bubbleData, area, totalMaxy, totalOffset);
+    }
+    function scaleY(bubbleData, area, maxY, offset) {
+        var height = area.height;
+        var offsetScale = offset / height > 0.5 ? 0.5 : 1;
         var yBase = area.y;
         var yScale = (area.height - offset) / maxY;
         for (var i = 0, length = bubbleData.length; i < length; i++) {
@@ -354,4 +396,4 @@ define('echarts/chart/eventRiver', [
         return pos;
     }
     return eventRiverLayout;
-});</=>
+});

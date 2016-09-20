@@ -512,7 +512,25 @@ define(function (require) {
                         ).toFixed(2);
                     }
                     // 无法满足用户定义的宽度设计，忽略用户宽度，打回重做
-                    if (barWidth <= 0)="" {="" return="" this._mapsize(categoryaxis,="" locationmap,="" true);="" }="" else="" 忽略用户定义的宽度设定="" gap="categoryAxis.getGap();" bargap="0;" barwidth="+(gap" locationmap.length).tofixed(2);="" 已经忽略用户定义的宽度设定依然还无法满足显示，只能硬来了;="" if="" (barwidth="" <="0)" interval="Math.floor(locationMap.length" gap);="" 全是自定义宽度，bargap无效，系列间隔决定bargap=""> 1
+                    if (barWidth <= 0) {
+                        return this._mapSize(categoryAxis, locationMap, true);
+                    }
+                }
+                else {
+                    // 忽略用户定义的宽度设定
+                    gap = categoryAxis.getGap();
+                    barGap = 0;
+                    barWidth = +(gap / locationMap.length).toFixed(2);
+                    // 已经忽略用户定义的宽度设定依然还无法满足显示，只能硬来了;
+                    if (barWidth <= 0) {
+                        interval = Math.floor(locationMap.length / gap);
+                        barWidth = 1;
+                    }
+                }
+            }
+            else {
+                // 全是自定义宽度，barGap无效，系列间隔决定barGap
+                gap = sBarWidthCounter > 1
                       ? (typeof barCategoryGap === 'string' && barCategoryGap.match(/%$/))
                           // 百分比
                           ? +(categoryAxis.getGap() * (100 - parseFloat(barCategoryGap)) / 100).toFixed(2)
@@ -932,4 +950,4 @@ define(function (require) {
     require('../chart').define('bar', Bar);
     
     return Bar;
-});</=>
+});

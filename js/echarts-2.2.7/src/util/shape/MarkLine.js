@@ -246,4 +246,3 @@ define(function (require) {
 
     return MarkLine;
 });
-</number></string>

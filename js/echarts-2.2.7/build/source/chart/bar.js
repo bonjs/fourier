@@ -333,7 +333,20 @@ define('echarts/chart/bar', [
                         barGap = parseFloat(barGap);
                         barWidth = +((gap - sBarWidthTotal - barGap * (locationMap.length - 1)) / (locationMap.length - sBarWidthCounter)).toFixed(2);
                     }
-                    if (barWidth <= 0)="" {="" return="" this._mapsize(categoryaxis,="" locationmap,="" true);="" }="" else="" gap="categoryAxis.getGap();" bargap="0;" barwidth="+(gap" locationmap.length).tofixed(2);="" if="" (barwidth="" <="0)" interval="Math.floor(locationMap.length" gap);=""> 1 ? typeof barCategoryGap === 'string' && barCategoryGap.match(/%$/) ? +(categoryAxis.getGap() * (100 - parseFloat(barCategoryGap)) / 100).toFixed(2) : categoryAxis.getGap() - barCategoryGap : sBarWidthTotal;
+                    if (barWidth <= 0) {
+                        return this._mapSize(categoryAxis, locationMap, true);
+                    }
+                } else {
+                    gap = categoryAxis.getGap();
+                    barGap = 0;
+                    barWidth = +(gap / locationMap.length).toFixed(2);
+                    if (barWidth <= 0) {
+                        interval = Math.floor(locationMap.length / gap);
+                        barWidth = 1;
+                    }
+                }
+            } else {
+                gap = sBarWidthCounter > 1 ? typeof barCategoryGap === 'string' && barCategoryGap.match(/%$/) ? +(categoryAxis.getGap() * (100 - parseFloat(barCategoryGap)) / 100).toFixed(2) : categoryAxis.getGap() - barCategoryGap : sBarWidthTotal;
                 barWidth = 0;
                 barGap = sBarWidthCounter > 1 ? +((gap - sBarWidthTotal) / (sBarWidthCounter - 1)).toFixed(2) : 0;
                 if (barGap < 0) {
@@ -632,4 +645,4 @@ define('echarts/chart/bar', [
     zrUtil.inherits(Bar, ChartBase);
     require('../chart').define('bar', Bar);
     return Bar;
-});</=>
+});

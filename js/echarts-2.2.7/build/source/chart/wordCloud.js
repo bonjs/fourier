@@ -572,7 +572,8 @@ define('echarts/chart/wordCloud', [
                         var last;
                         for (var j = 0; j < h; j++) {
                             last = 0;
-                            for (var i = 0; i <= w;="" i++)="" {="" board[x="" +="" i]="" |="last" <<="" msx="" (i="" <="" w="" ?="" (last="sprite[j" *="" i])="">>> sx : 0);
+                            for (var i = 0; i <= w; i++) {
+                                board[x + i] |= last << msx | (i < w ? (last = sprite[j * w + i]) >>> sx : 0);
                             }
                             x += sw;
                         }
@@ -594,7 +595,8 @@ define('echarts/chart/wordCloud', [
                 var last;
                 for (var j = 0; j < h; j++) {
                     last = 0;
-                    for (var i = 0; i <= w;="" i++)="" {="" if="" ((last="" <<="" msx="" |="" (i="" <="" w="" ?="" (last="sprite[j" *="" +="" i])="">>> sx : 0)) & board[x + i]) {
+                    for (var i = 0; i <= w; i++) {
+                        if ((last << msx | (i < w ? (last = sprite[j * w + i]) >>> sx : 0)) & board[x + i]) {
                             return true;
                         }
                     }
@@ -603,7 +605,41 @@ define('echarts/chart/wordCloud', [
                 return false;
             }
             function collideRects(a, maxBounds) {
-                return maxBounds.row[a.y] && maxBounds.cloumn[a.x] && a.x >= maxBounds.row[a.y].start && a.x <= maxbounds.row[a.y].end="" &&="" a.y="">= maxBounds.cloumn[a.x].start && a.y <= 31="" maxbounds.cloumn[a.x].end;="" }="" },="" _autocaltextsize:="" function="" (data,="" shapearea,="" maxwidth,="" maxheight,="" minsize)="" {="" var="" sizesum="sum(data," (k)="" return="" k.size;="" });="" i="data.length;" maxareapre="0.25;" mintextsize="minSize;" cw="this.defaultOption.cw;" ch="this.defaultOption.ch;" c="this.defaultOption.c;" ratio="this.defaultOption.ratio;" cloudradians="this.defaultOption.cloudRadians;" d;="" dpre;="" while="" (i--)="" d="data[i];" dpre="d.size" sizesum;="" if="" (maxareapre)="" d.areapre="dpre" <="" ?="" :="" maxareapre;="" else="" d.area="shapeArea" *="" d.areapre;="" d.totalarea="shapeArea;" measuretextwithitbyarea(d);="" measuretextwithitbyarea(d)="" c.clearrect(0,="" 0,="" (cw="" <<="" 5)="" ratio,="" ratio);="" c.save();="" c.font="d.style" +="" '="" d.weight="" ~~((d.size="" 1)="" ratio)="" 'px="" d.font;="" w="c.measureText(d.text" 'm').width="" h="d.size" 1;="">> 5 << 5;
+                return maxBounds.row[a.y] && maxBounds.cloumn[a.x] && a.x >= maxBounds.row[a.y].start && a.x <= maxBounds.row[a.y].end && a.y >= maxBounds.cloumn[a.x].start && a.y <= maxBounds.cloumn[a.x].end;
+            }
+        },
+        _autoCalTextSize: function (data, shapeArea, maxwidth, maxheight, minSize) {
+            var sizesum = sum(data, function (k) {
+                return k.size;
+            });
+            var i = data.length;
+            var maxareapre = 0.25;
+            var minTextSize = minSize;
+            var cw = this.defaultOption.cw;
+            var ch = this.defaultOption.ch;
+            var c = this.defaultOption.c;
+            var ratio = this.defaultOption.ratio;
+            var cloudRadians = this.defaultOption.cloudRadians;
+            var d;
+            var dpre;
+            while (i--) {
+                d = data[i];
+                dpre = d.size / sizesum;
+                if (maxareapre) {
+                    d.areapre = dpre < maxareapre ? dpre : maxareapre;
+                } else {
+                    d.areapre = dpre;
+                }
+                d.area = shapeArea * d.areapre;
+                d.totalarea = shapeArea;
+                measureTextWitHitByarea(d);
+            }
+            function measureTextWitHitByarea(d) {
+                c.clearRect(0, 0, (cw << 5) / ratio, ch / ratio);
+                c.save();
+                c.font = d.style + ' ' + d.weight + ' ' + ~~((d.size + 1) / ratio) + 'px ' + d.font;
+                var w = c.measureText(d.text + 'm').width * ratio, h = d.size << 1;
+                w = w + 31 >> 5 << 5;
                 c.restore();
                 d.aw = w;
                 d.ah = h;
@@ -618,7 +654,11 @@ define('echarts/chart/wordCloud', [
                     rw = Math.max(Math.abs(wcr + hsr), Math.abs(wcr - hsr)) + 31 >> 5 << 5;
                     rh = ~~Math.max(Math.abs(wsr + hcr), Math.abs(wsr - hcr));
                 }
-                if (d.size <= mintextsize="" ||="" d.rotate="" &&="" w="" *="" h="" <="d.area" rw="" rh="" {="" d.area="w" h;="" return;="" }="" if="" (d.rotate=""> maxwidth && rh > maxheight) {
+                if (d.size <= minTextSize || d.rotate && w * h <= d.area && rw <= maxwidth && rh <= maxheight || w * h <= d.area && w <= maxwidth && h <= maxheight) {
+                    d.area = w * h;
+                    return;
+                }
+                if (d.rotate && rw > maxwidth && rh > maxheight) {
                     k = Math.min(maxwidth / rw, maxheight / rh);
                 } else if (w > maxwidth || h > maxheight) {
                     k = Math.min(maxwidth / w, maxheight / h);
@@ -1530,13 +1570,17 @@ define('echarts/chart/wordCloud', [
             var width = this._calculableLocation.width;
             var height = this._calculableLocation.height;
             if (this.dataRangeOption.orient == 'horizontal') {
-                if (shape.style.x + dx <= x)="" {="" shape.style.x="x;" }="" else="" if="" (shape.style.x="" +="" dx="" shape.style.width="">= x + width) {
+                if (shape.style.x + dx <= x) {
+                    shape.style.x = x;
+                } else if (shape.style.x + dx + shape.style.width >= x + width) {
                     shape.style.x = x + width - shape.style.width;
                 } else {
                     shape.style.x += dx;
                 }
             } else {
-                if (shape.style.y + dy <= y)="" {="" shape.style.y="y;" }="" else="" if="" (shape.style.y="" +="" dy="" shape.style.height="">= y + height) {
+                if (shape.style.y + dy <= y) {
+                    shape.style.y = y;
+                } else if (shape.style.y + dy + shape.style.height >= y + height) {
                     shape.style.y = y + height - shape.style.height;
                 } else {
                     shape.style.y += dy;
@@ -1939,7 +1983,7 @@ define('echarts/chart/wordCloud', [
             } else {
                 var splitRangeList = this._splitList;
                 for (var i = 0, len = splitRangeList.length; i < len; i++) {
-                    if (splitRangeList[i].min <= value="" &&="" splitrangelist[i].max="">= value) {
+                    if (splitRangeList[i].min <= value && splitRangeList[i].max >= value) {
                         idx = i;
                         break;
                     }
@@ -2064,4 +2108,13 @@ define('echarts/chart/wordCloud', [
             x = originPos[0];
             y = originPos[1];
             var rect = this.style.rect;
-            if (x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y </=></=></=></=></=></=></=></=></=>
+            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    zrUtil.inherits(HandlePolygon, Base);
+    return HandlePolygon;
+});

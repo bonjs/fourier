@@ -161,8 +161,8 @@
         /**
          * 获取数据的点集
          * @param {number} polarIndex
-         * @param {Array<object>} 处理的数据
-         * @return {Array<array<number>>} 点集
+         * @param {Array<Object>} 处理的数据
+         * @return {Array<Array<number>>} 点集
          */
         _getPointList : function (polarIndex, dataArr) {
             var pointList = [];
@@ -184,7 +184,7 @@
         
         /**
          * 添加拐点
-         * @param {Array<array<number>>} pointList 点集
+         * @param {Array<Array<number>>} pointList 点集
          * @param {string} defaultColor 默认填充颜色
          * @param {object} data 数据
          * @param {number} serieIndex
@@ -222,7 +222,7 @@
         
         /**
          * 添加数据图形
-         * @param {Array<array<number>>} pointList 点集
+         * @param {Array<Array<number>>} pointList 点集
          * @param {string} defaultColor 默认填充颜色
          * @param {object} data 数据
          * @param {number} serieIndex
@@ -456,4 +456,4 @@
     require('../chart').define('radar', Radar);
     
     return Radar;
-});</array<number></array<number></array<number></object>
+});

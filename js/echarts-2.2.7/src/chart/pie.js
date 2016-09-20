@@ -175,7 +175,546 @@ define(function (require) {
                                 x: center[0],          // 圆心横坐标
                                 y: center[1],          // 圆心纵坐标
                                 // 圆环内外半径
-                                r0: radius[0] <= 0="" 2="" 10="" 360="" ?="" :="" radius[0]="" -="" 10,="" r:="" radius[1]="" +="" brushtype:="" 'stroke',="" linewidth:="" 1,="" strokecolor:="" series[i].calculableholdercolor="" ||="" this.ectheme.calculableholdercolor="" ecconfig.calculableholdercolor="" }="" };="" ecdata.pack(piecase,="" series[i],="" i,="" undefined,="" -1);="" this.setcalculable(piecase);="" piecase="radius[0]" <="10" new="" circleshape(piecase)="" ringshape(piecase);="" this.shapelist.push(piecase);="" this._buildsinglepie(i);="" this.buildmark(i);="" this.addshapelist();="" },="" **="" *="" 构建单个饼图="" @param="" {number}="" seriesindex="" 系列索引="" _buildsinglepie:="" function="" (seriesindex)="" {="" var="" series="this.series;" serie="series[seriesIndex];" data="serie.data;" legend="this.component.legend;" itemname;="" totalselected="0;" 迭代累计选中且非0个数="" totalselectedvalue0="0;" 迭代累计选中0只个数="" totalvalue="0;" 迭代累计="" maxvalue="Number.NEGATIVE_INFINITY;" singleshapelist="[];" 计算需要显示的个数和总值="" for="" (var="" i="0," l="data.length;" l;="" i++)="" itemname="data[i].name;" this.selectedmap[itemname]="legend" legend.isselected(itemname)="" true;="" if="" (this.selectedmap[itemname]="" &&="" !isnan(data[i].value))="" (+data[i].value="" !="=" 0)="" totalselected++;="" else="" totalselectedvalue0++;="" +data[i].value);="" (totalvalue="==" return;="" percent="100;" clockwise="serie.clockWise;" startangle="(serie.startAngle.toFixed(2)" 360)="" %="" 360;="" endangle;="" minangle="serie.minAngle" 0.01;="" #bugfixed="" totalangle="360" (minangle="" totalselected)="" 0.01="" totalselectedvalue0;="" defaultcolor;="" rosetype="serie.roseType;" center;="" radius;="" r0;="" 扇形内半径="" r1;="" 扇形外半径="" (!this.selectedmap[itemname]="" isnan(data[i].value))="" continue;="" 默认颜色策略，有图例则从图例中获取颜色定义，没有就全局颜色定义="" defaultcolor="legend" legend.getcolor(itemname)="" this.zr.getcolor(i);="" totalvalue;="" (rosetype="" )="" endangle="clockWise" (startangle="" (percent="" 0.01))="" 0.01));="" l)="" (360="" startangle);="" 0;="" 100).tofixed(2);="" center="this.parseCenter(this.zr," serie.center);="" radius="this.parseRadius(this.zr," serie.radius);="" r0="+radius[0];" r1="+radius[1];" 'radius')="" (r1="" r0)="" 0.8="" 0.2="" 'area')="" maxvalue)="" (clockwise)="" temp;="" temp="startAngle;" this._builditem(="" singleshapelist,="" seriesindex,="" percent,="" data[i].selected,="" center,="" r0,="" r1,="" startangle,="" endangle,="" );="" (!clockwise)="" this._autolabellayout(singleshapelist,="" r1);="" this.shapelist.push(singleshapelist[i]);="" 构建单个扇形及指标="" _builditem:="" (="" dataindex,="" isselected,="" midangle="((endAngle" startangle)="" 中值="" 扇形="" sector="this.getSector(" 图形需要附加的私有数据="" ecdata.pack(="" sector,="" series[seriesindex],="" series[seriesindex].data[dataindex],="" series[seriesindex].data[dataindex].name,="" singleshapelist.push(sector);="" 文本标签，需要显示则会有返回="" label="this.getLabel(" midangle,="" defaultcolor,="" false="" 文本标签视觉引导线，需要显示则会有返回="" labelline="this.getLabelLine(" (labelline)="" labelline,="" singleshapelist.push(labelline);="" (label)="" label,="" label._labelline="labelLine;" singleshapelist.push(label);="" 构建扇形="" getsector:="" querytarget="[data," serie];="" 多级控制="" normal="this.deepMerge(" querytarget,="" 'itemstyle.normal'="" {};="" emphasis="this.deepMerge(" 'itemstyle.emphasis'="" normalcolor="this.getItemStyleColor(normal.color," data)="" emphasiscolor="this.getItemStyleColor(emphasis.color," (typeof="" 'string'="" zrcolor.lift(normalcolor,="" -0.2)="" zlevel:="" serie.zlevel,="" z:="" serie.z,="" clickable:="" this.deepquery(querytarget,="" 'clickable'),="" style:="" x:="" center[0],="" 圆心横坐标="" y:="" center[1],="" 圆心纵坐标="" r0:="" 圆环内半径="" 圆环外半径="" startangle:="" endangle:="" 'both',="" color:="" normalcolor,="" normal.borderwidth,="" normal.bordercolor,="" linejoin:="" 'round'="" highlightstyle:="" emphasiscolor,="" emphasis.borderwidth,="" emphasis.bordercolor,="" _seriesindex:="" _dataindex:="" dataindex="" (isselected)="" sector.style.endangle)="" 2).tofixed(2)="" sector.style._hasselected="true;" sector.style._x="sector.style.x;" sector.style._y="sector.style.y;" offset="this.query(serie," 'selectedoffset');="" sector.style.x="" true)="" offset;="" sector.style.y="" this._selected[seriesindex][dataindex]="true;" (this._selectedmode)="" sector.onclick="this.shapeHandler.onclick;" (this.deepquery([data,="" serie,="" this.option],="" 'calculable'))="" this.setcalculable(sector);="" sector.draggable="true;" “emphasis显示”添加事件响应="" (this._needlabel(serie,="" data,="" emphasis下显示文本="" this._needlabelline(serie,="" emphasis下显示引导线="" sector.onmouseover="this.shapeHandler.onmouseover;" sectorshape(sector);="" return="" sector;="" 需要显示则会有返回构建好的shape，否则返回undefined="" getlabel:="" isemphasis="" 特定状态下是否需要显示文本标签="" (!this._needlabel(serie,="" isemphasis))="" status="isEmphasis" 'emphasis'="" 'normal';="" serie里有默认配置，放心大胆的用！="" itemstyle="zrUtil.merge(" zrutil.clone(data.itemstyle)="" {},="" serie.itemstyle="" label配置="" labelcontrol="itemStyle[status].label;" textstyle="labelControl.textStyle" centerx="center[0];" centery="center[1];" x;="" y;="" 标签位置半径="" textalign;="" textbaseline="middle" ;="" labelcontrol.position="labelControl.position" itemstyle.normal.label.position;="" (labelcontrol.position="==" 'center')="" center显示="" x="centerX;" y="centerY;" textalign="center" 'inner'="" 'inside')="" 内部标签显示,="" 按外半径比例计算标签位置="" radius[1])="" (labelcontrol.distance="" 0.5);="" zrmath.cos(midangle,="" true));="" zrmath.sin(midangle,="" 外部显示，默认="" 'outer')="" (-itemstyle[status].labelline.length);="">= 90 && midAngle <= 5="" 20="" 270)="" ?="" 'right'="" :="" 'left';="" }="" if="" (labelcontrol.position="" !="center" &&="" labelcontrol.position="" )="" {="" x="" +="textAlign" =="=" 'left'="" -20;="" data.__labelx="x" -="" (textalign="==" -5);="" data.__labely="y;" var="" ts="new" textshape({="" zlevel:="" serie.zlevel,="" z:="" serie.z="" 1,="" hoverable:="" false,="" style:="" x:="" x,="" y:="" y,="" color:="" textstyle.color="" ||="" defaultcolor,="" text:="" this.getlabeltext(seriesindex,="" dataindex,="" percent,="" status),="" textalign:="" textstyle.align="" textalign,="" textbaseline:="" textstyle.baseline="" textbaseline,="" textfont:="" this.getfont(textstyle)="" },="" highlightstyle:="" brushtype:="" 'fill'="" });="" ts._radius="radius;" ts._labelposition="labelControl.position" 'outer';="" ts._rect="ts.getRect(ts.style);" ts._seriesindex="seriesIndex;" ts._dataindex="dataIndex;" return="" ts;="" **="" *="" 根据lable.format计算label="" text="" getlabeltext:="" function="" (seriesindex,="" status)="" series="this.series;" serie="series[seriesIndex];" data="serie.data[dataIndex];" formatter="this.deepQuery(" [data,="" serie],="" 'itemstyle.'="" status="" '.label.formatter'="" );="" (formatter)="" (typeof="" 'function')="" formatter.call(="" this.mychart,="" seriesindex:="" seriesindex,="" seriesname:="" serie.name="" '',="" series:="" serie,="" dataindex:="" data:="" data,="" name:="" data.name,="" value:="" data.value,="" percent:="" percent="" else="" 'string')="" .replace('{b}','{b0}')="" .replace('{c}','{c0}')="" .replace('{d}','{d0}');="" serie.name)="" .replace('{b0}',="" data.name)="" .replace('{c0}',="" data.value)="" .replace('{d0}',="" percent);="" formatter;="" data.name;="" 需要显示则会有返回构建好的shape，否则返回undefined="" getlabelline:="" (="" center,="" r0,="" r1,="" midangle,="" isemphasis="" 特定状态下是否需要显示文本标签="" (this._needlabelline(serie,="" isemphasis))="" 'emphasis'="" 'normal';="" serie里有默认配置，放心大胆的用！="" itemstyle="zrUtil.merge(" zrutil.clone(data.itemstyle)="" {},="" serie.itemstyle="" labelline配置="" labellinecontrol="itemStyle[status].labelLine;" linestyle="labelLineControl.lineStyle" {};="" centerx="center[0];" 圆心横坐标="" centery="center[1];" 圆心纵坐标="" 视觉引导线起点半径="" minradius="r1;" 视觉引导线终点半径="" maxradius="this.parseRadius(this.zr," serie.radius)[1]="" (-labellinecontrol.length);="" cosvalue="zrMath.cos(midAngle," true);="" sinvalue="zrMath.sin(midAngle," new="" polylineshape({="" pointlist:="" [="" cosvalue,="" ],="" data.__labelx,="" ]="" xstart:="" ystart:="" sinvalue,="" xend:="" yend:="" strokecolor:="" linestyle.color="" linetype:="" linestyle.type,="" linewidth:="" linestyle.width="" _seriesindex:="" _dataindex:="" dataindex="" return;="" 返回特定状态（normal="" or="" emphasis）下是否需要显示label标签文本="" @param="" {object}="" {boolean}="" true="" is="" and="" false="" 'normal'="" _needlabel:="" (serie,="" isemphasis)="" this.deepquery(="" (isemphasis="" 'normal')="" '.label.show'="" emphasis）下是否需要显示labelline标签视觉引导线="" _needlabelline:="" +'.labelline.show'="" {array.<object="">} sList 单系列图形集合
+                                r0: radius[0] <= 10 ? 0 : radius[0] - 10,
+                                r: radius[1] + 10,
+                                brushType: 'stroke',
+                                lineWidth: 1,
+                                strokeColor: series[i].calculableHolderColor
+                                             || this.ecTheme.calculableHolderColor
+                                             || ecConfig.calculableHolderColor
+                            }
+                        };
+                        ecData.pack(pieCase, series[i], i, undefined, -1);
+                        this.setCalculable(pieCase);
+
+                        pieCase = radius[0] <= 10
+                                  ? new CircleShape(pieCase)
+                                  : new RingShape(pieCase);
+                        this.shapeList.push(pieCase);
+                    }
+                    this._buildSinglePie(i);
+                    this.buildMark(i);
+                }
+            }
+
+            this.addShapeList();
+        },
+
+        /**
+         * 构建单个饼图
+         *
+         * @param {number} seriesIndex 系列索引
+         */
+        _buildSinglePie: function (seriesIndex) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data;
+            var legend = this.component.legend;
+            var itemName;
+            var totalSelected = 0;               // 迭代累计选中且非0个数
+            var totalSelectedValue0 = 0;         // 迭代累计选中0只个数
+            var totalValue = 0;                  // 迭代累计
+            var maxValue = Number.NEGATIVE_INFINITY;
+
+            var singleShapeList = [];
+            // 计算需要显示的个数和总值
+            for (var i = 0, l = data.length; i < l; i++) {
+                itemName = data[i].name;
+                this.selectedMap[itemName] = legend ? legend.isSelected(itemName) : true;
+
+                if (this.selectedMap[itemName] && !isNaN(data[i].value)) {
+                    if (+data[i].value !== 0) {
+                        totalSelected++;
+                    }
+                    else {
+                        totalSelectedValue0++;
+                    }
+                    totalValue += +data[i].value;
+                    maxValue = Math.max(maxValue, +data[i].value);
+                }
+            }
+
+            if (totalValue === 0) {
+                return;
+            }
+
+            var percent = 100;
+            var clockWise = serie.clockWise;
+            var startAngle = (serie.startAngle.toFixed(2) - 0 + 360) % 360;
+            var endAngle;
+            var minAngle = serie.minAngle || 0.01; // #bugfixed
+            var totalAngle = 360 - (minAngle * totalSelected) - 0.01 * totalSelectedValue0;
+            var defaultColor;
+            var roseType = serie.roseType;
+            var center;
+            var radius;
+            var r0;     // 扇形内半径
+            var r1;     // 扇形外半径
+
+            for (var i = 0, l = data.length; i < l; i++) {
+                itemName = data[i].name;
+                if (!this.selectedMap[itemName] || isNaN(data[i].value)) {
+                    continue;
+                }
+                // 默认颜色策略，有图例则从图例中获取颜色定义，没有就全局颜色定义
+                defaultColor = legend ? legend.getColor(itemName) : this.zr.getColor(i);
+
+                percent = data[i].value / totalValue;
+                if (roseType != 'area') {
+                    endAngle = clockWise
+                        ? (startAngle - percent * totalAngle - (percent !== 0 ? minAngle : 0.01))
+                        : (percent * totalAngle + startAngle + (percent !== 0 ? minAngle : 0.01));
+                }
+                else {
+                    endAngle = clockWise
+                        ? (startAngle - 360 / l)
+                        : (360 / l + startAngle);
+                }
+                endAngle = endAngle.toFixed(2) - 0;
+                percent = (percent * 100).toFixed(2);
+
+                center = this.parseCenter(this.zr, serie.center);
+                radius = this.parseRadius(this.zr, serie.radius);
+                r0 = +radius[0];
+                r1 = +radius[1];
+
+                if (roseType === 'radius') {
+                    r1 = data[i].value / maxValue * (r1 - r0) * 0.8 + (r1 - r0) * 0.2 + r0;
+                }
+                else if (roseType === 'area') {
+                    r1 = Math.sqrt(data[i].value / maxValue) * (r1 - r0) + r0;
+                }
+
+                if (clockWise) {
+                    var temp;
+                    temp = startAngle;
+                    startAngle = endAngle;
+                    endAngle = temp;
+                }
+
+                this._buildItem(
+                    singleShapeList,
+                    seriesIndex, i, percent,
+                    data[i].selected,
+                    center, r0, r1,
+                    startAngle, endAngle, defaultColor
+                );
+                if (!clockWise) {
+                    startAngle = endAngle;
+                }
+            }
+            this._autoLabelLayout(singleShapeList, center, r1);
+            for (var i = 0, l = singleShapeList.length; i < l; i++) {
+                this.shapeList.push(singleShapeList[i]);
+            }
+            singleShapeList = null;
+        },
+
+        /**
+         * 构建单个扇形及指标
+         */
+        _buildItem: function (
+            singleShapeList,
+            seriesIndex, dataIndex, percent,
+            isSelected,
+            center, r0, r1,
+            startAngle, endAngle, defaultColor
+        ) {
+            var series = this.series;
+            var midAngle = ((endAngle + startAngle) / 2 + 360) % 360; // 中值
+
+            // 扇形
+            var sector = this.getSector(
+                    seriesIndex, dataIndex, percent, isSelected,
+                    center, r0, r1,
+                    startAngle, endAngle, defaultColor
+                );
+            // 图形需要附加的私有数据
+            ecData.pack(
+                sector,
+                series[seriesIndex], seriesIndex,
+                series[seriesIndex].data[dataIndex], dataIndex,
+                series[seriesIndex].data[dataIndex].name,
+                percent
+            );
+            singleShapeList.push(sector);
+
+            // 文本标签，需要显示则会有返回
+            var label = this.getLabel(
+                    seriesIndex, dataIndex, percent,
+                    center, midAngle, defaultColor,
+                    false
+                );
+            // 文本标签视觉引导线，需要显示则会有返回
+            var labelLine = this.getLabelLine(
+                    seriesIndex, dataIndex,
+                    center, r0, r1,
+                    midAngle, defaultColor,
+                    false
+                );
+
+            if (labelLine) {
+                ecData.pack(
+                    labelLine,
+                    series[seriesIndex], seriesIndex,
+                    series[seriesIndex].data[dataIndex], dataIndex,
+                    series[seriesIndex].data[dataIndex].name,
+                    percent
+                );
+                singleShapeList.push(labelLine);
+            }
+            if (label) {
+                ecData.pack(
+                    label,
+                    series[seriesIndex], seriesIndex,
+                    series[seriesIndex].data[dataIndex], dataIndex,
+                    series[seriesIndex].data[dataIndex].name,
+                    percent
+                );
+                label._labelLine = labelLine;
+                singleShapeList.push(label);
+            }
+        },
+
+        /**
+         * 构建扇形
+         */
+        getSector: function (
+            seriesIndex, dataIndex, percent, isSelected,
+            center, r0, r1,
+            startAngle, endAngle, defaultColor
+        ) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var queryTarget = [data, serie];
+
+            // 多级控制
+            var normal = this.deepMerge(
+                queryTarget,
+                'itemStyle.normal'
+            ) || {};
+            var emphasis = this.deepMerge(
+                queryTarget,
+                'itemStyle.emphasis'
+            ) || {};
+            var normalColor = this.getItemStyleColor(normal.color, seriesIndex, dataIndex, data)
+                              || defaultColor;
+
+            var emphasisColor = this.getItemStyleColor(emphasis.color, seriesIndex, dataIndex, data)
+                || (typeof normalColor === 'string'
+                    ? zrColor.lift(normalColor, -0.2)
+                    : normalColor
+                );
+
+            var sector = {
+                zlevel: serie.zlevel,
+                z: serie.z,
+                clickable: this.deepQuery(queryTarget, 'clickable'),
+                style: {
+                    x: center[0],          // 圆心横坐标
+                    y: center[1],          // 圆心纵坐标
+                    r0: r0,         // 圆环内半径
+                    r: r1,          // 圆环外半径
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    brushType: 'both',
+                    color: normalColor,
+                    lineWidth: normal.borderWidth,
+                    strokeColor: normal.borderColor,
+                    lineJoin: 'round'
+                },
+                highlightStyle: {
+                    color: emphasisColor,
+                    lineWidth: emphasis.borderWidth,
+                    strokeColor: emphasis.borderColor,
+                    lineJoin: 'round'
+                },
+                _seriesIndex: seriesIndex,
+                _dataIndex: dataIndex
+            };
+
+            if (isSelected) {
+                var midAngle =
+                    ((sector.style.startAngle + sector.style.endAngle) / 2).toFixed(2) - 0;
+                sector.style._hasSelected = true;
+                sector.style._x = sector.style.x;
+                sector.style._y = sector.style.y;
+                var offset = this.query(serie, 'selectedOffset');
+                sector.style.x += zrMath.cos(midAngle, true) * offset;
+                sector.style.y -= zrMath.sin(midAngle, true) * offset;
+
+                this._selected[seriesIndex][dataIndex] = true;
+            }
+            else {
+                this._selected[seriesIndex][dataIndex] = false;
+            }
+
+
+            if (this._selectedMode) {
+                sector.onclick = this.shapeHandler.onclick;
+            }
+
+            if (this.deepQuery([data, serie, this.option], 'calculable')) {
+                this.setCalculable(sector);
+                sector.draggable = true;
+            }
+
+            // “emphasis显示”添加事件响应
+            if (this._needLabel(serie, data, true)          // emphasis下显示文本
+                || this._needLabelLine(serie, data, true)   // emphasis下显示引导线
+            ) {
+                sector.onmouseover = this.shapeHandler.onmouseover;
+            }
+
+            sector = new SectorShape(sector);
+            return sector;
+        },
+
+        /**
+         * 需要显示则会有返回构建好的shape，否则返回undefined
+         */
+        getLabel: function (
+            seriesIndex, dataIndex, percent,
+            center, midAngle, defaultColor,
+            isEmphasis
+        ) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+
+            // 特定状态下是否需要显示文本标签
+            if (!this._needLabel(serie, data, isEmphasis)) {
+                return;
+            }
+
+            var status = isEmphasis ? 'emphasis' : 'normal';
+
+            // serie里有默认配置，放心大胆的用！
+            var itemStyle = zrUtil.merge(
+                    zrUtil.clone(data.itemStyle) || {},
+                    serie.itemStyle
+                );
+            // label配置
+            var labelControl = itemStyle[status].label;
+            var textStyle = labelControl.textStyle || {};
+
+            var centerX = center[0];                      // 圆心横坐标
+            var centerY = center[1];                      // 圆心纵坐标
+            var x;
+            var y;
+            var radius = this.parseRadius(this.zr, serie.radius);  // 标签位置半径
+            var textAlign;
+            var textBaseline = 'middle';
+            labelControl.position = labelControl.position
+                                    || itemStyle.normal.label.position;
+            if (labelControl.position === 'center') {
+                // center显示
+                x = centerX;
+                y = centerY;
+                textAlign = 'center';
+            }
+            else if (labelControl.position === 'inner' || labelControl.position === 'inside') {
+                // 内部标签显示, 按外半径比例计算标签位置
+                radius = (radius[0] + radius[1]) * (labelControl.distance || 0.5);
+                x = Math.round(centerX + radius * zrMath.cos(midAngle, true));
+                y = Math.round(centerY - radius * zrMath.sin(midAngle, true));
+                defaultColor = '#fff';
+                textAlign = 'center';
+            }
+            else {
+                // 外部显示，默认 labelControl.position === 'outer')
+                radius = radius[1] - (-itemStyle[status].labelLine.length);
+                x = Math.round(centerX + radius * zrMath.cos(midAngle, true));
+                y = Math.round(centerY - radius * zrMath.sin(midAngle, true));
+                textAlign = (midAngle >= 90 && midAngle <= 270) ? 'right' : 'left';
+            }
+
+            if (labelControl.position != 'center'
+                && labelControl.position != 'inner'
+                && labelControl.position != 'inside'
+            ) {
+                x += textAlign === 'left' ? 20 : -20;
+            }
+            data.__labelX = x - (textAlign === 'left' ? 5 : -5);
+            data.__labelY = y;
+
+            var ts = new TextShape({
+                zlevel: serie.zlevel,
+                z: serie.z + 1,
+                hoverable: false,
+                style: {
+                    x: x,
+                    y: y,
+                    color: textStyle.color || defaultColor,
+                    text: this.getLabelText(seriesIndex, dataIndex, percent, status),
+                    textAlign: textStyle.align || textAlign,
+                    textBaseline: textStyle.baseline || textBaseline,
+                    textFont: this.getFont(textStyle)
+                },
+                highlightStyle: {
+                    brushType: 'fill'
+                }
+            });
+            ts._radius = radius;
+            ts._labelPosition = labelControl.position || 'outer';
+            ts._rect = ts.getRect(ts.style);
+            ts._seriesIndex = seriesIndex;
+            ts._dataIndex = dataIndex;
+            return ts;
+
+        },
+
+        /**
+         * 根据lable.format计算label text
+         */
+        getLabelText: function (seriesIndex, dataIndex, percent, status) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+            var formatter = this.deepQuery(
+                [data, serie],
+                'itemStyle.' + status + '.label.formatter'
+            );
+
+            if (formatter) {
+                if (typeof formatter === 'function') {
+                    return formatter.call(
+                        this.myChart,
+                        {
+                            seriesIndex: seriesIndex,
+                            seriesName: serie.name || '',
+                            series: serie,
+                            dataIndex: dataIndex,
+                            data: data,
+                            name: data.name,
+                            value: data.value,
+                            percent: percent
+                        }
+                    );
+                }
+                else if (typeof formatter === 'string') {
+                    formatter = formatter.replace('{a}','{a0}')
+                                         .replace('{b}','{b0}')
+                                         .replace('{c}','{c0}')
+                                         .replace('{d}','{d0}');
+                    formatter = formatter.replace('{a0}', serie.name)
+                                         .replace('{b0}', data.name)
+                                         .replace('{c0}', data.value)
+                                         .replace('{d0}', percent);
+
+                    return formatter;
+                }
+            }
+            else {
+                return data.name;
+            }
+        },
+
+        /**
+         * 需要显示则会有返回构建好的shape，否则返回undefined
+         */
+        getLabelLine: function (
+            seriesIndex, dataIndex,
+            center, r0, r1,
+            midAngle, defaultColor,
+            isEmphasis
+        ) {
+            var series = this.series;
+            var serie = series[seriesIndex];
+            var data = serie.data[dataIndex];
+
+            // 特定状态下是否需要显示文本标签
+            if (this._needLabelLine(serie, data, isEmphasis)) {
+                var status = isEmphasis ? 'emphasis' : 'normal';
+
+                // serie里有默认配置，放心大胆的用！
+                var itemStyle = zrUtil.merge(
+                        zrUtil.clone(data.itemStyle) || {},
+                        serie.itemStyle
+                    );
+                // labelLine配置
+                var labelLineControl = itemStyle[status].labelLine;
+                var lineStyle = labelLineControl.lineStyle || {};
+
+                var centerX = center[0];                    // 圆心横坐标
+                var centerY = center[1];                    // 圆心纵坐标
+                // 视觉引导线起点半径
+                var minRadius = r1;
+                // 视觉引导线终点半径
+                var maxRadius = this.parseRadius(this.zr, serie.radius)[1]
+                                - (-labelLineControl.length);
+                var cosValue = zrMath.cos(midAngle, true);
+                var sinValue = zrMath.sin(midAngle, true);
+
+                return new PolylineShape({
+                    zlevel: serie.zlevel,
+                    z: serie.z + 1,
+                    hoverable: false,
+                    style: {
+                        pointList: [
+                            [
+                                centerX + minRadius * cosValue,
+                                centerY - minRadius * sinValue
+                            ],
+                            [
+                                centerX + maxRadius * cosValue,
+                                centerY - maxRadius * sinValue
+                            ],
+                            [
+                                data.__labelX,
+                                data.__labelY
+                            ]
+                        ],
+                        //xStart: centerX + minRadius * cosValue,
+                        //yStart: centerY - minRadius * sinValue,
+                        //xEnd: centerX + maxRadius * cosValue,
+                        //yEnd: centerY - maxRadius * sinValue,
+                        strokeColor: lineStyle.color || defaultColor,
+                        lineType: lineStyle.type,
+                        lineWidth: lineStyle.width
+                    },
+                    _seriesIndex: seriesIndex,
+                    _dataIndex: dataIndex
+                });
+            }
+            else {
+                return;
+            }
+        },
+
+        /**
+         * 返回特定状态（normal or emphasis）下是否需要显示label标签文本
+         * @param {Object} serie
+         * @param {Object} data
+         * @param {boolean} isEmphasis true is 'emphasis' and false is 'normal'
+         */
+        _needLabel: function (serie, data, isEmphasis) {
+            return this.deepQuery(
+                [data, serie],
+                'itemStyle.'
+                + (isEmphasis ? 'emphasis' : 'normal')
+                + '.label.show'
+            );
+        },
+
+        /**
+         * 返回特定状态（normal or emphasis）下是否需要显示labelLine标签视觉引导线
+         * @param {Object} serie
+         * @param {Object} data
+         * @param {boolean} isEmphasis true is 'emphasis' and false is 'normal'
+         */
+        _needLabelLine: function (serie, data, isEmphasis) {
+            return this.deepQuery(
+                [data, serie],
+                'itemStyle.'
+                + (isEmphasis ? 'emphasis' : 'normal')
+                +'.labelLine.show'
+            );
+        },
+
+        /**
+         * @param {Array.<Object>} sList 单系列图形集合
          */
         _autoLabelLayout : function (sList, center, r) {
             var leftList = [];
@@ -197,7 +736,7 @@ define(function (require) {
         },
 
         /**
-         * @param {Array.<object>} tList 单系列文本图形集合
+         * @param {Array.<Object>} tList 单系列文本图形集合
          * @param {number} direction 水平方向参数，left为-1，right为1
          */
         _layoutCalculate : function(tList, center, r, direction) {
@@ -272,7 +811,37 @@ define(function (require) {
                         // 右下，左下
                         deltaX = lastDeltaX - 10;
                     }
-                    if (!isDownList && deltaX <= lastdeltax)="" {="" 右上，左上="" deltax="lastDeltaX" +="" 10;="" }="" slist[i]._rect.x="sList[i].style.x" =="" x="" *="" direction;="" if="" (slist[i]._labelline)="" slist[i]._labelline.style.pointlist[2][0]="x" (deltax="" -="" 5)="" slist[i]._labelline.style.pointlist[1][0]="x" 20)="" *direction;="" lastdeltax="deltaX;" var="" lasty="0;" delta;="" len="tList.length;" uplist="[];" downlist="[];" for="" (var="" i="0;" <="" len;="" i++)="" delta="tList[i]._rect.y" lasty;="" (delta="" 0)="" _changedown(i,="" len,="" -delta,="" direction);="" tlist[i]._rect.height;="" (this.zr.getheight()="" _changeup(len="" 1,="" this.zr.getheight());="" (tlist[i]._rect.y="">= center[1]) {
+                    if (!isDownList && deltaX <= lastDeltaX) {
+                        // 右上，左上
+                        deltaX = lastDeltaX + 10;
+                    }
+
+                    sList[i]._rect.x = sList[i].style.x = x + deltaX * direction;
+                    if (sList[i]._labelLine) {
+                        sList[i]._labelLine.style.pointList[2][0] = x + (deltaX - 5) * direction;
+                        sList[i]._labelLine.style.pointList[1][0] = x + (deltaX - 20) *direction;
+                    }
+                    lastDeltaX = deltaX;
+                }
+            }
+
+            var lastY = 0;
+            var delta;
+            var len = tList.length;
+            var upList = [];
+            var downList = [];
+            for (var i = 0; i < len; i++) {
+                delta = tList[i]._rect.y - lastY;
+                if (delta < 0) {
+                    _changeDown(i, len, -delta, direction);
+                }
+                lastY = tList[i]._rect.y + tList[i]._rect.height;
+            }
+            if (this.zr.getHeight() - lastY < 0) {
+                _changeUp(len - 1, lastY - this.zr.getHeight());
+            }
+            for (var i = 0; i < len; i++) {
+                if (tList[i]._rect.y >= center[1]) {
                     downList.push(tList[i]);
                 }
                 else {
@@ -570,4 +1139,3 @@ define(function (require) {
 
     return Pie;
 });
-</=></object></=></=>

@@ -1446,7 +1446,7 @@ var esl;
      * @param {Object} source 对象数据
      * @param {boolean} keyMatchable key是否允许被前缀匹配
      * @param {boolean} allowAsterisk 是否支持*匹配所有
-     * @return {Array.<object>} 对象转换数组
+     * @return {Array.<Object>} 对象转换数组
      */
     function kv2List(source, keyMatchable, allowAsterisk) {
         var list = [];
@@ -4312,7 +4312,7 @@ define('zrender/zrender', [
             var downloadLink = document.createElement('a');
             downloadLink.href = image;
             downloadLink.setAttribute('download', (saveOption.name ? saveOption.name : this.option.title && (this.option.title.text || this.option.title.subtext) ? this.option.title.text || this.option.title.subtext : 'ECharts') + '.' + imgType);
-            downloadLink.innerHTML = '<img style="vertical-align:middle" src="' + image + '" title="' + (!!window.ActiveXObject || 'ActiveXObject' in window ? '右键->图片另存为' : saveOption.lang ? saveOption.lang[0] : '点击保存') + '">';
+            downloadLink.innerHTML = '<img style="vertical-align:middle" src="' + image + '" title="' + (!!window.ActiveXObject || 'ActiveXObject' in window ? '右键->图片另存为' : saveOption.lang ? saveOption.lang[0] : '点击保存') + '"/>';
             downloadDiv.appendChild(downloadLink);
             document.body.appendChild(downloadDiv);
             downloadLink = null;
@@ -4414,7 +4414,9 @@ define('zrender/zrender', [
             }
             var zoomOption = newOption.dataZoom;
             if (zoomOption && zoomOption.show) {
-                var start = zoomOption.start != null && zoomOption.start >= 0 && zoomOption.start <= 100="" ?="" zoomoption.start="" :="" 0;="" var="" end="zoomOption.end" !="null" &&="" zoomoption.end="">= 0 && zoomOption.end <= 100="" ?="" zoomoption.end="" :="" 100;="" if="" (start=""> end) {
+                var start = zoomOption.start != null && zoomOption.start >= 0 && zoomOption.start <= 100 ? zoomOption.start : 0;
+                var end = zoomOption.end != null && zoomOption.end >= 0 && zoomOption.end <= 100 ? zoomOption.end : 100;
+                if (start > end) {
                     start = start + end;
                     end = start - end;
                     start = start - end;
@@ -4802,7 +4804,7 @@ define('zrender/zrender', [
         show: true,
         showContent: true,
         trigger: 'item',
-        islandFormatter: '{a} <br>{b} : {c}',
+        islandFormatter: '{a} <br/>{b} : {c}',
         showDelay: 20,
         hideDelay: 100,
         transitionDuration: 0.4,
@@ -5129,7 +5131,29 @@ define('zrender/zrender', [
                 var curCoord = categoryAxis.getCoordByIndex(dataIndex);
                 while (curCoord < xEnd) {
                     right = curCoord;
-                    if (curCoord <= x)="" {="" left="curCoord;" }="" else="" break;="" curcoord="categoryAxis.getCoordByIndex(++dataIndex);" if="" (dataindex="" <="0)" dataindex="0;" (x="" -="" (categoryaxis.getnamebyindex(dataindex)="=" null)="" return="" dataindex;="" var="" top;="" bottom;="" ystart="this.component.grid.getY();" while="" (curcoord=""> yStart) {
+                    if (curCoord <= x) {
+                        left = curCoord;
+                    } else {
+                        break;
+                    }
+                    curCoord = categoryAxis.getCoordByIndex(++dataIndex);
+                }
+                if (dataIndex <= 0) {
+                    dataIndex = 0;
+                } else if (x - left <= right - x) {
+                    dataIndex -= 1;
+                } else {
+                    if (categoryAxis.getNameByIndex(dataIndex) == null) {
+                        dataIndex -= 1;
+                    }
+                }
+                return dataIndex;
+            } else {
+                var top;
+                var bottom;
+                var yStart = this.component.grid.getY();
+                var curCoord = categoryAxis.getCoordByIndex(dataIndex);
+                while (curCoord > yStart) {
                     top = curCoord;
                     if (curCoord >= y) {
                         bottom = curCoord;
@@ -5138,7 +5162,9 @@ define('zrender/zrender', [
                     }
                     curCoord = categoryAxis.getCoordByIndex(++dataIndex);
                 }
-                if (dataIndex <= 0)="" {="" dataindex="0;" }="" else="" if="" (y="" -="" top="">= bottom - y) {
+                if (dataIndex <= 0) {
+                    dataIndex = 0;
+                } else if (y - top >= bottom - y) {
                     dataIndex -= 1;
                 } else {
                     if (categoryAxis.getNameByIndex(dataIndex) == null) {
@@ -5279,7 +5305,7 @@ define('zrender/zrender', [
                         this._curTicket = NaN;
                         formatter = this._encodeHTML(categoryAxis.getNameByIndex(dataIndex));
                         for (var i = 0, l = seriesArray.length; i < l; i++) {
-                            formatter += '<br>' + this._encodeHTML(seriesArray[i].name || '') + ' : ';
+                            formatter += '<br/>' + this._encodeHTML(seriesArray[i].name || '') + ' : ';
                             data = seriesArray[i].data[dataIndex];
                             data = this.getDataFromOption(data, '-');
                             formatter += data instanceof Array ? data : this.numAddCommas(data);
@@ -5367,9 +5393,29 @@ define('zrender/zrender', [
                         });
                     }
                 }
-                if (params.length <= 0)="" {="" return;="" }="" this._lastitemtriggerid="-1;" if="" (this._lastdataindex="" !="dataIndex" ||="" this._lastseriesindex="" this._lastdataindex="dataIndex;" (typeof="" formatter="==" 'function')="" this._curticket="axis:" +="" dataindex;="" this._tdom.innerhtml="formatter.call(this.myChart," params,="" this._curticket,="" this._setcontent);="" else="" 'string')="" '{a0}').replace('{b}',="" '{b0}').replace('{c}',="" '{c0}').replace('{d}',="" '{d0}');="" for="" (var="" i="0," l="params.length;" <="" l;="" i++)="" '}',="" this._encodehtml(params[i].seriesname));="" this._encodehtml(params[i].name));="" this.numaddcommas(params[i].value));="" this._encodehtml(params[i].indicator));="" '<br="">' + this._encodeHTML(params[0].indicator) + ' : ' + this.numAddCommas(params[0].value);
+                if (params.length <= 0) {
+                    return;
+                }
+                this._lastItemTriggerId = -1;
+                if (this._lastDataIndex != dataIndex || this._lastSeriesIndex != seriesIndex[0]) {
+                    this._lastDataIndex = dataIndex;
+                    this._lastSeriesIndex = seriesIndex[0];
+                    if (typeof formatter === 'function') {
+                        this._curTicket = 'axis:' + dataIndex;
+                        this._tDom.innerHTML = formatter.call(this.myChart, params, this._curTicket, this._setContent);
+                    } else if (typeof formatter === 'string') {
+                        formatter = formatter.replace('{a}', '{a0}').replace('{b}', '{b0}').replace('{c}', '{c0}').replace('{d}', '{d0}');
+                        for (var i = 0, l = params.length; i < l; i++) {
+                            formatter = formatter.replace('{a' + i + '}', this._encodeHTML(params[i].seriesName));
+                            formatter = formatter.replace('{b' + i + '}', this._encodeHTML(params[i].name));
+                            formatter = formatter.replace('{c' + i + '}', this.numAddCommas(params[i].value));
+                            formatter = formatter.replace('{d' + i + '}', this._encodeHTML(params[i].indicator));
+                        }
+                        this._tDom.innerHTML = formatter;
+                    } else {
+                        formatter = this._encodeHTML(params[0].name) + '<br/>' + this._encodeHTML(params[0].indicator) + ' : ' + this.numAddCommas(params[0].value);
                         for (var i = 1, l = params.length; i < l; i++) {
-                            formatter += '<br>' + this._encodeHTML(params[i].name) + '<br>';
+                            formatter += '<br/>' + this._encodeHTML(params[i].name) + '<br/>';
                             formatter += this._encodeHTML(params[i].indicator) + ' : ' + this.numAddCommas(params[i].value);
                         }
                         this._tDom.innerHTML = formatter;
@@ -5472,7 +5518,7 @@ define('zrender/zrender', [
                     } else if (serie.type === ecConfig.CHART_TYPE_EVENTRIVER) {
                         this._tDom.innerHTML = this._itemFormatter.eventRiver.call(this, serie, name, value, data);
                     } else {
-                        this._tDom.innerHTML = '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br>' : '') + (name === '' ? '' : this._encodeHTML(name) + ' : ') + (value instanceof Array ? value : this.numAddCommas(value));
+                        this._tDom.innerHTML = '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br/>' : '') + (name === '' ? '' : this._encodeHTML(name) + ' : ') + (value instanceof Array ? value : this.numAddCommas(value));
                     }
                 }
             }
@@ -5498,9 +5544,9 @@ define('zrender/zrender', [
             radar: function (serie, name, value, indicator) {
                 var html = '';
                 html += this._encodeHTML(name === '' ? serie.name || '' : name);
-                html += html === '' ? '' : '<br>';
+                html += html === '' ? '' : '<br />';
                 for (var i = 0; i < indicator.length; i++) {
-                    html += this._encodeHTML(indicator[i].text) + ' : ' + this.numAddCommas(value[i]) + '<br>';
+                    html += this._encodeHTML(indicator[i].text) + ' : ' + this.numAddCommas(value[i]) + '<br />';
                 }
                 return html;
             },
@@ -5510,14 +5556,14 @@ define('zrender/zrender', [
                 } else {
                     var name1 = this._encodeHTML(name);
                     var name2 = this._encodeHTML(special);
-                    return '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br>' : '') + name1 + ' -> ' + name2 + ' (' + this.numAddCommas(value) + ')' + '<br>' + name2 + ' -> ' + name1 + ' (' + this.numAddCommas(special2) + ')';
+                    return '' + (serie.name != null ? this._encodeHTML(serie.name) + '<br/>' : '') + name1 + ' -> ' + name2 + ' (' + this.numAddCommas(value) + ')' + '<br />' + name2 + ' -> ' + name1 + ' (' + this.numAddCommas(special2) + ')';
                 }
             },
             eventRiver: function (serie, name, value, data) {
                 var html = '';
                 html += this._encodeHTML(serie.name === '' ? '' : serie.name + ' : ');
                 html += this._encodeHTML(name);
-                html += html === '' ? '' : '<br>';
+                html += html === '' ? '' : '<br />';
                 data = data.evolution;
                 for (var i = 0, l = data.length; i < l; i++) {
                     html += '<div style="padding-top:5px;">';
@@ -5527,7 +5573,7 @@ define('zrender/zrender', [
                     if (data[i].detail.img) {
                         html += '<img src="' + data[i].detail.img + '" style="float:left;width:40px;height:40px;">';
                     }
-                    html += '<div style="margin-left:45px;">' + data[i].time + '<br>';
+                    html += '<div style="margin-left:45px;">' + data[i].time + '<br/>';
                     html += '<a href="' + data[i].detail.link + '" target="_blank">';
                     html += data[i].detail.text + '</a></div>';
                     html += '</div>';
@@ -5783,7 +5829,122 @@ define('zrender/zrender', [
                 case ecConfig.CHART_TYPE_BAR:
                 case ecConfig.CHART_TYPE_K:
                 case ecConfig.CHART_TYPE_RADAR:
-                    if (this.component.polar == null || serie.data[0].value.length <= 2="" dataindex)="" {="" return;="" }="" var="" polarindex="serie.polarIndex" ||="" 0;="" vector="this.component.polar.getVector(polarIndex," dataindex,="" 'max');="" this._event="{" zrenderx:="" vector[0],="" zrendery:="" vector[1]="" };="" this._showpolartrigger(polarindex,="" dataindex);="" break;="" else="" shapelist="chart.shapeList;" x;="" y;="" switch="" (chart.type)="" case="" ecconfig.chart_type_line:="" ecconfig.chart_type_bar:="" ecconfig.chart_type_k:="" ecconfig.chart_type_treemap:="" ecconfig.chart_type_scatter:="" dataindex="params.dataIndex;" for="" (var="" i="0," l="shapeList.length;" <="" l;="" i++)="" if="" (shapelist[i]._mark="=" null="" &&="" ecdata.get(shapelist[i],="" 'seriesindex')="=" seriesindex="" 'dataindex')="=" this._curtarget="shapeList[i];" x="shapeList[i].style.x;" y="chart.type" !="ecConfig.CHART_TYPE_K" ?="" shapelist[i].style.y="" :="" shapelist[i].style.y[0];="" ecconfig.chart_type_radar:="" (shapelist[i].type="==" 'polygon'="" 0);="" ecconfig.chart_type_pie:="" name="params.name;" 'sector'="" 'name')="=" name)="" style="this._curTarget.style;" midangle="(style.startAngle" +="" style.endangle)="" *="" math.pi="" 180;="" math.cos(midangle)="" style.r="" 1.5;="" -="" math.sin(midangle)="" ecconfig.chart_type_map:="" maptype="serie.mapType;" 'text'="" shapelist[i]._maptype="==" shapelist[i].style._name="==" this._curtarget.position[0];="" this._curtarget.position[1];="" ecconfig.chart_type_chord:="" (style.r="" 2);="" this.zr.trigger(zrconfig.event.mousemove,="" x,="" });="" ecconfig.chart_type_force:="" 'circle'="" (x="" this.zr.addhovershape(this._curtarget);="" this.zr.refreshhover();="" this._showitemtrigger();="" },="" hidetip:="" function="" ()="" this._hide();="" refresh:="" (newoption)="" this._zrheight="this.zr.getHeight();" this._zrwidth="this.zr.getWidth();" (this._lasttipshape="" this._lasttipshape.tipshape.length=""> 0) {
+                    if (this.component.polar == null || serie.data[0].value.length <= dataIndex) {
+                        return;
+                    }
+                    var polarIndex = serie.polarIndex || 0;
+                    var vector = this.component.polar.getVector(polarIndex, dataIndex, 'max');
+                    this._event = {
+                        zrenderX: vector[0],
+                        zrenderY: vector[1]
+                    };
+                    this._showPolarTrigger(polarIndex, dataIndex);
+                    break;
+                }
+            } else {
+                var shapeList = chart.shapeList;
+                var x;
+                var y;
+                switch (chart.type) {
+                case ecConfig.CHART_TYPE_LINE:
+                case ecConfig.CHART_TYPE_BAR:
+                case ecConfig.CHART_TYPE_K:
+                case ecConfig.CHART_TYPE_TREEMAP:
+                case ecConfig.CHART_TYPE_SCATTER:
+                    var dataIndex = params.dataIndex;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i]._mark == null && ecData.get(shapeList[i], 'seriesIndex') == seriesIndex && ecData.get(shapeList[i], 'dataIndex') == dataIndex) {
+                            this._curTarget = shapeList[i];
+                            x = shapeList[i].style.x;
+                            y = chart.type != ecConfig.CHART_TYPE_K ? shapeList[i].style.y : shapeList[i].style.y[0];
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_RADAR:
+                    var dataIndex = params.dataIndex;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'polygon' && ecData.get(shapeList[i], 'seriesIndex') == seriesIndex && ecData.get(shapeList[i], 'dataIndex') == dataIndex) {
+                            this._curTarget = shapeList[i];
+                            var vector = this.component.polar.getCenter(serie.polarIndex || 0);
+                            x = vector[0];
+                            y = vector[1];
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_PIE:
+                    var name = params.name;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'sector' && ecData.get(shapeList[i], 'seriesIndex') == seriesIndex && ecData.get(shapeList[i], 'name') == name) {
+                            this._curTarget = shapeList[i];
+                            var style = this._curTarget.style;
+                            var midAngle = (style.startAngle + style.endAngle) / 2 * Math.PI / 180;
+                            x = this._curTarget.style.x + Math.cos(midAngle) * style.r / 1.5;
+                            y = this._curTarget.style.y - Math.sin(midAngle) * style.r / 1.5;
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_MAP:
+                    var name = params.name;
+                    var mapType = serie.mapType;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'text' && shapeList[i]._mapType === mapType && shapeList[i].style._name === name) {
+                            this._curTarget = shapeList[i];
+                            x = this._curTarget.style.x + this._curTarget.position[0];
+                            y = this._curTarget.style.y + this._curTarget.position[1];
+                            break;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_CHORD:
+                    var name = params.name;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'sector' && ecData.get(shapeList[i], 'name') == name) {
+                            this._curTarget = shapeList[i];
+                            var style = this._curTarget.style;
+                            var midAngle = (style.startAngle + style.endAngle) / 2 * Math.PI / 180;
+                            x = this._curTarget.style.x + Math.cos(midAngle) * (style.r - 2);
+                            y = this._curTarget.style.y - Math.sin(midAngle) * (style.r - 2);
+                            this.zr.trigger(zrConfig.EVENT.MOUSEMOVE, {
+                                zrenderX: x,
+                                zrenderY: y
+                            });
+                            return;
+                        }
+                    }
+                    break;
+                case ecConfig.CHART_TYPE_FORCE:
+                    var name = params.name;
+                    for (var i = 0, l = shapeList.length; i < l; i++) {
+                        if (shapeList[i].type === 'circle' && ecData.get(shapeList[i], 'name') == name) {
+                            this._curTarget = shapeList[i];
+                            x = this._curTarget.position[0];
+                            y = this._curTarget.position[1];
+                            break;
+                        }
+                    }
+                    break;
+                }
+                if (x != null && y != null) {
+                    this._event = {
+                        zrenderX: x,
+                        zrenderY: y
+                    };
+                    this.zr.addHoverShape(this._curTarget);
+                    this.zr.refreshHover();
+                    this._showItemTrigger();
+                }
+            }
+        },
+        hideTip: function () {
+            this._hide();
+        },
+        refresh: function (newOption) {
+            this._zrHeight = this.zr.getHeight();
+            this._zrWidth = this.zr.getWidth();
+            if (this._lastTipShape && this._lastTipShape.tipShape.length > 0) {
                 this.zr.delShape(this._lastTipShape.tipShape);
             }
             this._lastTipShape = false;
@@ -5837,7 +5998,7 @@ define('zrender/zrender', [
             this._tDom = null;
         },
         _encodeHTML: function (source) {
-            return String(source).replace(/&/g, '&amp;').replace(//g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            return String(source).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
     };
     zrUtil.inherits(Tooltip, Base);
@@ -7176,7 +7337,9 @@ define('zrender/zrender', [
         return array;
     }
     function adjust(value, region) {
-        if (value <= region[0])="" {="" value="region[0];" }="" else="" if="" (value="">= region[1]) {
+        if (value <= region[0]) {
+            value = region[0];
+        } else if (value >= region[1]) {
             value = region[1];
         }
         return value;
@@ -7917,11 +8080,37 @@ define('zrender/zrender', [
         _findChainIndex: function (x) {
             var chainPoint = this._chainPoint;
             var len = chainPoint.length;
-            if (x <= chainpoint[0].x)="" {="" return="" 0;="" }="" else="" if="" (x="">= chainPoint[len - 1].x) {
+            if (x <= chainPoint[0].x) {
+                return 0;
+            } else if (x >= chainPoint[len - 1].x) {
                 return len - 1;
             }
             for (var i = 0; i < len - 1; i++) {
-                if (x >= chainPoint[i].x && x <= chainpoint[i="" +="" 1].x)="" {="" return="" math.abs(x="" -="" chainpoint[i].x)="" <="" ?="" i="" :="" 1;="" }="" },="" __onclick:="" function="" (param)="" var="" x="zrEvent.getX(param.event);" newindex="this._findChainIndex(x);" if="" (newindex="==" this.currentindex)="" true;="" this.currentindex="newIndex;" this.timelineoption.autoplay="" &&="" this.stop();="" cleartimeout(this.playticket);="" this._onframe();="" __ondrift:="" (shape,="" dx)="" chainpoint="this._chainPoint;" len="chainPoint.length;" newindex;="" (shape.style.x="" dx="" chainpoint[0].symbolsize)="" shape.style.x="chainPoint[0].x" chainpoint[0].symbolsize;="" else="">= chainPoint[len - 1].x - chainPoint[len - 1].symbolSize) {
+                if (x >= chainPoint[i].x && x <= chainPoint[i + 1].x) {
+                    return Math.abs(x - chainPoint[i].x) < Math.abs(x - chainPoint[i + 1].x) ? i : i + 1;
+                }
+            }
+        },
+        __onclick: function (param) {
+            var x = zrEvent.getX(param.event);
+            var newIndex = this._findChainIndex(x);
+            if (newIndex === this.currentIndex) {
+                return true;
+            }
+            this.currentIndex = newIndex;
+            this.timelineOption.autoPlay && this.stop();
+            clearTimeout(this.playTicket);
+            this._onFrame();
+        },
+        __ondrift: function (shape, dx) {
+            this.timelineOption.autoPlay && this.stop();
+            var chainPoint = this._chainPoint;
+            var len = chainPoint.length;
+            var newIndex;
+            if (shape.style.x + dx <= chainPoint[0].x - chainPoint[0].symbolSize) {
+                shape.style.x = chainPoint[0].x - chainPoint[0].symbolSize;
+                newIndex = 0;
+            } else if (shape.style.x + dx >= chainPoint[len - 1].x - chainPoint[len - 1].symbolSize) {
                 shape.style.x = chainPoint[len - 1].x - chainPoint[len - 1].symbolSize;
                 newIndex = len - 1;
             } else {
@@ -8314,7 +8503,75 @@ define('zrender/zrender', [
             addShapeHandle(background);
             for (var i = 0; i < n; i++) {
                 var style = shapeList[i].highlightStyle;
-                if (style.y - shapeList[i].animationY + style.r <= 100="" 0)="" {="" shapelist[i].highlightstyle.y="canvasHeight" +="" style.r;="" shapelist[i].highlightstyle.x="Math.ceil(Math.random()" *="" canvaswidth);="" }="" -="shapeList[i].animationY;" addshapehandle(shapelist[i]);="" addshapehandle(textshape);="" refreshhandle();="" },="" effectoption.timeinterval);="" };="" return="" bubble;="" });define('zrender="" loadingeffect="" dynamicline',="" [="" 'require',="" '.="" base',="" '..="" tool="" util',="" color',="" shape="" line'="" ],="" function="" (require)="" var="" base="require('./Base');" util="require('../tool/util');" zrcolor="require('../tool/color');" lineshape="require('../shape/Line');" dynamicline(options)="" base.call(this,="" options);="" util.inherits(dynamicline,="" base);="" dynamicline.prototype._start="function" (addshapehandle,="" refreshhandle)="" options="util.merge(this.options," textstyle:="" color:="" '#fff'="" backgroundcolor:="" 'rgba(0,="" 0,="" 0.8)',="" effectoption:="" n:="" 30,="" linewidth:="" 1,="" 'random',="" timeinterval:="" });="" textshape="this.createTextShape(options.textStyle);" background="this.createBackgroundShape(options.backgroundColor);" effectoption="options.effectOption;" n="effectOption.n;" linewidth="effectOption.lineWidth;" shapelist="[];" canvaswidth="this.canvasWidth;" canvasheight="this.canvasHeight;" for="" (var="" i="0;" <="" n;="" i++)="" xstart="-Math.ceil(Math.random()" 1000);="" len="Math.ceil(Math.random()" 400);="" pos="Math.ceil(Math.random()" canvasheight);="" color="effectOption.color" =="random" ?="" zrcolor.random()="" :="" effectoption.color;="" shapelist[i]="new" lineshape({="" highlightstyle:="" xstart:="" xstart,="" ystart:="" pos,="" xend:="" len,="" yend:="" strokecolor:="" color,="" animationx:="" math.ceil(math.random()="" 100),="" len:="" setinterval(function="" ()="" addshapehandle(background);="" style="shapeList[i].highlightStyle;" if="" (style.xstart="">= canvasWidth) {
+                if (style.y - shapeList[i].animationY + style.r <= 0) {
+                    shapeList[i].highlightStyle.y = canvasHeight + style.r;
+                    shapeList[i].highlightStyle.x = Math.ceil(Math.random() * canvasWidth);
+                }
+                shapeList[i].highlightStyle.y -= shapeList[i].animationY;
+                addShapeHandle(shapeList[i]);
+            }
+            addShapeHandle(textShape);
+            refreshHandle();
+        }, effectOption.timeInterval);
+    };
+    return Bubble;
+});define('zrender/loadingEffect/DynamicLine', [
+    'require',
+    './Base',
+    '../tool/util',
+    '../tool/color',
+    '../shape/Line'
+], function (require) {
+    var Base = require('./Base');
+    var util = require('../tool/util');
+    var zrColor = require('../tool/color');
+    var LineShape = require('../shape/Line');
+    function DynamicLine(options) {
+        Base.call(this, options);
+    }
+    util.inherits(DynamicLine, Base);
+    DynamicLine.prototype._start = function (addShapeHandle, refreshHandle) {
+        var options = util.merge(this.options, {
+            textStyle: { color: '#fff' },
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            effectOption: {
+                n: 30,
+                lineWidth: 1,
+                color: 'random',
+                timeInterval: 100
+            }
+        });
+        var textShape = this.createTextShape(options.textStyle);
+        var background = this.createBackgroundShape(options.backgroundColor);
+        var effectOption = options.effectOption;
+        var n = effectOption.n;
+        var lineWidth = effectOption.lineWidth;
+        var shapeList = [];
+        var canvasWidth = this.canvasWidth;
+        var canvasHeight = this.canvasHeight;
+        for (var i = 0; i < n; i++) {
+            var xStart = -Math.ceil(Math.random() * 1000);
+            var len = Math.ceil(Math.random() * 400);
+            var pos = Math.ceil(Math.random() * canvasHeight);
+            var color = effectOption.color == 'random' ? zrColor.random() : effectOption.color;
+            shapeList[i] = new LineShape({
+                highlightStyle: {
+                    xStart: xStart,
+                    yStart: pos,
+                    xEnd: xStart + len,
+                    yEnd: pos,
+                    strokeColor: color,
+                    lineWidth: lineWidth
+                },
+                animationX: Math.ceil(Math.random() * 100),
+                len: len
+            });
+        }
+        return setInterval(function () {
+            addShapeHandle(background);
+            for (var i = 0; i < n; i++) {
+                var style = shapeList[i].highlightStyle;
+                if (style.xStart >= canvasWidth) {
                     shapeList[i].len = Math.ceil(Math.random() * 400);
                     style.xStart = -400;
                     style.xEnd = -400 + shapeList[i].len;
@@ -9699,7 +9956,7 @@ define('zrender/zrender', [
                 var W = 10;
                 var H = 10;
                 var scaleX = scaleY = 1;
-                vmlStr.push(' <g_vml_:group', '="" coordsize="', Z * W, ',', Z * H, '" ',="" coordorigin="0,0" style="width:', W, 'px;height:', H, 'px;position:absolute;');
+                vmlStr.push(' <g_vml_:group', ' coordsize="', Z * W, ',', Z * H, '"', ' coordorigin="0,0"', ' style="width:', W, 'px;height:', H, 'px;position:absolute;');
                 if (this.m_[0][0] != 1 || this.m_[0][1] || this.m_[1][1] != 1 || this.m_[1][0]) {
                     var filter = [];
                     var scaleX = this.scaleX_;
@@ -9726,7 +9983,7 @@ define('zrender/zrender', [
                 vmlStr.push(' progid:DXImageTransform.Microsoft.AlphaImageLoader(src=', image.src, ',sizingMethod=scale)">');
                 if (sx || sy)
                     vmlStr.push('</div>');
-                vmlStr.push('</div>');
+                vmlStr.push('</div></div>');
                 this.element_.insertAdjacentHTML('BeforeEnd', vmlStr.join(''));
             };
             contextPrototype.stroke = function (aFill) {
@@ -9734,7 +9991,7 @@ define('zrender/zrender', [
                 var lineOpen = false;
                 var W = 10;
                 var H = 10;
-                lineStr.push('<g_vml_:shape', '="" filled="', !!aFill, '" ',="" style="position:absolute;width:', W, 'px;height:', H, 'px;" coordorigin="0,0" coordsize="', Z * W, ',', Z * H, '" stroked="', !aFill, '" path="');
+                lineStr.push('<g_vml_:shape', ' filled="', !!aFill, '"', ' style="position:absolute;width:', W, 'px;height:', H, 'px;"', ' coordorigin="0,0"', ' coordsize="', Z * W, ',', Z * H, '"', ' stroked="', !aFill, '"', ' path="');
                 var newSeq = false;
                 var min = {
                     x: null,
@@ -9788,7 +10045,7 @@ define('zrender/zrender', [
                 } else {
                     appendFill(this, lineStr, min, max);
                 }
-                lineStr.push('');
+                lineStr.push('</g_vml_:shape>');
                 this.element_.insertAdjacentHTML('beforeEnd', lineStr.join(''));
             };
             function appendStroke(ctx, lineStr) {
@@ -9799,7 +10056,7 @@ define('zrender/zrender', [
                 if (lineWidth < 1) {
                     opacity *= lineWidth;
                 }
-                lineStr.push('<g_vml_:stroke', '="" opacity="', opacity, '" ',="" joinstyle="', ctx.lineJoin, '" miterlimit="', ctx.miterLimit, '" endcap="', processLineCap(ctx.lineCap), '" weight="', lineWidth, 'px" color="', color, '">');
+                lineStr.push('<g_vml_:stroke', ' opacity="', opacity, '"', ' joinstyle="', ctx.lineJoin, '"', ' miterlimit="', ctx.miterLimit, '"', ' endcap="', processLineCap(ctx.lineCap), '"', ' weight="', lineWidth, 'px"', ' color="', color, '" />');
             }
             function appendFill(ctx, lineStr, min, max) {
                 var fillStyle = ctx.fillStyle;
@@ -9857,18 +10114,18 @@ define('zrender/zrender', [
                         var stop = stops[i];
                         colors.push(stop.offset * expansion + shift + ' ' + stop.color);
                     }
-                    lineStr.push('<g_vml_:fill type="', fillStyle.type_, '" ',="" '="" method="none" focus="100%" color="', color1, '" color2="', color2, '" colors="', colors.join(','), '" opacity="', opacity2, '" g_o_:opacity2="', opacity1, '" angle="', angle, '" focusposition="', focus.x, ',', focus.y, '">');
+                    lineStr.push('<g_vml_:fill type="', fillStyle.type_, '"', ' method="none" focus="100%"', ' color="', color1, '"', ' color2="', color2, '"', ' colors="', colors.join(','), '"', ' opacity="', opacity2, '"', ' g_o_:opacity2="', opacity1, '"', ' angle="', angle, '"', ' focusposition="', focus.x, ',', focus.y, '" />');
                 } else if (fillStyle instanceof CanvasPattern_) {
                     if (width && height) {
                         var deltaLeft = -min.x;
                         var deltaTop = -min.y;
-                        lineStr.push('<g_vml_:fill', '="" position="', deltaLeft / width * arcScaleX * arcScaleX, ',', deltaTop / height * arcScaleY * arcScaleY, '" ',="" type="tile" src="', fillStyle.src_, '">');
+                        lineStr.push('<g_vml_:fill', ' position="', deltaLeft / width * arcScaleX * arcScaleX, ',', deltaTop / height * arcScaleY * arcScaleY, '"', ' type="tile"', ' src="', fillStyle.src_, '" />');
                     }
                 } else {
                     var a = processStyle(ctx.fillStyle);
                     var color = a.color;
                     var opacity = a.alpha * ctx.globalAlpha;
-                    lineStr.push('<g_vml_:fill color="', color, '" opacity="', opacity, '">');
+                    lineStr.push('<g_vml_:fill color="', color, '" opacity="', opacity, '" />');
                 }
             }
             contextPrototype.fill = function () {
@@ -10063,7 +10320,7 @@ define('zrender/zrender', [
                     break;
                 }
                 var d = getCoords(this, x + offset.x, y + offset.y);
-                lineStr.push('<g_vml_:line from="', -left, ' 0" to="', right, ' 0.05" ',="" '="" coordsize="100 100" coordorigin="0 0" filled="', !stroke, '" stroked="', !!stroke, '" style="position:absolute;width:1px;height:1px;">');
+                lineStr.push('<g_vml_:line from="', -left, ' 0" to="', right, ' 0.05" ', ' coordsize="100 100" coordorigin="0 0"', ' filled="', !stroke, '" stroked="', !!stroke, '" style="position:absolute;width:1px;height:1px;">');
                 if (stroke) {
                     appendStroke(this, lineStr);
                 } else {
@@ -10077,7 +10334,7 @@ define('zrender/zrender', [
                 }
                 var skewM = m[0][0].toFixed(3) + ',' + m[1][0].toFixed(3) + ',' + m[0][1].toFixed(3) + ',' + m[1][1].toFixed(3) + ',0,0';
                 var skewOffset = mr(d.x / Z) + ',' + mr(d.y / Z);
-                lineStr.push('<g_vml_:skew on="t" matrix="', skewM, '" ',="" '="" offset="', skewOffset, '" origin="', left, ' 0">', '<g_vml_:path textpathok="true">', '<g_vml_:textpath on="true" string="', encodeHtmlAttribute(text), '" style="v-text-align:', textAlign, ';font:', encodeHtmlAttribute(fontStyleString), '"></g_vml_:textpath></g_vml_:path></g_vml_:skew></g_vml_:line>');
+                lineStr.push('<g_vml_:skew on="t" matrix="', skewM, '" ', ' offset="', skewOffset, '" origin="', left, ' 0" />', '<g_vml_:path textpathok="true" />', '<g_vml_:textpath on="true" string="', encodeHtmlAttribute(text), '" style="v-text-align:', textAlign, ';font:', encodeHtmlAttribute(fontStyleString), '" /></g_vml_:line>');
                 this.element_.insertAdjacentHTML('beforeEnd', lineStr.join(''));
             };
             contextPrototype.fillText = function (text, x, y, maxWidth) {
@@ -11945,7 +12202,14 @@ define('zrender/zrender', [
                     if (percent < cachePercent) {
                         start = Math.min(cacheKey + 1, trackLen - 1);
                         for (i = start; i >= 0; i--) {
-                            if (kfPercents[i] <= percent)="" {="" break;="" }="" i="Math.min(i," tracklen="" -="" 2);="" else="" for="" (i="cacheKey;" <="" tracklen;="" i++)="" if="" (kfpercents[i]=""> percent) {
+                            if (kfPercents[i] <= percent) {
+                                break;
+                            }
+                        }
+                        i = Math.min(i, trackLen - 2);
+                    } else {
+                        for (i = cacheKey; i < trackLen; i++) {
+                            if (kfPercents[i] > percent) {
                                 break;
                             }
                         }
@@ -12303,7 +12567,9 @@ define('zrender/zrender', [
         this.options = options || {};
     };
     Base.prototype.adjust = function (value, region) {
-        if (value <= region[0])="" {="" value="region[0];" }="" else="" if="" (value="">= region[1]) {
+        if (value <= region[0]) {
+            value = region[0];
+        } else if (value >= region[1]) {
             value = region[1];
         }
         return value;
@@ -12787,15 +13053,43 @@ define('zrender/zrender', [
             _a = (y0 - y1) / (x0 - x1);
             _b = (x0 * y1 - x1 * y0) / (x0 - x1);
         } else {
-            return Math.abs(x - x0) <= 2="" _l="" 2;="" }="" var="" tmp="_a" *="" x="" -="" y="" +="" _b;="" _s="tmp" (_a="" _a="" 1);="" return="" <="_l" function="" isinsidecubicstroke(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" x3,="" y3,="" linewidth,="" x,="" y)="" {="" if="" (linewidth="==" 0)="" false;="" 5);="" (y=""> y0 + _l && y > y1 + _l && y > y2 + _l && y > y3 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l && y < y3 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l && x > x3 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l && x < x3 - _l) {
+            return Math.abs(x - x0) <= _l / 2;
+        }
+        var tmp = _a * x - y + _b;
+        var _s = tmp * tmp / (_a * _a + 1);
+        return _s <= _l / 2 * _l / 2;
+    }
+    function isInsideCubicStroke(x0, y0, x1, y1, x2, y2, x3, y3, lineWidth, x, y) {
+        if (lineWidth === 0) {
+            return false;
+        }
+        var _l = Math.max(lineWidth, 5);
+        if (y > y0 + _l && y > y1 + _l && y > y2 + _l && y > y3 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l && y < y3 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l && x > x3 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l && x < x3 - _l) {
             return false;
         }
         var d = curve.cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, null);
-        return d <= _l="" 2;="" }="" function="" isinsidequadraticstroke(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" linewidth,="" x,="" y)="" {="" if="" (linewidth="==" 0)="" return="" false;="" var="" 5);="" (y=""> y0 + _l && y > y1 + _l && y > y2 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l) {
+        return d <= _l / 2;
+    }
+    function isInsideQuadraticStroke(x0, y0, x1, y1, x2, y2, lineWidth, x, y) {
+        if (lineWidth === 0) {
+            return false;
+        }
+        var _l = Math.max(lineWidth, 5);
+        if (y > y0 + _l && y > y1 + _l && y > y2 + _l || y < y0 - _l && y < y1 - _l && y < y2 - _l || x > x0 + _l && x > x1 + _l && x > x2 + _l || x < x0 - _l && x < x1 - _l && x < x2 - _l) {
             return false;
         }
         var d = curve.quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, null);
-        return d <= _l="" 2;="" }="" function="" isinsidearcstroke(cx,="" cy,="" r,="" startangle,="" endangle,="" anticlockwise,="" linewidth,="" x,="" y)="" {="" if="" (linewidth="==" 0)="" return="" false;="" var="" 5);="" x="" -="cx;" y="" d="Math.sqrt(x" *="" +="" y);="" (d=""> r || d + _l < r) {
+        return d <= _l / 2;
+    }
+    function isInsideArcStroke(cx, cy, r, startAngle, endAngle, anticlockwise, lineWidth, x, y) {
+        if (lineWidth === 0) {
+            return false;
+        }
+        var _l = Math.max(lineWidth, 5);
+        x -= cx;
+        y -= cy;
+        var d = Math.sqrt(x * x + y * y);
+        if (d - _l > r || d + _l < r) {
             return false;
         }
         if (Math.abs(startAngle - endAngle) >= PI2) {
@@ -12816,10 +13110,49 @@ define('zrender/zrender', [
         if (angle < 0) {
             angle += PI2;
         }
-        return angle >= startAngle && angle <= endangle="" ||="" angle="" +="" pi2="">= startAngle && angle + PI2 <= endangle;="" }="" function="" isinsidepolyline(points,="" linewidth,="" x,="" y)="" {="" var="" linewidth="Math.max(lineWidth," 10);="" for="" (var="" i="0," l="points.length" -="" 1;="" <="" l;="" i++)="" x0="points[i][0];" y0="points[i][1];" x1="points[i" +="" 1][0];="" y1="points[i" 1][1];="" if="" (isinsideline(x0,="" y0,="" x1,="" y1,="" y))="" return="" true;="" false;="" isinsidering(cx,="" cy,="" r0,="" r,="" d="(x" cx)="" *="" (x="" (y="" cy)="" cy);="" r="" &&=""> r0 * r0;
+        return angle >= startAngle && angle <= endAngle || angle + PI2 >= startAngle && angle + PI2 <= endAngle;
+    }
+    function isInsidePolyline(points, lineWidth, x, y) {
+        var lineWidth = Math.max(lineWidth, 10);
+        for (var i = 0, l = points.length - 1; i < l; i++) {
+            var x0 = points[i][0];
+            var y0 = points[i][1];
+            var x1 = points[i + 1][0];
+            var y1 = points[i + 1][1];
+            if (isInsideLine(x0, y0, x1, y1, lineWidth, x, y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function isInsideRing(cx, cy, r0, r, x, y) {
+        var d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+        return d < r * r && d > r0 * r0;
     }
     function isInsideRect(x0, y0, width, height, x, y) {
-        return x >= x0 && x <= x0="" +="" width="" &&="" y="">= y0 && y <= y0="" +="" height;="" }="" function="" isinsidecircle(x0,="" y0,="" r,="" x,="" y)="" {="" return="" (x="" -="" x0)="" *="" (y="" y0)="" <="" r="" r;="" isinsidesector(cx,="" cy,="" r0,="" startangle,="" endangle,="" anticlockwise,="" isinsidearcstroke(cx,="" (r0="" r)="" 2,="" y);="" isinsidepolygon(points,="" var="" n="points.length;" w="0;" for="" (var="" i="0," j="N" 1;="" n;="" i++)="" x0="points[j][0];" x1="points[i][0];" y1="points[i][1];" x1,="" y1,="" !="=" 0;="" windingline(x0,="" if=""> y0 && y > y1 || y < y0 && y < y1) {
+        return x >= x0 && x <= x0 + width && y >= y0 && y <= y0 + height;
+    }
+    function isInsideCircle(x0, y0, r, x, y) {
+        return (x - x0) * (x - x0) + (y - y0) * (y - y0) < r * r;
+    }
+    function isInsideSector(cx, cy, r0, r, startAngle, endAngle, anticlockwise, x, y) {
+        return isInsideArcStroke(cx, cy, (r0 + r) / 2, startAngle, endAngle, anticlockwise, r - r0, x, y);
+    }
+    function isInsidePolygon(points, x, y) {
+        var N = points.length;
+        var w = 0;
+        for (var i = 0, j = N - 1; i < N; i++) {
+            var x0 = points[j][0];
+            var y0 = points[j][1];
+            var x1 = points[i][0];
+            var y1 = points[i][1];
+            w += windingLine(x0, y0, x1, y1, x, y);
+            j = i;
+        }
+        return w !== 0;
+    }
+    function windingLine(x0, y0, x1, y1, x, y) {
+        if (y > y0 && y > y1 || y < y0 && y < y1) {
             return 0;
         }
         if (y1 == y0) {
@@ -12899,7 +13232,33 @@ define('zrender/zrender', [
             return 0;
         } else {
             var t = curve.quadraticExtremum(y0, y1, y2);
-            if (t >= 0 && t <= 1="" 1)="" {="" var="" w="0;" y_="curve.quadraticAt(y0," y1,="" y2,="" t);="" for="" (var="" i="0;" <="" nroots;="" i++)="" x_="curve.quadraticAt(x0," x1,="" x2,="" roots[i]);="" if="" (x_="" x)="" continue;="" }="" (roots[i]="" t)="" +="y_" y0="" ?="" :="" -1;="" else="" return="" w;="" roots[0]);="" 0;="" y2="" function="" windingarc(cx,="" cy,="" r,="" startangle,="" endangle,="" anticlockwise,="" x,="" y)="" y="" -="cy;" (y=""> r || y < -r) {
+            if (t >= 0 && t <= 1) {
+                var w = 0;
+                var y_ = curve.quadraticAt(y0, y1, y2, t);
+                for (var i = 0; i < nRoots; i++) {
+                    var x_ = curve.quadraticAt(x0, x1, x2, roots[i]);
+                    if (x_ < x) {
+                        continue;
+                    }
+                    if (roots[i] < t) {
+                        w += y_ < y0 ? 1 : -1;
+                    } else {
+                        w += y2 < y_ ? 1 : -1;
+                    }
+                }
+                return w;
+            } else {
+                var x_ = curve.quadraticAt(x0, x1, x2, roots[0]);
+                if (x_ < x) {
+                    return 0;
+                }
+                return y2 < y0 ? 1 : -1;
+            }
+        }
+    }
+    function windingArc(cx, cy, r, startAngle, endAngle, anticlockwise, x, y) {
+        y -= cy;
+        if (y > r || y < -r) {
             return 0;
         }
         var tmp = Math.sqrt(r * r - y * y);
@@ -12909,7 +13268,21 @@ define('zrender/zrender', [
             startAngle = 0;
             endAngle = PI2;
             var dir = anticlockwise ? 1 : -1;
-            if (x >= roots[0] + cx && x <= roots[1]="" +="" cx)="" {="" return="" dir;="" }="" else="" 0;="" if="" (anticlockwise)="" var="" tmp="startAngle;" startangle="normalizeRadian(endAngle);" endangle="normalizeRadian(tmp);" (startangle=""> endAngle) {
+            if (x >= roots[0] + cx && x <= roots[1] + cx) {
+                return dir;
+            } else {
+                return 0;
+            }
+        }
+        if (anticlockwise) {
+            var tmp = startAngle;
+            startAngle = normalizeRadian(endAngle);
+            endAngle = normalizeRadian(tmp);
+        } else {
+            startAngle = normalizeRadian(startAngle);
+            endAngle = normalizeRadian(endAngle);
+        }
+        if (startAngle > endAngle) {
             endAngle += PI2;
         }
         var w = 0;
@@ -12921,7 +13294,8 @@ define('zrender/zrender', [
                 if (angle < 0) {
                     angle = PI2 + angle;
                 }
-                if (angle >= startAngle && angle <= endangle="" ||="" angle="" +="" pi2="">= startAngle && angle + PI2 <= endangle)="" {="" if="" (angle=""> Math.PI / 2 && angle < Math.PI * 1.5) {
+                if (angle >= startAngle && angle <= endAngle || angle + PI2 >= startAngle && angle + PI2 <= endAngle) {
+                    if (angle > Math.PI / 2 && angle < Math.PI * 1.5) {
                         dir = -dir;
                     }
                     w += dir;
@@ -13362,11 +13736,166 @@ define('zrender/zrender', [
         if (!rect) {
             rect = this.style.__rect = this.getRect(this.style);
         }
-        return x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y <= 0="" rect.y="" +="" rect.height;="" };="" base.prototype.drawtext="function" (ctx,="" style,="" normalstyle)="" {="" if="" (typeof="" style.text="=" 'undefined'="" ||="" false)="" return;="" }="" var="" textcolor="style.textColor" style.color="" style.strokecolor;="" ctx.fillstyle="textColor;" dd="10;" al;="" bl;="" tx;="" ty;="" textposition="style.textPosition" this.textposition="" 'top';="" switch="" (textposition)="" case="" 'inside':="" 'top':="" 'bottom':="" 'left':="" 'right':="" (this.getrect)="" rect="(normalStyle" style).__rect="" this.getrect(normalstyle="" style);="" tx="rect.x" rect.width="" 2;="" ty="rect.y" rect.height="" al="center" ;="" bl="middle" (style.brushtype="" !="stroke" &&="" style.color)="" break;="" -="" dd;="" 'start':="" 'end':="" pointlist="style.pointList" [="" style.xstart="" 0,="" style.ystart="" ],="" style.xend="" style.yend="" ]="" ];="" length="pointList.length;" (length="" <="" 2)="" xstart;="" xend;="" ystart;="" yend;="" xstart="pointList[1][0];" xend="pointList[0][0];" ystart="pointList[1][1];" yend="pointList[0][1];" 2][0];="" 1][0];="" 2][1];="" 1][1];="" angle="Math.atan((yStart" yend)="" (xend="" xstart))="" math.pi="" *="" 180;="" 0)="" else="" (ystart="" (angle="">= 30 && angle <= 150)="" {="" al="center" ;="" bl="bottom" ty="" -="dd;" }="" else="" if="" (angle=""> 150 && angle < 210) {
+        return x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
+    };
+    Base.prototype.drawText = function (ctx, style, normalStyle) {
+        if (typeof style.text == 'undefined' || style.text === false) {
+            return;
+        }
+        var textColor = style.textColor || style.color || style.strokeColor;
+        ctx.fillStyle = textColor;
+        var dd = 10;
+        var al;
+        var bl;
+        var tx;
+        var ty;
+        var textPosition = style.textPosition || this.textPosition || 'top';
+        switch (textPosition) {
+        case 'inside':
+        case 'top':
+        case 'bottom':
+        case 'left':
+        case 'right':
+            if (this.getRect) {
+                var rect = (normalStyle || style).__rect || this.getRect(normalStyle || style);
+                switch (textPosition) {
+                case 'inside':
+                    tx = rect.x + rect.width / 2;
+                    ty = rect.y + rect.height / 2;
+                    al = 'center';
+                    bl = 'middle';
+                    if (style.brushType != 'stroke' && textColor == style.color) {
+                        ctx.fillStyle = '#fff';
+                    }
+                    break;
+                case 'left':
+                    tx = rect.x - dd;
+                    ty = rect.y + rect.height / 2;
+                    al = 'end';
+                    bl = 'middle';
+                    break;
+                case 'right':
+                    tx = rect.x + rect.width + dd;
+                    ty = rect.y + rect.height / 2;
+                    al = 'start';
+                    bl = 'middle';
+                    break;
+                case 'top':
+                    tx = rect.x + rect.width / 2;
+                    ty = rect.y - dd;
+                    al = 'center';
+                    bl = 'bottom';
+                    break;
+                case 'bottom':
+                    tx = rect.x + rect.width / 2;
+                    ty = rect.y + rect.height + dd;
+                    al = 'center';
+                    bl = 'top';
+                    break;
+                }
+            }
+            break;
+        case 'start':
+        case 'end':
+            var pointList = style.pointList || [
+                [
+                    style.xStart || 0,
+                    style.yStart || 0
+                ],
+                [
+                    style.xEnd || 0,
+                    style.yEnd || 0
+                ]
+            ];
+            var length = pointList.length;
+            if (length < 2) {
+                return;
+            }
+            var xStart;
+            var xEnd;
+            var yStart;
+            var yEnd;
+            switch (textPosition) {
+            case 'start':
+                xStart = pointList[1][0];
+                xEnd = pointList[0][0];
+                yStart = pointList[1][1];
+                yEnd = pointList[0][1];
+                break;
+            case 'end':
+                xStart = pointList[length - 2][0];
+                xEnd = pointList[length - 1][0];
+                yStart = pointList[length - 2][1];
+                yEnd = pointList[length - 1][1];
+                break;
+            }
+            tx = xEnd;
+            ty = yEnd;
+            var angle = Math.atan((yStart - yEnd) / (xEnd - xStart)) / Math.PI * 180;
+            if (xEnd - xStart < 0) {
+                angle += 180;
+            } else if (yStart - yEnd < 0) {
+                angle += 360;
+            }
+            dd = 5;
+            if (angle >= 30 && angle <= 150) {
+                al = 'center';
+                bl = 'bottom';
+                ty -= dd;
+            } else if (angle > 150 && angle < 210) {
                 al = 'right';
                 bl = 'middle';
                 tx -= dd;
-            } else if (angle >= 210 && angle <= 330)="" {="" al="center" ;="" bl="top" ty="" +="dd;" }="" else="" tx="" break;="" case="" 'specific':="" ||="" 0;="" if="" (tx="" !="null" &&="" _filltext(ctx,="" style.text,="" tx,="" ty,="" style.textfont,="" style.textalign="" al,="" style.textbaseline="" bl);="" };="" base.prototype.modself="function" ()="" this.__dirty="true;" (this.style)="" this.style.__rect="null;" (this.highlightstyle)="" this.highlightstyle.__rect="null;" base.prototype.issilent="function" return="" !(this.hoverable="" this.draggable="" this.clickable="" this.onmousemove="" this.onmouseover="" this.onmouseout="" this.onmousedown="" this.onmouseup="" this.onclick="" this.ondragenter="" this.ondragover="" this.ondragleave="" this.ondrop);="" util.merge(base.prototype,="" transformable.prototype,="" true);="" eventful.prototype,="" base;="" });define('zrender="" tool="" curve',="" [="" 'require',="" '.="" vector'="" ],="" function="" (require)="" var="" vector="require('./vector');" 'use="" strict';="" epsilon="0.0001;" three_sqrt="Math.sqrt(3);" one_third="1" 3;="" _v0="vector.create();" _v1="vector.create();" _v2="vector.create();" isaroundzero(val)="" val=""> -EPSILON && val < EPSILON;
+            } else if (angle >= 210 && angle <= 330) {
+                al = 'center';
+                bl = 'top';
+                ty += dd;
+            } else {
+                al = 'left';
+                bl = 'middle';
+                tx += dd;
+            }
+            break;
+        case 'specific':
+            tx = style.textX || 0;
+            ty = style.textY || 0;
+            al = 'start';
+            bl = 'middle';
+            break;
+        }
+        if (tx != null && ty != null) {
+            _fillText(ctx, style.text, tx, ty, style.textFont, style.textAlign || al, style.textBaseline || bl);
+        }
+    };
+    Base.prototype.modSelf = function () {
+        this.__dirty = true;
+        if (this.style) {
+            this.style.__rect = null;
+        }
+        if (this.highlightStyle) {
+            this.highlightStyle.__rect = null;
+        }
+    };
+    Base.prototype.isSilent = function () {
+        return !(this.hoverable || this.draggable || this.clickable || this.onmousemove || this.onmouseover || this.onmouseout || this.onmousedown || this.onmouseup || this.onclick || this.ondragenter || this.ondragover || this.ondragleave || this.ondrop);
+    };
+    util.merge(Base.prototype, Transformable.prototype, true);
+    util.merge(Base.prototype, Eventful.prototype, true);
+    return Base;
+});define('zrender/tool/curve', [
+    'require',
+    './vector'
+], function (require) {
+    var vector = require('./vector');
+    'use strict';
+    var EPSILON = 0.0001;
+    var THREE_SQRT = Math.sqrt(3);
+    var ONE_THIRD = 1 / 3;
+    var _v0 = vector.create();
+    var _v1 = vector.create();
+    var _v2 = vector.create();
+    function isAroundZero(val) {
+        return val > -EPSILON && val < EPSILON;
     }
     function isNotAroundZero(val) {
         return val > EPSILON || val < -EPSILON;
@@ -13393,7 +13922,23 @@ define('zrender/zrender', [
                 roots[0] = 0;
             } else {
                 var t1 = -c / b;
-                if (t1 >= 0 && t1 <= 4="" 1)="" {="" roots[n++]="t1;" }="" else="" var="" disc="B" *="" b="" -="" a="" c;="" if="" (isaroundzero(disc))="" k="B" a;="" t1="-b" +="" k;="" t2="-K" 2;="" (t1="">= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 1)="" {="" roots[n++]="t2;" }="" else="" if="" (disc=""> 0) {
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            }
+        } else {
+            var disc = B * B - 4 * A * C;
+            if (isAroundZero(disc)) {
+                var K = B / A;
+                var t1 = -b / a + K;
+                var t2 = -K / 2;
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    roots[n++] = t2;
+                }
+            } else if (disc > 0) {
                 var discSqrt = Math.sqrt(disc);
                 var Y1 = A * b + 1.5 * a * (-B + discSqrt);
                 var Y2 = A * b + 1.5 * a * (-B - discSqrt);
@@ -13408,29 +13953,257 @@ define('zrender/zrender', [
                     Y2 = Math.pow(Y2, ONE_THIRD);
                 }
                 var t1 = (-b - (Y1 + Y2)) / (3 * a);
-                if (t1 >= 0 && t1 <= 2="" 3="" 1)="" {="" roots[n++]="t1;" }="" else="" var="" t="(2" *="" a="" b="" -="" b)="" (2="" math.sqrt(a="" a));="" theta="Math.acos(T)" 3;="" asqrt="Math.sqrt(A);" tmp="Math.cos(theta);" t1="(-b" tmp)="" (3="" a);="" t2="(-b" +="" (tmp="" three_sqrt="" math.sin(theta)))="" t3="(-b" if="" (t1="">= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 1)="" {="" roots[n++]="t2;" }="" if="" (t3="">= 0 && t3 <= 3="" 6="" 9="" 12="" 1)="" {="" roots[n++]="t3;" }="" return="" n;="" function="" cubicextrema(p0,="" p1,="" p2,="" p3,="" extrema)="" var="" b="6" *="" p2="" -="" p1="" +="" p0;="" a="9" p3="" p0="" p2;="" c="3" n="0;" if="" (isaroundzero(a))="" (isnotaroundzero(b))="" t1="-c" b;="" (t1="">= 0 && t1 <= 4="" 1)="" {="" extrema[n++]="t1;" }="" else="" var="" disc="b" *="" b="" -="" a="" c;="" if="" (isaroundzero(disc))="" extrema[0]="-b" (2="" a);="" (disc=""> 0) {
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            } else {
+                var T = (2 * A * b - 3 * a * B) / (2 * Math.sqrt(A * A * A));
+                var theta = Math.acos(T) / 3;
+                var ASqrt = Math.sqrt(A);
+                var tmp = Math.cos(theta);
+                var t1 = (-b - 2 * ASqrt * tmp) / (3 * a);
+                var t2 = (-b + ASqrt * (tmp + THREE_SQRT * Math.sin(theta))) / (3 * a);
+                var t3 = (-b + ASqrt * (tmp - THREE_SQRT * Math.sin(theta))) / (3 * a);
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    roots[n++] = t2;
+                }
+                if (t3 >= 0 && t3 <= 1) {
+                    roots[n++] = t3;
+                }
+            }
+        }
+        return n;
+    }
+    function cubicExtrema(p0, p1, p2, p3, extrema) {
+        var b = 6 * p2 - 12 * p1 + 6 * p0;
+        var a = 9 * p1 + 3 * p3 - 3 * p0 - 9 * p2;
+        var c = 3 * p1 - 3 * p0;
+        var n = 0;
+        if (isAroundZero(a)) {
+            if (isNotAroundZero(b)) {
+                var t1 = -c / b;
+                if (t1 >= 0 && t1 <= 1) {
+                    extrema[n++] = t1;
+                }
+            }
+        } else {
+            var disc = b * b - 4 * a * c;
+            if (isAroundZero(disc)) {
+                extrema[0] = -b / (2 * a);
+            } else if (disc > 0) {
                 var discSqrt = Math.sqrt(disc);
                 var t1 = (-b + discSqrt) / (2 * a);
                 var t2 = (-b - discSqrt) / (2 * a);
-                if (t1 >= 0 && t1 <= 1)="" {="" extrema[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 1)="" {="" extrema[n++]="t2;" }="" return="" n;="" function="" cubicsubdivide(p0,="" p1,="" p2,="" p3,="" t,="" out)="" var="" p01="(p1" -="" p0)="" *="" t="" +="" p0;="" p12="(p2" p1)="" p1;="" p23="(p3" p2)="" p2;="" p012="(p12" p01)="" p01;="" p123="(p23" p12)="" p12;="" p0123="(p123" p012)="" p012;="" out[0]="p0;" out[1]="p01;" out[2]="p012;" out[3]="p0123;" out[4]="p0123;" out[5]="p123;" out[6]="p23;" out[7]="p3;" cubicprojectpoint(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" x3,="" y3,="" x,="" y,="" t;="" interval="0.005;" d="Infinity;" _v0[0]="x;" _v0[1]="y;" for="" (var="" _t="0;" <="" 1;="" _v1[0]="cubicAt(x0," _t);="" _v1[1]="cubicAt(y0," d1="vector.distSquare(_v0," _v1);="" if="" (d1="" d)="" i="0;" 32;="" i++)="" (interval="" epsilon)="" break;="" prev="t" interval;="" next="t" prev);="" _v0);="" (prev="">= 0 && d1 < d) {
+                if (t1 >= 0 && t1 <= 1) {
+                    extrema[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    extrema[n++] = t2;
+                }
+            }
+        }
+        return n;
+    }
+    function cubicSubdivide(p0, p1, p2, p3, t, out) {
+        var p01 = (p1 - p0) * t + p0;
+        var p12 = (p2 - p1) * t + p1;
+        var p23 = (p3 - p2) * t + p2;
+        var p012 = (p12 - p01) * t + p01;
+        var p123 = (p23 - p12) * t + p12;
+        var p0123 = (p123 - p012) * t + p012;
+        out[0] = p0;
+        out[1] = p01;
+        out[2] = p012;
+        out[3] = p0123;
+        out[4] = p0123;
+        out[5] = p123;
+        out[6] = p23;
+        out[7] = p3;
+    }
+    function cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, out) {
+        var t;
+        var interval = 0.005;
+        var d = Infinity;
+        _v0[0] = x;
+        _v0[1] = y;
+        for (var _t = 0; _t < 1; _t += 0.05) {
+            _v1[0] = cubicAt(x0, x1, x2, x3, _t);
+            _v1[1] = cubicAt(y0, y1, y2, y3, _t);
+            var d1 = vector.distSquare(_v0, _v1);
+            if (d1 < d) {
+                t = _t;
+                d = d1;
+            }
+        }
+        d = Infinity;
+        for (var i = 0; i < 32; i++) {
+            if (interval < EPSILON) {
+                break;
+            }
+            var prev = t - interval;
+            var next = t + interval;
+            _v1[0] = cubicAt(x0, x1, x2, x3, prev);
+            _v1[1] = cubicAt(y0, y1, y2, y3, prev);
+            var d1 = vector.distSquare(_v1, _v0);
+            if (prev >= 0 && d1 < d) {
                 t = prev;
                 d = d1;
             } else {
                 _v2[0] = cubicAt(x0, x1, x2, x3, next);
                 _v2[1] = cubicAt(y0, y1, y2, y3, next);
                 var d2 = vector.distSquare(_v2, _v0);
-                if (next <= 1="" 2="" &&="" d2="" <="" d)="" {="" t="next;" d="d2;" }="" else="" interval="" *="0.5;" if="" (out)="" out[0]="cubicAt(x0," x1,="" x2,="" x3,="" t);="" out[1]="cubicAt(y0," y1,="" y2,="" y3,="" return="" math.sqrt(d);="" function="" quadraticat(p0,="" p1,="" p2,="" t)="" var="" onet="1" -="" t;="" (onet="" p0="" +="" p1)="" p2;="" quadraticderivativeat(p0,="" ((1="" (p1="" p0)="" (p2="" p1));="" quadraticrootat(p0,="" val,="" roots)="" a="p0" p1="" b="2" p0);="" c="p0" val;="" n="0;" (isaroundzero(a))="" (isnotaroundzero(b))="" t1="-c" b;="" (t1="">= 0 && t1 <= 4="" 1)="" {="" roots[n++]="t1;" }="" else="" var="" disc="b" *="" b="" -="" a="" c;="" if="" (isaroundzero(disc))="" t1="-b" (2="" a);="" (t1="">= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" else="" if="" (disc=""> 0) {
+                if (next <= 1 && d2 < d) {
+                    t = next;
+                    d = d2;
+                } else {
+                    interval *= 0.5;
+                }
+            }
+        }
+        if (out) {
+            out[0] = cubicAt(x0, x1, x2, x3, t);
+            out[1] = cubicAt(y0, y1, y2, y3, t);
+        }
+        return Math.sqrt(d);
+    }
+    function quadraticAt(p0, p1, p2, t) {
+        var onet = 1 - t;
+        return onet * (onet * p0 + 2 * t * p1) + t * t * p2;
+    }
+    function quadraticDerivativeAt(p0, p1, p2, t) {
+        return 2 * ((1 - t) * (p1 - p0) + t * (p2 - p1));
+    }
+    function quadraticRootAt(p0, p1, p2, val, roots) {
+        var a = p0 - 2 * p1 + p2;
+        var b = 2 * (p1 - p0);
+        var c = p0 - val;
+        var n = 0;
+        if (isAroundZero(a)) {
+            if (isNotAroundZero(b)) {
+                var t1 = -c / b;
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            }
+        } else {
+            var disc = b * b - 4 * a * c;
+            if (isAroundZero(disc)) {
+                var t1 = -b / (2 * a);
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+            } else if (disc > 0) {
                 var discSqrt = Math.sqrt(disc);
                 var t1 = (-b + discSqrt) / (2 * a);
                 var t2 = (-b - discSqrt) / (2 * a);
-                if (t1 >= 0 && t1 <= 1)="" {="" roots[n++]="t1;" }="" if="" (t2="">= 0 && t2 <= 2="" 1)="" {="" roots[n++]="t2;" }="" return="" n;="" function="" quadraticextremum(p0,="" p1,="" p2)="" var="" divider="p0" +="" p2="" -="" *="" p1;="" if="" (divider="==" 0)="" 0.5;="" else="" (p0="" p1)="" divider;="" quadraticsubdivide(p0,="" p2,="" t,="" out)="" p01="(p1" p0)="" t="" p0;="" p12="(p2" p012="(p12" p01)="" p01;="" out[0]="p0;" out[1]="p01;" out[2]="p012;" out[3]="p012;" out[4]="p12;" out[5]="p2;" quadraticprojectpoint(x0,="" y0,="" x1,="" y1,="" x2,="" y2,="" x,="" y,="" t;="" interval="0.005;" d="Infinity;" _v0[0]="x;" _v0[1]="y;" for="" (var="" _t="0;" <="" 1;="" _v1[0]="quadraticAt(x0," _t);="" _v1[1]="quadraticAt(y0," d1="vector.distSquare(_v0," _v1);="" (d1="" d)="" i="0;" 32;="" i++)="" (interval="" epsilon)="" break;="" prev="t" interval;="" next="t" prev);="" _v0);="" (prev="">= 0 && d1 < d) {
+                if (t1 >= 0 && t1 <= 1) {
+                    roots[n++] = t1;
+                }
+                if (t2 >= 0 && t2 <= 1) {
+                    roots[n++] = t2;
+                }
+            }
+        }
+        return n;
+    }
+    function quadraticExtremum(p0, p1, p2) {
+        var divider = p0 + p2 - 2 * p1;
+        if (divider === 0) {
+            return 0.5;
+        } else {
+            return (p0 - p1) / divider;
+        }
+    }
+    function quadraticSubdivide(p0, p1, p2, t, out) {
+        var p01 = (p1 - p0) * t + p0;
+        var p12 = (p2 - p1) * t + p1;
+        var p012 = (p12 - p01) * t + p01;
+        out[0] = p0;
+        out[1] = p01;
+        out[2] = p012;
+        out[3] = p012;
+        out[4] = p12;
+        out[5] = p2;
+    }
+    function quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, out) {
+        var t;
+        var interval = 0.005;
+        var d = Infinity;
+        _v0[0] = x;
+        _v0[1] = y;
+        for (var _t = 0; _t < 1; _t += 0.05) {
+            _v1[0] = quadraticAt(x0, x1, x2, _t);
+            _v1[1] = quadraticAt(y0, y1, y2, _t);
+            var d1 = vector.distSquare(_v0, _v1);
+            if (d1 < d) {
+                t = _t;
+                d = d1;
+            }
+        }
+        d = Infinity;
+        for (var i = 0; i < 32; i++) {
+            if (interval < EPSILON) {
+                break;
+            }
+            var prev = t - interval;
+            var next = t + interval;
+            _v1[0] = quadraticAt(x0, x1, x2, prev);
+            _v1[1] = quadraticAt(y0, y1, y2, prev);
+            var d1 = vector.distSquare(_v1, _v0);
+            if (prev >= 0 && d1 < d) {
                 t = prev;
                 d = d1;
             } else {
                 _v2[0] = quadraticAt(x0, x1, x2, next);
                 _v2[1] = quadraticAt(y0, y1, y2, next);
                 var d2 = vector.distSquare(_v2, _v0);
-                if (next <= 0="" 1="" &&="" d2="" <="" d)="" {="" t="next;" d="d2;" }="" else="" interval="" *="0.5;" if="" (out)="" out[0]="quadraticAt(x0," x1,="" x2,="" t);="" out[1]="quadraticAt(y0," y1,="" y2,="" return="" math.sqrt(d);="" cubicat:="" cubicat,="" cubicderivativeat:="" cubicderivativeat,="" cubicrootat:="" cubicrootat,="" cubicextrema:="" cubicextrema,="" cubicsubdivide:="" cubicsubdivide,="" cubicprojectpoint:="" cubicprojectpoint,="" quadraticat:="" quadraticat,="" quadraticderivativeat:="" quadraticderivativeat,="" quadraticrootat:="" quadraticrootat,="" quadraticextremum:="" quadraticextremum,="" quadraticsubdivide:="" quadraticsubdivide,="" quadraticprojectpoint:="" quadraticprojectpoint="" };="" });define('zrender="" mixin="" transformable',="" [="" 'require',="" '..="" tool="" matrix',="" vector'="" ],="" function="" (require)="" 'use="" strict';="" var="" matrix="require('../tool/matrix');" vector="require('../tool/vector');" origin="[" 0,="" ];="" mtranslate="matrix.translate;" epsilon="0.00005;" isaroundzero(val)="" val=""> -EPSILON && val < EPSILON;
+                if (next <= 1 && d2 < d) {
+                    t = next;
+                    d = d2;
+                } else {
+                    interval *= 0.5;
+                }
+            }
+        }
+        if (out) {
+            out[0] = quadraticAt(x0, x1, x2, t);
+            out[1] = quadraticAt(y0, y1, y2, t);
+        }
+        return Math.sqrt(d);
+    }
+    return {
+        cubicAt: cubicAt,
+        cubicDerivativeAt: cubicDerivativeAt,
+        cubicRootAt: cubicRootAt,
+        cubicExtrema: cubicExtrema,
+        cubicSubdivide: cubicSubdivide,
+        cubicProjectPoint: cubicProjectPoint,
+        quadraticAt: quadraticAt,
+        quadraticDerivativeAt: quadraticDerivativeAt,
+        quadraticRootAt: quadraticRootAt,
+        quadraticExtremum: quadraticExtremum,
+        quadraticSubdivide: quadraticSubdivide,
+        quadraticProjectPoint: quadraticProjectPoint
+    };
+});define('zrender/mixin/Transformable', [
+    'require',
+    '../tool/matrix',
+    '../tool/vector'
+], function (require) {
+    'use strict';
+    var matrix = require('../tool/matrix');
+    var vector = require('../tool/vector');
+    var origin = [
+        0,
+        0
+    ];
+    var mTranslate = matrix.translate;
+    var EPSILON = 0.00005;
+    function isAroundZero(val) {
+        return val > -EPSILON && val < EPSILON;
     }
     function isNotAroundZero(val) {
         return val > EPSILON || val < -EPSILON;
@@ -15722,7 +16495,35 @@ define('zrender/zrender', [
                 rect = this.style.__rect = this.getRect(this.style);
             }
             var delta = rect.height < 8 || rect.width < 8 ? 4 : 0;
-            return x >= rect.x - delta && x <= rect.x="" +="" rect.width="" delta="" &&="" y="">= rect.y - delta && y <= rect.y="" +="" rect.height="" delta;="" }="" };="" zrutil.inherits(icon,="" base);="" return="" icon;="" });define('echarts="" util="" shape="" markline',="" [="" 'require',="" 'zrender="" base',="" '.="" icon',="" line',="" beziercurve',="" tool="" area',="" dashedlineto',="" util',="" curve'="" ],="" function="" (require)="" {="" var="" base="require('zrender/shape/Base');" iconshape="require('./Icon');" lineshape="require('zrender/shape/Line');" lineinstance="new" lineshape({});="" curveshape="require('zrender/shape/BezierCurve');" curveinstance="new" curveshape({});="" area="require('zrender/tool/area');" dashedlineto="require('zrender/shape/util/dashedLineTo');" zrutil="require('zrender/tool/util');" curvetool="require('zrender/tool/curve');" markline(options)="" base.call(this,="" options);="" if="" (this.style.curveness=""> 0) {
+            return x >= rect.x - delta && x <= rect.x + rect.width + delta && y >= rect.y - delta && y <= rect.y + rect.height + delta;
+        }
+    };
+    zrUtil.inherits(Icon, Base);
+    return Icon;
+});define('echarts/util/shape/MarkLine', [
+    'require',
+    'zrender/shape/Base',
+    './Icon',
+    'zrender/shape/Line',
+    'zrender/shape/BezierCurve',
+    'zrender/tool/area',
+    'zrender/shape/util/dashedLineTo',
+    'zrender/tool/util',
+    'zrender/tool/curve'
+], function (require) {
+    var Base = require('zrender/shape/Base');
+    var IconShape = require('./Icon');
+    var LineShape = require('zrender/shape/Line');
+    var lineInstance = new LineShape({});
+    var CurveShape = require('zrender/shape/BezierCurve');
+    var curveInstance = new CurveShape({});
+    var area = require('zrender/tool/area');
+    var dashedLineTo = require('zrender/shape/util/dashedLineTo');
+    var zrUtil = require('zrender/tool/util');
+    var curveTool = require('zrender/tool/curve');
+    function MarkLine(options) {
+        Base.call(this, options);
+        if (this.style.curveness > 0) {
             this.updatePoints(this.style);
         }
         if (this.highlightStyle.curveness > 0) {
@@ -17076,7 +17877,21 @@ define('zrender/zrender', [
                     coarsenedEdges.push(new CoarsenedEdge(res.groups[i]));
                 }
                 var newRes = this._iterate(coarsenedEdges);
-                if (newRes.savedInk <= 0)="" {="" break;="" }="" else="" res="newRes;" var="" newedges="[];" function="" pointapproxequal(p0,="" p1)="" return="" v2distsquare(p0,="" <="" 1e-10;="" cleanedgepoints(edgepoints,="" rawedgepoints)="" off="0;" for="" (var="" i="0;" edgepoints.length;="" i++)="" if="" (!(off=""> 0 && pointApproxEqual(edgePoints[i], res[off - 1]))) {
+                if (newRes.savedInk <= 0) {
+                    break;
+                } else {
+                    res = newRes;
+                }
+            }
+            var newEdges = [];
+            function pointApproxEqual(p0, p1) {
+                return v2DistSquare(p0, p1) < 1e-10;
+            }
+            function cleanEdgePoints(edgePoints, rawEdgePoints) {
+                var res = [];
+                var off = 0;
+                for (var i = 0; i < edgePoints.length; i++) {
+                    if (!(off > 0 && pointApproxEqual(edgePoints[i], res[off - 1]))) {
                         res[off++] = v2Clone(edgePoints[i]);
                     }
                 }
@@ -18182,12 +18997,87 @@ define('zrender/zrender', [
         nearestNList[i].node = node;
     };
     KDTree.prototype.nearestN = function (target, N, squaredDistance, output) {
-        if (N <= 0)="" {="" output.length="0;" return="" output;="" }="" var="" curr="this.root;" stack="this._stack;" idx="0;" nearestnlist="this._nearstNList;" for="" (var="" i="0;" <="" n;="" i++)="" if="" (!nearestnlist[i])="" nearestnlist[i]="{};" nearestnlist[i].dist="0;" nearestnlist[i].node="null;" currdist="squaredDistance(curr.data," target);="" found="0;" (curr.data="" !="=" target)="" found++;="" this._addnearest(found,="" currdist,="" curr);="" (target.array[curr.axis]="" curr.data.array[curr.axis])="" curr.right="" &&="" (stack[idx++]="curr.right);" curr.left="" else="" while="" (idx--)="" -="" curr.data.array[curr.axis];="" isleft="currDist" 0;="" needscheckotherside="false;" *="" currdist;="" (found="" n="" ||="" nearestnlist[found="" 1].dist)="" ((found="" curr.data="" n)="" (isleft)="" (needscheckotherside)="" found;="" output[i]="nearestNList[i].node.data;" };="" kdtree;="" });define('echarts="" data="" quickselect',="" ['require'],="" function="" (require)="" defaultcomparefunc(a,="" b)="" a="" b;="" swapelement(list,="" idx0,="" idx1)="" tmp="list[idx0];" list[idx0]="list[idx1];" list[idx1]="tmp;" select(list,="" left,="" right,="" nth,="" comparefunc)="" pivotidx="left;" (right=""> left) {
+        if (N <= 0) {
+            output.length = 0;
+            return output;
+        }
+        var curr = this.root;
+        var stack = this._stack;
+        var idx = 0;
+        var nearestNList = this._nearstNList;
+        for (var i = 0; i < N; i++) {
+            if (!nearestNList[i]) {
+                nearestNList[i] = {};
+            }
+            nearestNList[i].dist = 0;
+            nearestNList[i].node = null;
+        }
+        var currDist = squaredDistance(curr.data, target);
+        var found = 0;
+        if (curr.data !== target) {
+            found++;
+            this._addNearest(found, currDist, curr);
+        }
+        if (target.array[curr.axis] < curr.data.array[curr.axis]) {
+            curr.right && (stack[idx++] = curr.right);
+            curr.left && (stack[idx++] = curr.left);
+        } else {
+            curr.left && (stack[idx++] = curr.left);
+            curr.right && (stack[idx++] = curr.right);
+        }
+        while (idx--) {
+            curr = stack[idx];
+            var currDist = target.array[curr.axis] - curr.data.array[curr.axis];
+            var isLeft = currDist < 0;
+            var needsCheckOtherSide = false;
+            currDist = currDist * currDist;
+            if (found < N || currDist < nearestNList[found - 1].dist) {
+                currDist = squaredDistance(curr.data, target);
+                if ((found < N || currDist < nearestNList[found - 1].dist) && curr.data !== target) {
+                    if (found < N) {
+                        found++;
+                    }
+                    this._addNearest(found, currDist, curr);
+                }
+                needsCheckOtherSide = true;
+            }
+            if (isLeft) {
+                if (needsCheckOtherSide) {
+                    curr.right && (stack[idx++] = curr.right);
+                }
+                curr.left && (stack[idx++] = curr.left);
+            } else {
+                if (needsCheckOtherSide) {
+                    curr.left && (stack[idx++] = curr.left);
+                }
+                curr.right && (stack[idx++] = curr.right);
+            }
+        }
+        for (var i = 0; i < found; i++) {
+            output[i] = nearestNList[i].node.data;
+        }
+        output.length = found;
+        return output;
+    };
+    return KDTree;
+});define('echarts/data/quickSelect', ['require'], function (require) {
+    function defaultCompareFunc(a, b) {
+        return a - b;
+    }
+    function swapElement(list, idx0, idx1) {
+        var tmp = list[idx0];
+        list[idx0] = list[idx1];
+        list[idx1] = tmp;
+    }
+    function select(list, left, right, nth, compareFunc) {
+        var pivotIdx = left;
+        while (right > left) {
             var pivotIdx = Math.round((right + left) / 2);
             var pivotValue = list[pivotIdx];
             swapElement(list, pivotIdx, right);
             pivotIdx = left;
-            for (var i = left; i <= right="" -="" 1;="" i++)="" {="" if="" (comparefunc(pivotvalue,="" list[i])="">= 0) {
+            for (var i = left; i <= right - 1; i++) {
+                if (compareFunc(pivotValue, list[i]) >= 0) {
                     swapElement(list, i, pivotIdx);
                     pivotIdx++;
                 }
@@ -18204,7 +19094,78 @@ define('zrender/zrender', [
         return left;
     }
     function quickSelect(list, left, right, nth, compareFunc) {
-        if (arguments.length <= 0="" 3)="" {="" nth="left;" if="" (arguments.length="=" 2)="" comparefunc="defaultCompareFunc;" }="" else="" left="0;" right="list.length" -="" 1;="" return="" select(list,="" left,="" right,="" nth,="" comparefunc);="" quickselect;="" });define('echarts="" component="" dataview',="" [="" 'require',="" '.="" base',="" '..="" config',="" 'zrender="" tool="" util',="" component'="" ],="" function="" (require)="" var="" base="require('./base');" ecconfig="require('../config');" zrutil="require('zrender/tool/util');" dataview(ectheme,="" messagecenter,="" zr,="" option,="" mychart)="" base.call(this,="" ectheme,="" mychart);="" this.dom="myChart.dom;" this._tdom="document.createElement('div');" this._textarea="document.createElement('textArea');" this._buttonrefresh="document.createElement('button');" this._buttonrefresh.setattribute('type',="" 'button');="" this._buttonclose="document.createElement('button');" this._buttonclose.setattribute('type',="" this._hasshow="false;" this._zrheight="zr.getHeight();" this._zrwidth="zr.getWidth();" this._tdom.classname="echarts-dataview" ;="" this.hide();="" this.dom.firstchild.appendchild(this._tdom);="" (window.addeventlistener)="" this._tdom.addeventlistener('click',="" this._stop);="" this._tdom.addeventlistener('mousewheel',="" this._tdom.addeventlistener('mousemove',="" this._tdom.addeventlistener('mousedown',="" this._tdom.addeventlistener('mouseup',="" this._tdom.addeventlistener('touchstart',="" this._tdom.addeventlistener('touchmove',="" this._tdom.addeventlistener('touchend',="" this._tdom.attachevent('onclick',="" this._tdom.attachevent('onmousewheel',="" this._tdom.attachevent('onmousemove',="" this._tdom.attachevent('onmousedown',="" this._tdom.attachevent('onmouseup',="" dataview.prototype="{" type:="" ecconfig.component_type_dataview,="" _lang:="" 'data="" view',="" 'close',="" 'refresh'="" _gcsstext:="" 'position:absolute;'="" +="" 'display:block;'="" 'overflow:hidden;'="" 'transition:height="" 0.8s,background-color="" 1s;'="" '-moz-transition:height="" '-webkit-transition:height="" '-o-transition:height="" 'z-index:1;'="" 'left:0;'="" 'top:0;',="" hide:="" ()="" this._sizecsstext="width:" 'px;'="" 'height:'="" 'background-color:#f0ffff;';="" this._tdom.style.csstext="this._gCssText" this._sizecsstext;="" },="" show:="" (newoption)="" lang="this.query(this.option," 'toolbox.feature.dataview.lang')="" ||="" this._lang;="" this.option="newOption;" this._tdom.innerhtml="<p style="padding:8px 0;margin:0 0 10px 0;" 'border-bottom:1px="" solid="" #eee"="">' + (lang[0] || this._lang[0]) + '<p></p>';
+        if (arguments.length <= 3) {
+            nth = left;
+            if (arguments.length == 2) {
+                compareFunc = defaultCompareFunc;
+            } else {
+                compareFunc = right;
+            }
+            left = 0;
+            right = list.length - 1;
+        }
+        return select(list, left, right, nth, compareFunc);
+    }
+    return quickSelect;
+});define('echarts/component/dataView', [
+    'require',
+    './base',
+    '../config',
+    'zrender/tool/util',
+    '../component'
+], function (require) {
+    var Base = require('./base');
+    var ecConfig = require('../config');
+    var zrUtil = require('zrender/tool/util');
+    function DataView(ecTheme, messageCenter, zr, option, myChart) {
+        Base.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.dom = myChart.dom;
+        this._tDom = document.createElement('div');
+        this._textArea = document.createElement('textArea');
+        this._buttonRefresh = document.createElement('button');
+        this._buttonRefresh.setAttribute('type', 'button');
+        this._buttonClose = document.createElement('button');
+        this._buttonClose.setAttribute('type', 'button');
+        this._hasShow = false;
+        this._zrHeight = zr.getHeight();
+        this._zrWidth = zr.getWidth();
+        this._tDom.className = 'echarts-dataview';
+        this.hide();
+        this.dom.firstChild.appendChild(this._tDom);
+        if (window.addEventListener) {
+            this._tDom.addEventListener('click', this._stop);
+            this._tDom.addEventListener('mousewheel', this._stop);
+            this._tDom.addEventListener('mousemove', this._stop);
+            this._tDom.addEventListener('mousedown', this._stop);
+            this._tDom.addEventListener('mouseup', this._stop);
+            this._tDom.addEventListener('touchstart', this._stop);
+            this._tDom.addEventListener('touchmove', this._stop);
+            this._tDom.addEventListener('touchend', this._stop);
+        } else {
+            this._tDom.attachEvent('onclick', this._stop);
+            this._tDom.attachEvent('onmousewheel', this._stop);
+            this._tDom.attachEvent('onmousemove', this._stop);
+            this._tDom.attachEvent('onmousedown', this._stop);
+            this._tDom.attachEvent('onmouseup', this._stop);
+        }
+    }
+    DataView.prototype = {
+        type: ecConfig.COMPONENT_TYPE_DATAVIEW,
+        _lang: [
+            'Data View',
+            'close',
+            'refresh'
+        ],
+        _gCssText: 'position:absolute;' + 'display:block;' + 'overflow:hidden;' + 'transition:height 0.8s,background-color 1s;' + '-moz-transition:height 0.8s,background-color 1s;' + '-webkit-transition:height 0.8s,background-color 1s;' + '-o-transition:height 0.8s,background-color 1s;' + 'z-index:1;' + 'left:0;' + 'top:0;',
+        hide: function () {
+            this._sizeCssText = 'width:' + this._zrWidth + 'px;' + 'height:' + 0 + 'px;' + 'background-color:#f0ffff;';
+            this._tDom.style.cssText = this._gCssText + this._sizeCssText;
+        },
+        show: function (newOption) {
+            this._hasShow = true;
+            var lang = this.query(this.option, 'toolbox.feature.dataView.lang') || this._lang;
+            this.option = newOption;
+            this._tDom.innerHTML = '<p style="padding:8px 0;margin:0 0 10px 0;' + 'border-bottom:1px solid #eee">' + (lang[0] || this._lang[0]) + '</p>';
             var customContent = this.query(this.option, 'toolbox.feature.dataView.optionToContent');
             if (typeof customContent != 'function') {
                 this._textArea.value = this._optionToContent();
@@ -18858,7 +19819,214 @@ define('zrender/zrender', [
         },
         isCover: function (x, y) {
             var rect = this.style;
-            if (x >= rect.x && x <= rect.x="" +="" rect.width="" &&="" y="">= rect.y && y <= 2="" rect.y="" +="" rect.height)="" {="" return="" true;="" }="" else="" false;="" };="" zrutil.inherits(chain,="" base);="" chain;="" });define('zrender="" shape="" ring',="" [="" 'require',="" '.="" base',="" '..="" tool="" util'="" ],="" function="" (require)="" var="" base="require('./Base');" ring="function" (options)="" base.call(this,="" options);="" ring.prototype="{" type:="" 'ring',="" buildpath:="" (ctx,="" style)="" ctx.arc(style.x,="" style.y,="" style.r,="" 0,="" math.pi="" *="" 2,="" false);="" ctx.moveto(style.x="" style.r0,="" style.y);="" true);="" return;="" },="" getrect:="" (style)="" if="" (style.__rect)="" style.__rect;="" linewidth;="" (style.brushtype="=" 'stroke'="" ||="" style.brushtype="=" 'fill')="" linewidth="style.lineWidth" 1;="" style.__rect="{" x:="" math.round(style.x="" -="" style.r="" 2),="" y:="" math.round(style.y="" width:="" linewidth,="" height:="" require('..="" util').inherits(ring,="" ring;="" });define('echarts="" component="" axis',="" 'zrender="" line',="" config',="" util="" ecdata',="" util',="" color',="" categoryaxis',="" valueaxis',="" component'="" lineshape="require('zrender/shape/Line');" ecconfig="require('../config');" ecdata="require('../util/ecData');" zrutil="require('zrender/tool/util');" zrcolor="require('zrender/tool/color');" axis(ectheme,="" messagecenter,="" zr,="" option,="" mychart,="" axistype)="" ectheme,="" mychart);="" this.axistype="axisType;" this._axislist="[];" this.refresh(option);="" axis.prototype="{" ecconfig.component_type_axis,="" axisbase:="" _buildaxisline:="" ()="" halflinewidth="lineWidth" 2;="" axshape="{" _axisshape:="" 'axisline',="" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase()="" 3,="" hoverable:="" false="" grid="this.grid;" switch="" (this.option.position)="" case="" 'left':="" axshape.style="{" xstart:="" grid.getx()="" halflinewidth,="" ystart:="" grid.getyend(),="" xend:="" yend:="" grid.gety(),="" linecap:="" 'round'="" break;="" 'right':="" grid.getxend()="" 'bottom':="" grid.getx(),="" grid.getyend()="" grid.getxend(),="" 'top':="" grid.gety()="" style="axShape.style;" (this.option.name="" !="=" '')="" style.text="this.option.name;" style.textposition="this.option.nameLocation;" style.textfont="this.getFont(this.option.nameTextStyle);" (this.option.nametextstyle.align)="" style.textalign="this.option.nameTextStyle.align;" (this.option.nametextstyle.baseline)="" style.textbaseline="this.option.nameTextStyle.baseline;" (this.option.nametextstyle.color)="" style.textcolor="this.option.nameTextStyle.color;" style.strokecolor="this.option.axisLine.lineStyle.color;" style.linewidth="lineWidth;" (this.ishorizontal())="" style.ystart="style.yEnd" =="" this.subpixeloptimize(style.yend,="" linewidth);="" style.xstart="style.xEnd" this.subpixeloptimize(style.xend,="" style.linetype="this.option.axisLine.lineStyle.type;" lineshape(axshape);="" this.shapelist.push(axshape);="" _axislabelclickable:="" (clickable,="" axshape)="" (clickable)="" ecdata.pack(axshape,="" undefined,="" -1,="" axshape.style.text);="" axshape.hoverable="true;" axshape.clickable="true;" axshape.highlightstyle="{" color:="" zrcolor.lift(axshape.style.color,="" 1),="" brushtype:="" 'fill'="" axshape;="" refixaxisshape:="" (zerox,="" zeroy)="" (!this.option.axisline.onzero)="" ticklength;="" (this.ishorizontal()="" &&="" zeroy="" for="" (var="" i="0," l="this.shapeList.length;" <="" l;="" i++)="" (this.shapelist[i]._axisshape="==" 'axisline')="" this.shapelist[i].style.ystart="this.shapeList[i].style.yEnd" this.subpixeloptimize(zeroy,="" this.shapelist[i].stylelinewidth);="" this.zr.modshape(this.shapelist[i].id);="" 'axistick')="" ticklength="this.shapeList[i].style.yEnd" this.shapelist[i].style.ystart;="" this.shapelist[i].style.yend="zeroY;" (!this.ishorizontal()="" zerox="" this.shapelist[i].style.xstart="this.shapeList[i].style.xEnd" this.subpixeloptimize(zerox,="" this.shapelist[i].style.xstart;="" this.shapelist[i].style.xend="zeroX" getposition:="" this.option.position;="" ishorizontal:="" this.option.position="==" 'bottom'="" 'top';="" reformoption:="" (opt)="" (!opt="" opt="" instanceof="" array="" opt.length="==" 0)="" ecconfig.component_type_axis_value="" }];="" (!(opt="" array))="" (opt.length=""> 2) {
+            if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    zrUtil.inherits(Chain, Base);
+    return Chain;
+});define('zrender/shape/Ring', [
+    'require',
+    './Base',
+    '../tool/util'
+], function (require) {
+    var Base = require('./Base');
+    var Ring = function (options) {
+        Base.call(this, options);
+    };
+    Ring.prototype = {
+        type: 'ring',
+        buildPath: function (ctx, style) {
+            ctx.arc(style.x, style.y, style.r, 0, Math.PI * 2, false);
+            ctx.moveTo(style.x + style.r0, style.y);
+            ctx.arc(style.x, style.y, style.r0, 0, Math.PI * 2, true);
+            return;
+        },
+        getRect: function (style) {
+            if (style.__rect) {
+                return style.__rect;
+            }
+            var lineWidth;
+            if (style.brushType == 'stroke' || style.brushType == 'fill') {
+                lineWidth = style.lineWidth || 1;
+            } else {
+                lineWidth = 0;
+            }
+            style.__rect = {
+                x: Math.round(style.x - style.r - lineWidth / 2),
+                y: Math.round(style.y - style.r - lineWidth / 2),
+                width: style.r * 2 + lineWidth,
+                height: style.r * 2 + lineWidth
+            };
+            return style.__rect;
+        }
+    };
+    require('../tool/util').inherits(Ring, Base);
+    return Ring;
+});define('echarts/component/axis', [
+    'require',
+    './base',
+    'zrender/shape/Line',
+    '../config',
+    '../util/ecData',
+    'zrender/tool/util',
+    'zrender/tool/color',
+    './categoryAxis',
+    './valueAxis',
+    '../component'
+], function (require) {
+    var Base = require('./base');
+    var LineShape = require('zrender/shape/Line');
+    var ecConfig = require('../config');
+    var ecData = require('../util/ecData');
+    var zrUtil = require('zrender/tool/util');
+    var zrColor = require('zrender/tool/color');
+    function Axis(ecTheme, messageCenter, zr, option, myChart, axisType) {
+        Base.call(this, ecTheme, messageCenter, zr, option, myChart);
+        this.axisType = axisType;
+        this._axisList = [];
+        this.refresh(option);
+    }
+    Axis.prototype = {
+        type: ecConfig.COMPONENT_TYPE_AXIS,
+        axisBase: {
+            _buildAxisLine: function () {
+                var lineWidth = this.option.axisLine.lineStyle.width;
+                var halfLineWidth = lineWidth / 2;
+                var axShape = {
+                    _axisShape: 'axisLine',
+                    zlevel: this.getZlevelBase(),
+                    z: this.getZBase() + 3,
+                    hoverable: false
+                };
+                var grid = this.grid;
+                switch (this.option.position) {
+                case 'left':
+                    axShape.style = {
+                        xStart: grid.getX() - halfLineWidth,
+                        yStart: grid.getYend(),
+                        xEnd: grid.getX() - halfLineWidth,
+                        yEnd: grid.getY(),
+                        lineCap: 'round'
+                    };
+                    break;
+                case 'right':
+                    axShape.style = {
+                        xStart: grid.getXend() + halfLineWidth,
+                        yStart: grid.getYend(),
+                        xEnd: grid.getXend() + halfLineWidth,
+                        yEnd: grid.getY(),
+                        lineCap: 'round'
+                    };
+                    break;
+                case 'bottom':
+                    axShape.style = {
+                        xStart: grid.getX(),
+                        yStart: grid.getYend() + halfLineWidth,
+                        xEnd: grid.getXend(),
+                        yEnd: grid.getYend() + halfLineWidth,
+                        lineCap: 'round'
+                    };
+                    break;
+                case 'top':
+                    axShape.style = {
+                        xStart: grid.getX(),
+                        yStart: grid.getY() - halfLineWidth,
+                        xEnd: grid.getXend(),
+                        yEnd: grid.getY() - halfLineWidth,
+                        lineCap: 'round'
+                    };
+                    break;
+                }
+                var style = axShape.style;
+                if (this.option.name !== '') {
+                    style.text = this.option.name;
+                    style.textPosition = this.option.nameLocation;
+                    style.textFont = this.getFont(this.option.nameTextStyle);
+                    if (this.option.nameTextStyle.align) {
+                        style.textAlign = this.option.nameTextStyle.align;
+                    }
+                    if (this.option.nameTextStyle.baseline) {
+                        style.textBaseline = this.option.nameTextStyle.baseline;
+                    }
+                    if (this.option.nameTextStyle.color) {
+                        style.textColor = this.option.nameTextStyle.color;
+                    }
+                }
+                style.strokeColor = this.option.axisLine.lineStyle.color;
+                style.lineWidth = lineWidth;
+                if (this.isHorizontal()) {
+                    style.yStart = style.yEnd = this.subPixelOptimize(style.yEnd, lineWidth);
+                } else {
+                    style.xStart = style.xEnd = this.subPixelOptimize(style.xEnd, lineWidth);
+                }
+                style.lineType = this.option.axisLine.lineStyle.type;
+                axShape = new LineShape(axShape);
+                this.shapeList.push(axShape);
+            },
+            _axisLabelClickable: function (clickable, axShape) {
+                if (clickable) {
+                    ecData.pack(axShape, undefined, -1, undefined, -1, axShape.style.text);
+                    axShape.hoverable = true;
+                    axShape.clickable = true;
+                    axShape.highlightStyle = {
+                        color: zrColor.lift(axShape.style.color, 1),
+                        brushType: 'fill'
+                    };
+                    return axShape;
+                } else {
+                    return axShape;
+                }
+            },
+            refixAxisShape: function (zeroX, zeroY) {
+                if (!this.option.axisLine.onZero) {
+                    return;
+                }
+                var tickLength;
+                if (this.isHorizontal() && zeroY != null) {
+                    for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                        if (this.shapeList[i]._axisShape === 'axisLine') {
+                            this.shapeList[i].style.yStart = this.shapeList[i].style.yEnd = this.subPixelOptimize(zeroY, this.shapeList[i].stylelineWidth);
+                            this.zr.modShape(this.shapeList[i].id);
+                        } else if (this.shapeList[i]._axisShape === 'axisTick') {
+                            tickLength = this.shapeList[i].style.yEnd - this.shapeList[i].style.yStart;
+                            this.shapeList[i].style.yStart = zeroY - tickLength;
+                            this.shapeList[i].style.yEnd = zeroY;
+                            this.zr.modShape(this.shapeList[i].id);
+                        }
+                    }
+                }
+                if (!this.isHorizontal() && zeroX != null) {
+                    for (var i = 0, l = this.shapeList.length; i < l; i++) {
+                        if (this.shapeList[i]._axisShape === 'axisLine') {
+                            this.shapeList[i].style.xStart = this.shapeList[i].style.xEnd = this.subPixelOptimize(zeroX, this.shapeList[i].stylelineWidth);
+                            this.zr.modShape(this.shapeList[i].id);
+                        } else if (this.shapeList[i]._axisShape === 'axisTick') {
+                            tickLength = this.shapeList[i].style.xEnd - this.shapeList[i].style.xStart;
+                            this.shapeList[i].style.xStart = zeroX;
+                            this.shapeList[i].style.xEnd = zeroX + tickLength;
+                            this.zr.modShape(this.shapeList[i].id);
+                        }
+                    }
+                }
+            },
+            getPosition: function () {
+                return this.option.position;
+            },
+            isHorizontal: function () {
+                return this.option.position === 'bottom' || this.option.position === 'top';
+            }
+        },
+        reformOption: function (opt) {
+            if (!opt || opt instanceof Array && opt.length === 0) {
+                opt = [{ type: ecConfig.COMPONENT_TYPE_AXIS_VALUE }];
+            } else if (!(opt instanceof Array)) {
+                opt = [opt];
+            }
+            if (opt.length > 2) {
                 opt = [
                     opt[0],
                     opt[1]
@@ -19038,7 +20206,25 @@ define('zrender/zrender', [
                 } else {
                     this._width = this.parsePercent(gridOption.width, this._zrWidth);
                 }
-                this._width = this._width <= 0="" 10="" ?="" :="" this._width;="" if="" (typeof="" gridoption.height="=" 'undefined')="" {="" this._height="this._zrHeight" -="" this._y="" y2;="" }="" else="" this._zrheight);="" <="0" this._height;="" this._x="this.subPixelOptimize(this._x," gridoption.borderwidth);="" this.shapelist.push(new="" rectangleshape({="" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" hoverable:="" false,="" style:="" x:="" this._x,="" y:="" this._y,="" width:="" this._width,="" height:="" this._height,="" brushtype:="" gridoption.borderwidth=""> 0 ? 'both' : 'fill',
+                this._width = this._width <= 0 ? 10 : this._width;
+                if (typeof gridOption.height == 'undefined') {
+                    this._height = this._zrHeight - this._y - y2;
+                } else {
+                    this._height = this.parsePercent(gridOption.height, this._zrHeight);
+                }
+                this._height = this._height <= 0 ? 10 : this._height;
+                this._x = this.subPixelOptimize(this._x, gridOption.borderWidth);
+                this._y = this.subPixelOptimize(this._y, gridOption.borderWidth);
+                this.shapeList.push(new RectangleShape({
+                    zlevel: this.getZlevelBase(),
+                    z: this.getZBase(),
+                    hoverable: false,
+                    style: {
+                        x: this._x,
+                        y: this._y,
+                        width: this._width,
+                        height: this._height,
+                        brushType: gridOption.borderWidth > 0 ? 'both' : 'fill',
                         color: gridOption.backgroundColor,
                         strokeColor: gridOption.borderColor,
                         lineWidth: gridOption.borderWidth
@@ -19645,7 +20831,51 @@ define('zrender/zrender', [
             var value;
             for (var i = 0, l = data.length; i < l; i++) {
                 value = data[i].value || data[i];
-                if (value[0] >= xStart && value[0] <= xend="" &&="" value[1]="">= yStart && value[1] <= 0="" 100="" yend)="" {="" newdata.push(data[i]);="" }="" return="" newdata;="" },="" _setscale:="" function="" ()="" var="" needscale="this._zoom.start" !="=" ||="" this._zoom.end="" this._zoom.start2="" this._zoom.end2="" 100;="" axis="{" xaxis:="" this.option.xaxis,="" yaxis:="" this.option.yaxis="" };="" for="" (var="" key="" in="" axis)="" i="0," l="axis[key].length;" <="" l;="" i++)="" axis[key][i].scale="needScale" axis[key][i]._scale;="" _backupscale:="" axis[key][i]._scale="axis[key][i].scale;" _getdetail:="" 'xaxis',="" 'yaxis'="" ];="" target="this._originalData[key[i]];" idx="" target)="" data="target[idx];" if="" (data="=" null)="" continue;="" length="data.length;" start="Math.floor(this._zoom.start" *="" length);="" end="Math.ceil(this._zoom.end" -="end"> 0 ? 1 : 0;
+                if (value[0] >= xStart && value[0] <= xEnd && value[1] >= yStart && value[1] <= yEnd) {
+                    newData.push(data[i]);
+                }
+            }
+            return newData;
+        },
+        _setScale: function () {
+            var needScale = this._zoom.start !== 0 || this._zoom.end !== 100 || this._zoom.start2 !== 0 || this._zoom.end2 !== 100;
+            var axis = {
+                xAxis: this.option.xAxis,
+                yAxis: this.option.yAxis
+            };
+            for (var key in axis) {
+                for (var i = 0, l = axis[key].length; i < l; i++) {
+                    axis[key][i].scale = needScale || axis[key][i]._scale;
+                }
+            }
+        },
+        _backupScale: function () {
+            var axis = {
+                xAxis: this.option.xAxis,
+                yAxis: this.option.yAxis
+            };
+            for (var key in axis) {
+                for (var i = 0, l = axis[key].length; i < l; i++) {
+                    axis[key][i]._scale = axis[key][i].scale;
+                }
+            }
+        },
+        _getDetail: function () {
+            var key = [
+                'xAxis',
+                'yAxis'
+            ];
+            for (var i = 0, l = key.length; i < l; i++) {
+                var target = this._originalData[key[i]];
+                for (var idx in target) {
+                    var data = target[idx];
+                    if (data == null) {
+                        continue;
+                    }
+                    var length = data.length;
+                    var start = Math.floor(this._zoom.start / 100 * length);
+                    var end = Math.ceil(this._zoom.end / 100 * length);
+                    end -= end > 0 ? 1 : 0;
                     return {
                         start: this.getDataFromOption(data[start]),
                         end: this.getDataFromOption(data[end])
@@ -19684,13 +20914,17 @@ define('zrender/zrender', [
             }
             var detailSize = shape._type == 'filler' ? this._handleSize : 0;
             if (this.zoomOption.orient == 'horizontal') {
-                if (shape.style.x + dx - detailSize <= this._location.x)="" {="" shape.style.x="this._location.x" +="" detailsize;="" }="" else="" if="" (shape.style.x="" dx="" shape.style.width="" detailsize="">= this._location.x + this._location.width) {
+                if (shape.style.x + dx - detailSize <= this._location.x) {
+                    shape.style.x = this._location.x + detailSize;
+                } else if (shape.style.x + dx + shape.style.width + detailSize >= this._location.x + this._location.width) {
                     shape.style.x = this._location.x + this._location.width - shape.style.width - detailSize;
                 } else {
                     shape.style.x += dx;
                 }
             } else {
-                if (shape.style.y + dy - detailSize <= this._location.y)="" {="" shape.style.y="this._location.y" +="" detailsize;="" }="" else="" if="" (shape.style.y="" dy="" shape.style.height="" detailsize="">= this._location.y + this._location.height) {
+                if (shape.style.y + dy - detailSize <= this._location.y) {
+                    shape.style.y = this._location.y + detailSize;
+                } else if (shape.style.y + dy + shape.style.height + detailSize >= this._location.y + this._location.height) {
                     shape.style.y = this._location.y + this._location.height - shape.style.height - detailSize;
                 } else {
                     shape.style.y += dy;
@@ -20286,7 +21520,69 @@ define('zrender/zrender', [
                     var height = this.grid.getHeight();
                     var lastX = this.grid.getX();
                     var curX;
-                    for (var i = 0; i <= datalength;="" i="" +="this._interval)" {="" if="" (intervalfunction="" &&="" !intervalfunction(i,="" data[i])="" <="" datalength)="" continue;="" }="" curx="i" datalength="" ?="" this.getcoordbyindex(i)="" optgap="" :="" this.grid.getxend();="" axshape="{" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" hoverable:="" false,="" style:="" x:="" lastx,="" y:="" y,="" width:="" -="" height:="" height,="" color:="" color[i="" this._interval="" %="" colorlength]="" };="" this.shapelist.push(new="" rectangleshape(axshape));="" lastx="curX;" else="" var="" x="this.grid.getX();" width="this.grid.getWidth();" lastyend="this.grid.getYend();" cury;="" for="" (var="" cury="i" this.grid.gety();="" x,="" cury,="" width,="" },="" refresh:="" function="" (newoption)="" this.option="this.reformOption(newOption);" this.option.axislabel.textstyle="this.getTextStyle(this.option.axisLabel.textStyle);" this.clear();="" this._buildshape();="" getgap:="" ()="" total="this.isHorizontal()" this.grid.getwidth()="" this.grid.getheight();="" (this.option.boundarygap)="" return="" (datalength=""> 1 ? dataLength - 1 : 1);
+                    for (var i = 0; i <= dataLength; i += this._interval) {
+                        if (intervalFunction && !intervalFunction(i, data[i]) && i < dataLength) {
+                            continue;
+                        }
+                        curX = i < dataLength ? this.getCoordByIndex(i) + optGap : this.grid.getXend();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: lastX,
+                                y: y,
+                                width: curX - lastX,
+                                height: height,
+                                color: color[i / this._interval % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastX = curX;
+                    }
+                } else {
+                    var x = this.grid.getX();
+                    var width = this.grid.getWidth();
+                    var lastYend = this.grid.getYend();
+                    var curY;
+                    for (var i = 0; i <= dataLength; i += this._interval) {
+                        if (intervalFunction && !intervalFunction(i, data[i]) && i < dataLength) {
+                            continue;
+                        }
+                        curY = i < dataLength ? this.getCoordByIndex(i) - optGap : this.grid.getY();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: x,
+                                y: curY,
+                                width: width,
+                                height: lastYend - curY,
+                                color: color[i / this._interval % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastYend = curY;
+                    }
+                }
+            }
+        },
+        refresh: function (newOption) {
+            if (newOption) {
+                this.option = this.reformOption(newOption);
+                this.option.axisLabel.textStyle = this.getTextStyle(this.option.axisLabel.textStyle);
+            }
+            this.clear();
+            this._buildShape();
+        },
+        getGap: function () {
+            var dataLength = this.option.data.length;
+            var total = this.isHorizontal() ? this.grid.getWidth() : this.grid.getHeight();
+            if (this.option.boundaryGap) {
+                return total / dataLength;
+            } else {
+                return total / (dataLength > 1 ? dataLength - 1 : 1);
             }
         },
         getCoord: function (value) {
@@ -20672,7 +21968,103 @@ define('zrender/zrender', [
                     var height = this.grid.getHeight();
                     var lastX = this.grid.getX();
                     var curX;
-                    for (var i = 0; i <= 0="" datalength;="" i++)="" {="" curx="i" <="" datalength="" ?="" this.getcoord(data[i])="" :="" this.grid.getxend();="" axshape="{" zlevel:="" this.getzlevelbase(),="" z:="" this.getzbase(),="" hoverable:="" false,="" style:="" x:="" lastx,="" y:="" y,="" width:="" -="" height:="" height,="" color:="" color[i="" %="" colorlength]="" }="" };="" this.shapelist.push(new="" rectangleshape(axshape));="" lastx="curX;" else="" var="" x="this.grid.getX();" width="this.grid.getWidth();" lastyend="this.grid.getYend();" cury;="" for="" (var="" i="0;" cury="i" this.grid.gety();="" x,="" cury,="" width,="" },="" _calculatevalue:="" function="" ()="" if="" (isnan(this.option.min="" 0)="" ||="" isnan(this.option.max="" 0))="" data="{};" xidx;="" yidx;="" legend="this.component.legend;" l="this.series.length;" l;="" (this.series[i].type="" !="ecConfig.CHART_TYPE_LINE" &&="" this.series[i].type="" continue;="" (legend="" !legend.isselected(this.series[i].name))="" xidx="this.series[i].xAxisIndex" 0;="" yidx="this.series[i].yAxisIndex" (this.option.xaxisindex="" this.option.yaxisindex="" this._calculsum(data,="" i);="" oridata;="" in="" data)="" oridata="data[i];" j="0," k="oriData.length;" k;="" j++)="" (!isnan(oridata[j]))="" this._hasdata="true;" this._min="oriData[j];" this._max="oriData[j];" break;="" (this._hasdata)="" oridata[j]);="" boundarygap="this.option.type" 'log'="" this.option.boundarygap="" [="" 0,="" ];="" gap="Math.abs(this._max" this._min);="" math.abs(gap="" *="" boundarygap[0])="" this.option.min="" +="" boundarygap[1])="" this.option.max="" (this._min="==" this._max)="" (this._max="=="> 0) {
+                    for (var i = 0; i <= dataLength; i++) {
+                        curX = i < dataLength ? this.getCoord(data[i]) : this.grid.getXend();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: lastX,
+                                y: y,
+                                width: curX - lastX,
+                                height: height,
+                                color: color[i % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastX = curX;
+                    }
+                } else {
+                    var x = this.grid.getX();
+                    var width = this.grid.getWidth();
+                    var lastYend = this.grid.getYend();
+                    var curY;
+                    for (var i = 0; i <= dataLength; i++) {
+                        curY = i < dataLength ? this.getCoord(data[i]) : this.grid.getY();
+                        axShape = {
+                            zlevel: this.getZlevelBase(),
+                            z: this.getZBase(),
+                            hoverable: false,
+                            style: {
+                                x: x,
+                                y: curY,
+                                width: width,
+                                height: lastYend - curY,
+                                color: color[i % colorLength]
+                            }
+                        };
+                        this.shapeList.push(new RectangleShape(axShape));
+                        lastYend = curY;
+                    }
+                }
+            }
+        },
+        _calculateValue: function () {
+            if (isNaN(this.option.min - 0) || isNaN(this.option.max - 0)) {
+                var data = {};
+                var xIdx;
+                var yIdx;
+                var legend = this.component.legend;
+                for (var i = 0, l = this.series.length; i < l; i++) {
+                    if (this.series[i].type != ecConfig.CHART_TYPE_LINE && this.series[i].type != ecConfig.CHART_TYPE_BAR && this.series[i].type != ecConfig.CHART_TYPE_SCATTER && this.series[i].type != ecConfig.CHART_TYPE_K && this.series[i].type != ecConfig.CHART_TYPE_EVENTRIVER) {
+                        continue;
+                    }
+                    if (legend && !legend.isSelected(this.series[i].name)) {
+                        continue;
+                    }
+                    xIdx = this.series[i].xAxisIndex || 0;
+                    yIdx = this.series[i].yAxisIndex || 0;
+                    if (this.option.xAxisIndex != xIdx && this.option.yAxisIndex != yIdx) {
+                        continue;
+                    }
+                    this._calculSum(data, i);
+                }
+                var oriData;
+                for (var i in data) {
+                    oriData = data[i];
+                    for (var j = 0, k = oriData.length; j < k; j++) {
+                        if (!isNaN(oriData[j])) {
+                            this._hasData = true;
+                            this._min = oriData[j];
+                            this._max = oriData[j];
+                            break;
+                        }
+                    }
+                    if (this._hasData) {
+                        break;
+                    }
+                }
+                for (var i in data) {
+                    oriData = data[i];
+                    for (var j = 0, k = oriData.length; j < k; j++) {
+                        if (!isNaN(oriData[j])) {
+                            this._min = Math.min(this._min, oriData[j]);
+                            this._max = Math.max(this._max, oriData[j]);
+                        }
+                    }
+                }
+                var boundaryGap = this.option.type !== 'log' ? this.option.boundaryGap : [
+                    0,
+                    0
+                ];
+                var gap = Math.abs(this._max - this._min);
+                this._min = isNaN(this.option.min - 0) ? this._min - Math.abs(gap * boundaryGap[0]) : this.option.min - 0;
+                this._max = isNaN(this.option.max - 0) ? this._max + Math.abs(gap * boundaryGap[1]) : this.option.max - 0;
+                if (this._min === this._max) {
+                    if (this._max === 0) {
+                        this._max = 1;
+                    } else if (this._max > 0) {
                         this._min = this._max / this.option.splitNumber != null ? this.option.splitNumber : 5;
                     } else {
                         this._max = this._max / this.option.splitNumber != null ? this.option.splitNumber : 5;
@@ -20771,7 +22163,56 @@ define('zrender/zrender', [
             if (!scale && this._min >= 0 && this._max >= 0) {
                 this._min = 0;
             }
-            if (!scale && this._min <= 0="" &&="" this._max="" <="0)" {="" }="" var="" stepopt="smartSteps(this._min," this._max,="" splitnumber);="" splitnumber="splitNumber" !="null" ?="" :="" stepopt.secs;="" this._min="stepOpt.min;" this._valuelist="stepOpt.pnts;" this._reformlabeldata();="" },="" _reformtimevalue:="" function="" ()="" this.option.splitnumber="" 5;="" curvalue="ecDate.getAutoFormatter(this._min," formatter="curValue.formatter;" gapvalue="curValue.gapValue;" startgap;="" switch="" (formatter)="" case="" 'week':="" startgap="ecDate.nextMonday(this._min);" break;="" 'month':="" 1);="" 'quarter':="" 'half-year':="" 'year':="" default:="" if="" (gapvalue="" *="" 2)="" gapvalue)="" +="" 1)="" gapvalue;="" else="" -="" -gapvalue);="" startgap.sethours(math.round(startgap.gethours()="" 6)="" 6);="" startgap.setminutes(0);="" startgap.setseconds(0);="" (startgap="" while="" (splitnumber--="">= 0) {
+            if (!scale && this._min <= 0 && this._max <= 0) {
+                this._max = 0;
+            }
+            var stepOpt = smartSteps(this._min, this._max, splitNumber);
+            splitNumber = splitNumber != null ? splitNumber : stepOpt.secs;
+            this._min = stepOpt.min;
+            this._max = stepOpt.max;
+            this._valueList = stepOpt.pnts;
+            this._reformLabelData();
+        },
+        _reformTimeValue: function () {
+            var splitNumber = this.option.splitNumber != null ? this.option.splitNumber : 5;
+            var curValue = ecDate.getAutoFormatter(this._min, this._max, splitNumber);
+            var formatter = curValue.formatter;
+            var gapValue = curValue.gapValue;
+            this._valueList = [ecDate.getNewDate(this._min)];
+            var startGap;
+            switch (formatter) {
+            case 'week':
+                startGap = ecDate.nextMonday(this._min);
+                break;
+            case 'month':
+                startGap = ecDate.nextNthOnMonth(this._min, 1);
+                break;
+            case 'quarter':
+                startGap = ecDate.nextNthOnQuarterYear(this._min, 1);
+                break;
+            case 'half-year':
+                startGap = ecDate.nextNthOnHalfYear(this._min, 1);
+                break;
+            case 'year':
+                startGap = ecDate.nextNthOnYear(this._min, 1);
+                break;
+            default:
+                if (gapValue <= 3600000 * 2) {
+                    startGap = (Math.floor(this._min / gapValue) + 1) * gapValue;
+                } else {
+                    startGap = ecDate.getNewDate(this._min - -gapValue);
+                    startGap.setHours(Math.round(startGap.getHours() / 6) * 6);
+                    startGap.setMinutes(0);
+                    startGap.setSeconds(0);
+                }
+                break;
+            }
+            if (startGap - this._min < gapValue / 2) {
+                startGap -= -gapValue;
+            }
+            curValue = ecDate.getNewDate(startGap);
+            splitNumber *= 1.5;
+            while (splitNumber-- >= 0) {
                 if (formatter == 'month' || formatter == 'quarter' || formatter == 'half-year' || formatter == 'year') {
                     curValue.setDate(1);
                 }
@@ -20793,7 +22234,69 @@ define('zrender/zrender', [
             var splitNumber = this.option.splitNumber != null ? this.option.splitNumber : 5;
             var splitGap = (this._max - this._min) / splitNumber;
             this._valueList = [];
-            for (var i = 0; i <= splitnumber;="" i++)="" {="" this._valuelist.push(accmath.accadd(this._min,="" accmath.accmul(splitgap,="" i)));="" }="" this._reformlabeldata();="" },="" _reformlogvalue:="" function="" ()="" var="" thisoption="this.option;" result="require('../util/smartLogSteps')({" datamin:="" this._min,="" datamax:="" this._max,="" logpositive:="" thisoption.logpositive,="" loglabelbase:="" thisoption.loglabelbase,="" splitnumber:="" thisoption.splitnumber="" });="" this._min="result.dataMin;" this._max="result.dataMax;" this._valuelist="result.tickList;" this._datamappingmethods="result.dataMappingMethods;" this._reformlabeldata(result.labelformatter);="" _reformlabeldata:="" (innerformatter)="" this._valuelabel="[];" formatter="this.option.axisLabel.formatter;" if="" (formatter)="" for="" (var="" i="0," l="this._valueList.length;" <="" l;="" (typeof="" 'function')="" this._valuelabel.push(innerformatter="" ?="" formatter.call(this.mychart,="" this._valuelist[i],="" innerformatter)="" :="" this._valuelist[i]));="" else="" 'string')="" ecdate.format(formatter,="" this._valuelist[i])="" formatter.replace('{value}',="" innerformatter(this._valuelist[i])="" this.numaddcommas(this._valuelist[i]));="" getextremum:="" this._calculatevalue();="" datamappingmethods="this._dataMappingMethods;" return="" min:="" max:="" datamappingmethods:="" zrutil.merge({},="" datamappingmethods)="" null="" };="" refresh:="" (newoption,="" newseries)="" (newoption)="" this.option="this.reformOption(newOption);" this.option.axislabel.textstyle="zrUtil.merge(this.option.axisLabel.textStyle" ||="" {},="" this.ectheme.textstyle);="" this.series="newSeries;" (this.zr)="" this.clear();="" this._buildshape();="" getcoord:="" (value)="" (this._datamappingmethods)="" value="this._dataMappingMethods.value2Coord(value);" value;=""> this._max ? this._max : value;
+            for (var i = 0; i <= splitNumber; i++) {
+                this._valueList.push(accMath.accAdd(this._min, accMath.accMul(splitGap, i)));
+            }
+            this._reformLabelData();
+        },
+        _reformLogValue: function () {
+            var thisOption = this.option;
+            var result = require('../util/smartLogSteps')({
+                dataMin: this._min,
+                dataMax: this._max,
+                logPositive: thisOption.logPositive,
+                logLabelBase: thisOption.logLabelBase,
+                splitNumber: thisOption.splitNumber
+            });
+            this._min = result.dataMin;
+            this._max = result.dataMax;
+            this._valueList = result.tickList;
+            this._dataMappingMethods = result.dataMappingMethods;
+            this._reformLabelData(result.labelFormatter);
+        },
+        _reformLabelData: function (innerFormatter) {
+            this._valueLabel = [];
+            var formatter = this.option.axisLabel.formatter;
+            if (formatter) {
+                for (var i = 0, l = this._valueList.length; i < l; i++) {
+                    if (typeof formatter === 'function') {
+                        this._valueLabel.push(innerFormatter ? formatter.call(this.myChart, this._valueList[i], innerFormatter) : formatter.call(this.myChart, this._valueList[i]));
+                    } else if (typeof formatter === 'string') {
+                        this._valueLabel.push(innerFormatter ? ecDate.format(formatter, this._valueList[i]) : formatter.replace('{value}', this._valueList[i]));
+                    }
+                }
+            } else {
+                for (var i = 0, l = this._valueList.length; i < l; i++) {
+                    this._valueLabel.push(innerFormatter ? innerFormatter(this._valueList[i]) : this.numAddCommas(this._valueList[i]));
+                }
+            }
+        },
+        getExtremum: function () {
+            this._calculateValue();
+            var dataMappingMethods = this._dataMappingMethods;
+            return {
+                min: this._min,
+                max: this._max,
+                dataMappingMethods: dataMappingMethods ? zrUtil.merge({}, dataMappingMethods) : null
+            };
+        },
+        refresh: function (newOption, newSeries) {
+            if (newOption) {
+                this.option = this.reformOption(newOption);
+                this.option.axisLabel.textStyle = zrUtil.merge(this.option.axisLabel.textStyle || {}, this.ecTheme.textStyle);
+                this.series = newSeries;
+            }
+            if (this.zr) {
+                this.clear();
+                this._buildShape();
+            }
+        },
+        getCoord: function (value) {
+            if (this._dataMappingMethods) {
+                value = this._dataMappingMethods.value2Coord(value);
+            }
+            value = value < this._min ? this._min : value;
+            value = value > this._max ? this._max : value;
             var result;
             if (!this.isHorizontal()) {
                 result = this.grid.getYend() - (value - this._min) / (this._max - this._min) * this.grid.getHeight();
@@ -20929,7 +22432,136 @@ define('zrender/zrender', [
         for (var i = 0, l = _timeGap.length; i < l; i++) {
             curValue = _timeGap[i].value;
             totalGap = Math.ceil(max / curValue) * curValue - Math.floor(min / curValue) * curValue;
-            if (Math.round(totalGap / curValue) <= 6="" 8="" 10="" 24="" 50="" splitnumber="" *="" 1.2)="" {="" formatter="_timeGap[i].formatter;" gapvalue="_timeGap[i].value;" break;="" }="" if="" (formatter="=" null)="" ;="" curvalue="3600000" 367;="" totalgap="Math.ceil(max" curvalue)="" -="" math.floor(min="" curvalue;="" (splitnumber="" 1)="" return="" formatter:="" formatter,="" gapvalue:="" };="" function="" s2d(v)="" v="" <="" ?="" '0'="" +="" :="" v;="" format(formatter,="" value)="" 'week'="" ||="" 'month'="" 'quarter'="" 'half-year'="" 'year')="" var="" date="getNewDate(value);" y="date.getFullYear();" m="date.getMonth()" 1;="" d="date.getDate();" h="date.getHours();" s="date.getSeconds();" s2d(m));="" y);="" %="" 100);="" s2d(d));="" d);="" s2d(h));="" h);="" m);="" s2d(s));="" s);="" formatter;="" nextmonday(value)="" value="getNewDate(value);" value.setdate(value.getdate()="" value.getday());="" value;="" nextnthpernmonth(value,="" nth,="" nmon)="" value.setmonth(math.ceil((value.getmonth()="" nmon);="" value.setdate(nth);="" nextnthonmonth(value,="" nth)="" 1);="" nextnthonquarteryear(value,="" 3);="" nextnthonhalfyear(value,="" 6);="" nextnthonyear(value,="" 12);="" getnewdate(value)="" instanceof="" new="" date(typeof="" 'string'="" value.replace(="" g,="" '="" ')="" value);="" getautoformatter:="" getautoformatter,="" getnewdate:="" getnewdate,="" format:="" format,="" nextmonday:="" nextmonday,="" nextnthpernmonth:="" nextnthpernmonth,="" nextnthonmonth:="" nextnthonmonth,="" nextnthonquarteryear:="" nextnthonquarteryear,="" nextnthonhalfyear:="" nextnthonhalfyear,="" nextnthonyear:="" nextnthonyear="" });define('echarts="" util="" smartsteps',="" [],="" ()="" mysteps="[" 10,="" 20,="" 25,="" ];="" mysections="[" 4,="" 5,="" custopts;="" custsteps;="" custsecs;="" minlocked;="" maxlocked;="" mt="Math;" math_round="MT.round;" math_floor="MT.floor;" math_ceil="MT.ceil;" math_abs="MT.abs;" math_log(n)="" mt.log(math_abs(n))="" mt.ln10;="" math_pow(n)="" mt.pow(10,="" n);="" math_isint(n)="" n="==" math_floor(n);="" smartsteps(min,="" max,="" section,="" opts)="" custopts="opts" {};="" custsteps="custOpts.steps" mysteps;="" custsecs="custOpts.secs" mysections;="" section="MATH_ROUND(+section" 0)="" 99;="" min="+min" 0;="" max="+max" minlocked="maxLocked" =="" ('min'="" in="" custopts)="" ('max'="" maxlocked="1;" (min=""> max) {
+            if (Math.round(totalGap / curValue) <= splitNumber * 1.2) {
+                formatter = _timeGap[i].formatter;
+                gapValue = _timeGap[i].value;
+                break;
+            }
+        }
+        if (formatter == null) {
+            formatter = 'year';
+            curValue = 3600000 * 24 * 367;
+            totalGap = Math.ceil(max / curValue) * curValue - Math.floor(min / curValue) * curValue;
+            gapValue = Math.round(totalGap / (splitNumber - 1) / curValue) * curValue;
+        }
+        return {
+            formatter: formatter,
+            gapValue: gapValue
+        };
+    }
+    function s2d(v) {
+        return v < 10 ? '0' + v : v;
+    }
+    function format(formatter, value) {
+        if (formatter == 'week' || formatter == 'month' || formatter == 'quarter' || formatter == 'half-year' || formatter == 'year') {
+            formatter = 'MM - dd\nyyyy';
+        }
+        var date = getNewDate(value);
+        var y = date.getFullYear();
+        var M = date.getMonth() + 1;
+        var d = date.getDate();
+        var h = date.getHours();
+        var m = date.getMinutes();
+        var s = date.getSeconds();
+        formatter = formatter.replace('MM', s2d(M));
+        formatter = formatter.toLowerCase();
+        formatter = formatter.replace('yyyy', y);
+        formatter = formatter.replace('yy', y % 100);
+        formatter = formatter.replace('dd', s2d(d));
+        formatter = formatter.replace('d', d);
+        formatter = formatter.replace('hh', s2d(h));
+        formatter = formatter.replace('h', h);
+        formatter = formatter.replace('mm', s2d(m));
+        formatter = formatter.replace('m', m);
+        formatter = formatter.replace('ss', s2d(s));
+        formatter = formatter.replace('s', s);
+        return formatter;
+    }
+    function nextMonday(value) {
+        value = getNewDate(value);
+        value.setDate(value.getDate() + 8 - value.getDay());
+        return value;
+    }
+    function nextNthPerNmonth(value, nth, nmon) {
+        value = getNewDate(value);
+        value.setMonth(Math.ceil((value.getMonth() + 1) / nmon) * nmon);
+        value.setDate(nth);
+        return value;
+    }
+    function nextNthOnMonth(value, nth) {
+        return nextNthPerNmonth(value, nth, 1);
+    }
+    function nextNthOnQuarterYear(value, nth) {
+        return nextNthPerNmonth(value, nth, 3);
+    }
+    function nextNthOnHalfYear(value, nth) {
+        return nextNthPerNmonth(value, nth, 6);
+    }
+    function nextNthOnYear(value, nth) {
+        return nextNthPerNmonth(value, nth, 12);
+    }
+    function getNewDate(value) {
+        return value instanceof Date ? value : new Date(typeof value == 'string' ? value.replace(/-/g, '/') : value);
+    }
+    return {
+        getAutoFormatter: getAutoFormatter,
+        getNewDate: getNewDate,
+        format: format,
+        nextMonday: nextMonday,
+        nextNthPerNmonth: nextNthPerNmonth,
+        nextNthOnMonth: nextNthOnMonth,
+        nextNthOnQuarterYear: nextNthOnQuarterYear,
+        nextNthOnHalfYear: nextNthOnHalfYear,
+        nextNthOnYear: nextNthOnYear
+    };
+});define('echarts/util/smartSteps', [], function () {
+    var mySteps = [
+        10,
+        20,
+        25,
+        50
+    ];
+    var mySections = [
+        4,
+        5,
+        6
+    ];
+    var custOpts;
+    var custSteps;
+    var custSecs;
+    var minLocked;
+    var maxLocked;
+    var MT = Math;
+    var MATH_ROUND = MT.round;
+    var MATH_FLOOR = MT.floor;
+    var MATH_CEIL = MT.ceil;
+    var MATH_ABS = MT.abs;
+    function MATH_LOG(n) {
+        return MT.log(MATH_ABS(n)) / MT.LN10;
+    }
+    function MATH_POW(n) {
+        return MT.pow(10, n);
+    }
+    function MATH_ISINT(n) {
+        return n === MATH_FLOOR(n);
+    }
+    function smartSteps(min, max, section, opts) {
+        custOpts = opts || {};
+        custSteps = custOpts.steps || mySteps;
+        custSecs = custOpts.secs || mySections;
+        section = MATH_ROUND(+section || 0) % 99;
+        min = +min || 0;
+        max = +max || 0;
+        minLocked = maxLocked = 0;
+        if ('min' in custOpts) {
+            min = +custOpts.min || 0;
+            minLocked = 1;
+        }
+        if ('max' in custOpts) {
+            max = +custOpts.max || 0;
+            maxLocked = 1;
+        }
+        if (min > max) {
             max = [
                 min,
                 min = max
@@ -21200,7 +22832,7 @@ define('zrender/zrender', [
         if (min >= 0 && newMin < 0) {
             newMax -= newMin;
             newMin = 0;
-        } else if (max <= 0="" &&="" newmax=""> 0) {
+        } else if (max <= 0 && newMax > 0) {
             newMin -= newMax;
             newMax = 0;
         }
@@ -21423,7 +23055,7 @@ define('zrender/zrender', [
         if (logLabelMode === 'exponent') {
             baseAnalysis();
         } else {
-            !(spanExpon <= min_base_10_split_number="" &&="" splitnumber=""> MIN_BASE_10_SPLIT_NUMBER) ? baseAnalysis() : detailAnalysis();
+            !(spanExpon <= MIN_BASE_10_SPLIT_NUMBER && splitNumber > MIN_BASE_10_SPLIT_NUMBER) ? baseAnalysis() : detailAnalysis();
         }
         function baseAnalysis() {
             if (spanExpon < splitNumber) {
@@ -21438,11 +23070,99 @@ define('zrender/zrender', [
                 minExponAdjust -= 1;
             }
             logMappingOffset = -minExponAdjust * lnBase;
-            for (var n = minExponAdjust; n - stepExpon <= maxdatalog;="" n="" +="stepExpon)" {="" ticklist.push(mathpow(loglabelbase,="" n));="" }="" function="" detailanalysis()="" var="" mindecimal="toDecimalFrom4Hex(minExpon," 0);="" enddecimal="minDecimal" 2;="" while="" (mindecimal="" <="" &&="" toh(mindecimal="" 1)="" tok(mindecimal="" *="" ln2d10="" mindatalog)="" mindecimal++;="" maxdecimal="toDecimalFrom4Hex(maxExpon," -="" (maxdecimal=""> endDecimal && toH(maxDecimal - 1) + toK(maxDecimal - 1) * LN2D10 > maxDataLog) {
+            for (var n = minExponAdjust; n - stepExpon <= maxDataLog; n += stepExpon) {
+                tickList.push(mathPow(logLabelBase, n));
+            }
+        }
+        function detailAnalysis() {
+            var minDecimal = toDecimalFrom4Hex(minExpon, 0);
+            var endDecimal = minDecimal + 2;
+            while (minDecimal < endDecimal && toH(minDecimal + 1) + toK(minDecimal + 1) * LN2D10 < minDataLog) {
+                minDecimal++;
+            }
+            var maxDecimal = toDecimalFrom4Hex(maxExpon, 0);
+            var endDecimal = maxDecimal - 2;
+            while (maxDecimal > endDecimal && toH(maxDecimal - 1) + toK(maxDecimal - 1) * LN2D10 > maxDataLog) {
                 maxDecimal--;
             }
             logMappingOffset = -(toH(minDecimal) * LN10 + toK(minDecimal) * LN2);
-            for (var i = minDecimal; i <= 1="" 3="" maxdecimal;="" i++)="" {="" var="" h="toH(i);" k="toK(i);" ticklist.push(mathpow(10,="" h)="" *="" mathpow(2,="" k));="" }="" function="" todecimalfrom4hex(h,="" k)="" return="" +="" k;="" tok(decimal)="" decimal="" -="" toh(decimal)="" 3;="" mathfloor(fixaccurate(decimal="" 3));="" makeresult()="" resultticklist="[];" for="" (var="" i="0," len="tickList.length;" <="" len;="" resultticklist[i]="(logPositive" ?="" :="" -1)="" ticklist[i];="" !logpositive="" &&="" resultticklist.reverse();="" datamappingmethods="makeDataMappingMethods();" value2coord="dataMappingMethods.value2Coord;" newdatamin="value2Coord(resultTickList[0]);" newdatamax="value2Coord(resultTickList[resultTickList.length" 1]);="" if="" (newdatamin="==" newdatamax)="" datamin:="" newdatamin,="" datamax:="" newdatamax,="" ticklist:="" resultticklist,="" logpositive:="" logpositive,="" labelformatter:="" makelabelformatter(),="" datamappingmethods:="" };="" makelabelformatter()="" (loglabelmode="==" 'exponent')="" myloglabelbase="logLabelBase;" mylnbase="lnBase;" (value)="" (!isfinite(parsefloat(value)))="" '';="" sign="" ;="" (value="" 0)="" value="-value;" makesuperscriptexponent(mathlog(value)="" mylnbase);="" else="" number.addcommas(formatnumber(value));="" makedatamappingmethods()="" mylogpositive="logPositive;" mylogmappingoffset="logMappingOffset;" value2coord:="" (x)="" (x="=" null="" ||="" isnan(x)="" !isfinite(x))="" x;="" x="parseFloat(x);" (!isfinite(x))="" (mylogpositive="" epsilon)="" (!mylogpositive=""> -EPSILON) {
+            for (var i = minDecimal; i <= maxDecimal; i++) {
+                var h = toH(i);
+                var k = toK(i);
+                tickList.push(mathPow(10, h) * mathPow(2, k));
+            }
+        }
+        function toDecimalFrom4Hex(h, k) {
+            return h * 3 + k;
+        }
+        function toK(decimal) {
+            return decimal - toH(decimal) * 3;
+        }
+        function toH(decimal) {
+            return mathFloor(fixAccurate(decimal / 3));
+        }
+    }
+    function makeResult() {
+        var resultTickList = [];
+        for (var i = 0, len = tickList.length; i < len; i++) {
+            resultTickList[i] = (logPositive ? 1 : -1) * tickList[i];
+        }
+        !logPositive && resultTickList.reverse();
+        var dataMappingMethods = makeDataMappingMethods();
+        var value2Coord = dataMappingMethods.value2Coord;
+        var newDataMin = value2Coord(resultTickList[0]);
+        var newDataMax = value2Coord(resultTickList[resultTickList.length - 1]);
+        if (newDataMin === newDataMax) {
+            newDataMin -= 1;
+            newDataMax += 1;
+        }
+        return {
+            dataMin: newDataMin,
+            dataMax: newDataMax,
+            tickList: resultTickList,
+            logPositive: logPositive,
+            labelFormatter: makeLabelFormatter(),
+            dataMappingMethods: dataMappingMethods
+        };
+    }
+    function makeLabelFormatter() {
+        if (logLabelMode === 'exponent') {
+            var myLogLabelBase = logLabelBase;
+            var myLnBase = lnBase;
+            return function (value) {
+                if (!isFinite(parseFloat(value))) {
+                    return '';
+                }
+                var sign = '';
+                if (value < 0) {
+                    value = -value;
+                    sign = '-';
+                }
+                return sign + myLogLabelBase + makeSuperscriptExponent(mathLog(value) / myLnBase);
+            };
+        } else {
+            return function (value) {
+                if (!isFinite(parseFloat(value))) {
+                    return '';
+                }
+                return number.addCommas(formatNumber(value));
+            };
+        }
+    }
+    function makeDataMappingMethods() {
+        var myLogPositive = logPositive;
+        var myLogMappingOffset = logMappingOffset;
+        return {
+            value2Coord: function (x) {
+                if (x == null || isNaN(x) || !isFinite(x)) {
+                    return x;
+                }
+                x = parseFloat(x);
+                if (!isFinite(x)) {
+                    x = EPSILON;
+                } else if (myLogPositive && x < EPSILON) {
+                    x = EPSILON;
+                } else if (!myLogPositive && x > -EPSILON) {
                     x = -EPSILON;
                 }
                 x = mathAbs(x);
@@ -21479,4 +23199,4 @@ define('zrender/zrender', [
         return val > -EPSILON && val < EPSILON;
     }
     return smartLogSteps;
-});</=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></=></g_vml_:fill></g_vml_:fill',></g_vml_:fill></g_vml_:stroke',></g_vml_:shape',></g_vml_:group',></=></=></=></=></=></=></=></=></=></=></object></string>
+});
